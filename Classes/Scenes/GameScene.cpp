@@ -1,7 +1,11 @@
 // 该文件实现了头文件中声明的 GameScene 类的方法。主要功能包括场景初始化、坐标转换和调试网格绘制。
 // 2025.11.27 by BillyDu
+#include <string> // C++11 string
+
 #include "GameScene.h"
 #include "../Consts.h" // 引用常量
+#include "../Managers/DataManager.h"
+#include "../Utils/GameException.h"
 
 USING_NS_CC;
 
@@ -33,12 +37,38 @@ bool GameScene::init() {
         auto loc = touch->getLocation();
         auto gridPos = this->pixelToGrid(loc);
 
-        CCLOG("Clicked at Screen: (%f, %f) -> Grid: [Row: %d, Col: %d]",
+        CCLOG("[Info] Clicked at Screen: (%f, %f) -> Grid: [Row: %d, Col: %d]",
             loc.x, loc.y, gridPos.first, gridPos.second);
 
         return true;
         };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+
+    // --- DataManager Test (Paradigm Showcase) ---
+    try {
+        // 1. 加载数据
+        DataManager::getInstance().loadData();
+
+        // 2. 尝试读取一个植物的数据 (豌豆射手 ID 1001)
+        const auto& plantInfo = DataManager::getInstance().getPlantData(1001);
+
+        CCLOG("[Info] TEST: Loaded Plant [%s], HP: %d, Cost: %d",
+            plantInfo.name.c_str(), plantInfo.hp, plantInfo.cost);
+
+        // 3. (可选) 故意测试一个不存在的 ID 来触发异常机制
+        // DataManager::getInstance().getPlantData(9999); 
+
+    }
+    catch (const GameException& e) {
+        // 优雅的异常处理：弹出错误框或返回主菜单
+        CCLOG("[Err] Data Error: %s", e.what());
+        // 实际上这里应该弹出一个 MessageBox
+        return false;
+    }
+    catch (const std::exception& e) {
+        CCLOG("[Err] Standard Error: %s", e.what());
+        return false;
+    }
 
     return true;
 }
