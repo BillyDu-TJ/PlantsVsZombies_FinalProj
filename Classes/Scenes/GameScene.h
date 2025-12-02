@@ -3,7 +3,11 @@
 #ifndef __GAME_SCENE_H__
 #define __GAME_SCENE_H__
 
+#include <vector>
+
 #include "cocos2d.h"
+#include "../Entities/Zombie.h"
+#include "../Entities/Plant.h"
 
 class GameScene : public cocos2d::Scene {
 public:
@@ -27,6 +31,13 @@ public:
     void drawDebugGrid();
 
     CREATE_FUNC(GameScene);
+
+private:
+	cocos2d::Vector<Plant*> _plants;   // 场上的植物列表
+    cocos2d::Vector<Zombie*> _zombies; // 场上的僵尸列表
+   
+	// 生成僵尸
+	void spawnZombie(int id, int row);
 };
 
 #endif // __GAME_SCENE_H__

@@ -5,6 +5,7 @@
 #include "GameScene.h"
 #include "../Consts.h" // 引用常量
 #include "../Managers/DataManager.h"
+#include "../Managers/LevelManager.h"
 #include "../Utils/GameException.h"
 #include "../Entities/Plant.h"
 #include "../Entities/Zombie.h"
@@ -72,43 +73,94 @@ bool GameScene::init() {
         return false;
     }
 
-    // --- 实体测试 ---
+    // --- 加载关卡 ---
     try {
-        // 1. 创建一个豌豆射手 (ID 1001)
-        auto plantData = DataManager::getInstance().getPlantData(1001);
-        auto plant = Plant::createWithData(plantData);
-        // 放在第 2 行，第 1 列
-        auto pos = gridToPixel(2, 1);
-        plant->setPosition(pos);
-        plant->setRow(2);
-        this->addChild(plant);
-        CCLOG("[Info] Spawned plant at Row 2, Col 1");
-
-        // 2. 创建一个僵尸
-        auto zombie = Zombie::create();
-        zombie->setSpeed(20.0f); // 走慢点
-        // 放在第 2 行，屏幕最右侧
-        auto zPos = gridToPixel(2, 8);
-        zombie->setPosition(zPos);
-        zombie->setRow(2);
-        this->addChild(zombie);
-
-        // 让僵尸动起来 (为了演示，直接 schedule updateLogic)
-        // 实际上这些应该由 LevelManager 统一遍历调用
-        zombie->schedule([zombie](float dt) {
-            zombie->updateLogic(dt);
-            }, "zombie_update");
-
+        DataManager::getInstance().loadData(); // 确保数据先加载
+        LevelManager::getInstance().loadLevel("data/level_test.json");
     }
     catch (const std::exception& e) {
-        CCLOG("[Err] Entity Spawn Error: %s", e.what());
+        CCLOG("[Err] Init Error: %s", e.what());
     }
+
+    this->scheduleUpdate(); // 确保 Update 开启
+
+    //// --- 实体测试 ---
+    //try {
+    //    // 1. 创建一个豌豆射手 (ID 1001)
+    //    auto plantData = DataManager::getInstance().getPlantData(1001);
+    //    auto plant = Plant::createWithData(plantData);
+    //    // 放在第 2 行，第 1 列
+    //    auto pos = gridToPixel(2, 1);
+    //    plant->setPosition(pos);
+    //    plant->setRow(2);
+    //    this->addChild(plant);
+    //    CCLOG("[Info] Spawned plant at Row 2, Col 1");
+
+    //    // 2. 创建一个僵尸
+    //    auto zombie = Zombie::create();
+    //    zombie->setSpeed(20.0f); // 走慢点
+    //    // 放在第 2 行，屏幕最右侧
+    //    auto zPos = gridToPixel(2, 8);
+    //    zombie->setPosition(zPos);
+    //    zombie->setRow(2);
+    //    this->addChild(zombie);
+
+    //    // 让僵尸动起来 (为了演示，直接 schedule updateLogic)
+    //    // 实际上这些应该由 LevelManager 统一遍历调用
+    //    zombie->schedule([zombie](float dt) {
+    //        zombie->updateLogic(dt);
+    //        }, "zombie_update");
+
+    //}
+    //catch (const std::exception& e) {
+    //    CCLOG("[Err] Entity Spawn Error: %s", e.what());
+    //}
+
+    
 
     return true;
 }
 
 void GameScene::update(float dt) {
-    // 以后在这里处理僵尸移动、子弹飞行
+    // 1. 让 LevelManager 检查是否刷怪
+    // 使用 Lambda 表达式作为回调
+    LevelManager::getInstance().update(dt, [this](int id, int row) {
+        this->spawnZombie(id, row);
+        });
+
+    // 2. 更新所有僵尸的逻辑
+    for (auto zombie : _zombies) {
+        zombie->updateLogic(dt);
+    }
+
+    // 3. 更新所有植物逻辑
+    for (auto plant : _plants) {
+        plant->updateLogic(dt);
+    }
+}
+
+void GameScene::spawnZombie(int id, int row) {
+    try {
+        // 暂时假设所有僵尸数据通用，未来可用 id 从 DataManager 取特定数据
+        auto zombie = Zombie::create();
+
+        // 计算坐标
+        auto pixelPos = gridToPixel(row, GRID_COLS); // 放在屏幕最右侧格子外
+        // 微调：让它从屏幕外一点点走进来
+        pixelPos.x += 50.0f;
+
+        zombie->setPosition(pixelPos);
+        zombie->setRow(row);
+        // 如果有 ZOrder 需求，Row 越大 Z 越大(遮挡关系)
+        this->addChild(zombie, row * 10);
+
+        _zombies.pushBack(zombie); // 加入容器管理
+
+        CCLOG("[Info] Spawned Zombie [ID:%d] at Row:%d", id, row);
+    }
+    catch (...) {
+        CCLOG("[Err] Failed to spawn zombie");
+    }
 }
 
 /**

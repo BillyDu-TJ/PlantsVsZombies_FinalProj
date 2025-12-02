@@ -60,6 +60,7 @@ list(APPEND GAME_SOURCE
      Classes/HelloWorldScene.cpp
      Classes/Scenes/GameScene.cpp
      Classes/Managers/DataManager.cpp
+     Classes/Managers/LevelManager.cpp
      Classes/Entities/Unit.cpp
      Classes/Entities/Plant.cpp
      Classes/Entities/Zombie.cpp
@@ -75,6 +76,7 @@ list(APPEND GAME_HEADER
      Classes/Entities/Plant.h
      Classes/Entities/Zombie.h
      Classes/Managers/DataManager.h
+     Classes/Managers/LevelManager.h
      )
 
 if(ANDROID)

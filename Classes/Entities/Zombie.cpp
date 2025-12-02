@@ -35,7 +35,7 @@ void Zombie::updateLogic(float dt) {
         // 简单的越界检查 (如果走出屏幕左边，游戏结束或销毁)
         if (this->getPositionX() < -50) {
             this->removeFromParent();
-            CCLOG("Zombie reached the house! Game Over?");
+            CCLOG("[Info] Zombie reached the house! Game Over?");
         }
     }
     else if (_state == UnitState::ATTACK) {
