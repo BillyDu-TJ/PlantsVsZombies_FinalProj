@@ -2,9 +2,9 @@
   "2001": {
     "name": "NormalZombie",
     "hp": 300,
-    "walkingSpeed": 10,
-    "attack": 20,
-    "attackSpeed": 1.5,
-    "texture": "zombies/normalzombie.gif"
+    "speed": 10,
+    "damage": 20,
+    "attackInterval": 1.5,
+    "texture": "zombies/normalzombie.png"
   }
 }

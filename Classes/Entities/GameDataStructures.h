@@ -21,10 +21,10 @@ struct PlantData {
 struct ZombieData {
     std::string name;
     int hp = 0;
-    float speed = 0.0f;
-    int attack = 0;
-    float attackSpeed = 0.0f; // 攻击间隔
-	std::string texturePath;
+    int damage = 0;
+    float speed = 0.0f;          // 移动速度
+    float attackInterval = 1.0f; // 攻击间隔
+    std::string texturePath;
 };
 
 #endif // __GAME_DATA_STRUCTURES_H__

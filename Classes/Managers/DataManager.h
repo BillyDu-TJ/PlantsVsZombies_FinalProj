@@ -28,11 +28,17 @@ public:
 private:
     DataManager() = default; // 私有构造
 
-    // 解析具体文件的辅助函数
+    // 解析具体植物数据文件的辅助函数
     void loadPlants(const std::string& filename);
 
     // 缓存数据：ID -> Data
     std::unordered_map<int, PlantData> _plantDataMap;
+
+	// 解析具体僵尸数据文件的辅助函数
+    void loadZombies(const std::string& filename);
+
+    // 僵尸数据缓存
+    std::unordered_map<int, ZombieData> _zombieDataMap;
 };
 
 #endif // __DATA_MANAGER_H__

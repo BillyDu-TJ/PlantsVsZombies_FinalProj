@@ -15,7 +15,7 @@ void DataManager::loadData() {
     // 集中加载所有配置文件
     try {
         loadPlants("data/plants.json");
-        // loadZombies("data/zombies.json"); // 未来扩展
+        loadZombies("data/zombies.json"); // 未来扩展
         cocos2d::log("[Info] All data loaded successfully.");
     }
     catch (const std::exception& e) {
@@ -75,4 +75,44 @@ const PlantData& DataManager::getPlantData(int id) const {
         throw GameException("[Err] Plant ID not found: " + std::to_string(id));
     }
     return it->second;
+}
+
+// [新增] 实现 getZombieData
+const ZombieData& DataManager::getZombieData(int id) const {
+    auto it = _zombieDataMap.find(id);
+    if (it == _zombieDataMap.end()) {
+        throw GameException("Zombie ID not found: " + std::to_string(id));
+    }
+    return it->second;
+}
+
+// [新增] 实现 loadZombies (逻辑几乎同 loadPlants)
+void DataManager::loadZombies(const std::string& filename) {
+    std::string fullPath = cocos2d::FileUtils::getInstance()->fullPathForFilename(filename);
+    if (fullPath.empty()) throw GameException("Config file not found: " + filename);
+
+    std::string content = cocos2d::FileUtils::getInstance()->getStringFromFile(fullPath);
+    Document doc;
+    doc.Parse(content.c_str());
+
+    if (doc.HasParseError() || !doc.IsObject()) {
+        throw GameException("JSON Parse error in " + filename);
+    }
+
+    for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it) {
+        int id = std::stoi(it->name.GetString());
+        const auto& val = it->value;
+
+        ZombieData data;
+        // 防御性读取
+        data.name = val.HasMember("name") ? val["name"].GetString() : "Unknown";
+        data.hp = val.HasMember("hp") ? val["hp"].GetInt() : 100;
+        data.damage = val.HasMember("damage") ? val["damage"].GetInt() : 10;
+        data.speed = val.HasMember("speed") ? val["speed"].GetFloat() : 10.0f;
+        data.attackInterval = val.HasMember("attackInterval") ? val["attackInterval"].GetFloat() : 1.0f;
+        data.texturePath = val.HasMember("texture") ? val["texture"].GetString() : "";
+
+        _zombieDataMap[id] = data;
+        CCLOG("[Info] Loaded Zombie ID: %d (%s)", id, data.name.c_str());
+    }
 }

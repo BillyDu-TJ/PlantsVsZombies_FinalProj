@@ -168,25 +168,26 @@ void GameScene::update(float dt) {
 
 void GameScene::spawnZombie(int id, int row) {
     try {
-        // 暂时假设所有僵尸数据通用，未来可用 id 从 DataManager 取特定数据
-        auto zombie = Zombie::create();
+        // 1. [关键] 从 DataManager 获取僵尸配置
+        const auto& zombieData = DataManager::getInstance().getZombieData(id);
 
-        // 计算坐标
-        auto pixelPos = gridToPixel(row, GRID_COLS); // 放在屏幕最右侧格子外
-        // 微调：让它从屏幕外一点点走进来
+        // 2. [关键] 使用带参数的 create 方法
+        auto zombie = Zombie::createWithData(zombieData);
+
+        // ... 后续位置设置代码保持不变 ...
+        auto pixelPos = gridToPixel(row, GRID_COLS);
         pixelPos.x += 50.0f;
 
         zombie->setPosition(pixelPos);
         zombie->setRow(row);
-        // 如果有 ZOrder 需求，Row 越大 Z 越大(遮挡关系)
         this->addChild(zombie, row * 10);
 
-        _zombies.pushBack(zombie); // 加入容器管理
+        _zombies.pushBack(zombie);
 
         CCLOG("[Info] Spawned Zombie [ID:%d] at Row:%d", id, row);
     }
-    catch (...) {
-        CCLOG("[Err] Failed to spawn zombie");
+    catch (const std::exception& e) {
+        CCLOG("[Err] Failed to spawn zombie: %s", e.what());
     }
 }
 
@@ -230,7 +231,7 @@ void GameScene::tryPlantAt(int row, int col) {
         plant->setRow(row);
 
         // 添加到场景 (根据 Row 设置 ZOrder，防止遮挡关系错误)
-        this->addChild(plant, row * 100);
+        this->addChild(plant, row * 10 + 1);
 
         // 5. 更新游戏状态
         _plants.pushBack(plant);         // 加入容器

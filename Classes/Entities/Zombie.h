@@ -4,22 +4,20 @@
 #define __ZOMBIE_H__
 
 #include "Unit.h"
+#include "GameDataStructures.h"
 
 class Zombie : public Unit {
 public:
-    CREATE_FUNC(Zombie);
+    static Zombie* createWithData(const ZombieData& data);
     virtual bool init() override;
 
     virtual void updateLogic(float dt) override;
 
-    // ½©Ê¬ÌØÓÐ
-    void setSpeed(float speed) { _speed = speed; }
-    void setAttackDamage(int dmg) { _damage = dmg; }
+    void setZombieData(const ZombieData& data);
 
 private:
-    float _speed;
-    int _damage;
-    // float _attackInterval; // ¹¥»÷¼ä¸ô
+    ZombieData _data;
+	float _attackTimer = 0.0f;
 };
 
 #endif // __ZOMBIE_H__
