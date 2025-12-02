@@ -6,6 +6,8 @@
 #include "../Consts.h" // 引用常量
 #include "../Managers/DataManager.h"
 #include "../Utils/GameException.h"
+#include "../Entities/Plant.h"
+#include "../Entities/Zombie.h"
 
 USING_NS_CC;
 
@@ -68,6 +70,38 @@ bool GameScene::init() {
     catch (const std::exception& e) {
         CCLOG("[Err] Standard Error: %s", e.what());
         return false;
+    }
+
+    // --- 实体测试 ---
+    try {
+        // 1. 创建一个豌豆射手 (ID 1001)
+        auto plantData = DataManager::getInstance().getPlantData(1001);
+        auto plant = Plant::createWithData(plantData);
+        // 放在第 2 行，第 1 列
+        auto pos = gridToPixel(2, 1);
+        plant->setPosition(pos);
+        plant->setRow(2);
+        this->addChild(plant);
+        CCLOG("[Info] Spawned plant at Row 2, Col 1");
+
+        // 2. 创建一个僵尸
+        auto zombie = Zombie::create();
+        zombie->setSpeed(20.0f); // 走慢点
+        // 放在第 2 行，屏幕最右侧
+        auto zPos = gridToPixel(2, 8);
+        zombie->setPosition(zPos);
+        zombie->setRow(2);
+        this->addChild(zombie);
+
+        // 让僵尸动起来 (为了演示，直接 schedule updateLogic)
+        // 实际上这些应该由 LevelManager 统一遍历调用
+        zombie->schedule([zombie](float dt) {
+            zombie->updateLogic(dt);
+            }, "zombie_update");
+
+    }
+    catch (const std::exception& e) {
+        CCLOG("[Err] Entity Spawn Error: %s", e.what());
     }
 
     return true;

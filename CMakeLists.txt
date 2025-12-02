@@ -60,6 +60,9 @@ list(APPEND GAME_SOURCE
      Classes/HelloWorldScene.cpp
      Classes/Scenes/GameScene.cpp
      Classes/Managers/DataManager.cpp
+     Classes/Entities/Unit.cpp
+     Classes/Entities/Plant.cpp
+     Classes/Entities/Zombie.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
@@ -68,6 +71,9 @@ list(APPEND GAME_HEADER
      Classes/Scenes/GameScene.h
      Classes/Utils/GameException.h
      Classes/Entities/GameDataStructures.h
+     Classes/Entities/Unit.h
+     Classes/Entities/Plant.h
+     Classes/Entities/Zombie.h
      Classes/Managers/DataManager.h
      )
 
