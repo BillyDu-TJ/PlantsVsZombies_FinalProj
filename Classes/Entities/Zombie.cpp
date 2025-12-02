@@ -14,7 +14,7 @@ bool Zombie::init() {
     _damage = 10;
 
     // 暂时给个临时贴图或颜色块，防止看不见
-    this->setTexture("zombies/zombie_normal.png"); // 确保你有这个图，或者用 SetColor
+    this->setTexture("zombies/normalzombie.png"); // 确保你有这个图，或者用 SetColor
     if (this->getContentSize().width == 0) {
         // 如果图没加载到，画个红块代替
         this->setTextureRect(Rect(0, 0, 60, 90));

@@ -24,6 +24,19 @@ bool GameScene::init() {
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
+    // 0. 初始化网格
+    for (int r = 0; r < GRID_ROWS; ++r) {
+        for (int c = 0; c < GRID_COLS; ++c) {
+            _plantMap[r][c] = nullptr;
+        }
+    }
+
+    // 1. 基础UI：显示阳光数
+    _sunLabel = Label::createWithSystemFont("Sun: " + std::to_string(_currentSun), "Arial", 24);
+    _sunLabel->setPosition(Vec2(100, 680)); // 左上角
+    _sunLabel->setColor(Color3B::YELLOW);
+    this->addChild(_sunLabel, 100);
+
     // 1. 添加一个简单的背景色 (绿色草地)
     auto background = LayerColor::create(Color4B(0, 128, 0, 255));
     this->addChild(background, -1);
@@ -34,18 +47,6 @@ bool GameScene::init() {
     // 3. 开启 Update 调度
     this->scheduleUpdate();
 
-    // 4. 添加鼠标/触摸点击监听 (测试 pixelToGrid 是否正确)
-    auto listener = EventListenerTouchOneByOne::create();
-    listener->onTouchBegan = [this](Touch* touch, Event* event) {
-        auto loc = touch->getLocation();
-        auto gridPos = this->pixelToGrid(loc);
-
-        CCLOG("[Info] Clicked at Screen: (%f, %f) -> Grid: [Row: %d, Col: %d]",
-            loc.x, loc.y, gridPos.first, gridPos.second);
-
-        return true;
-        };
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
 
     // --- DataManager Test (Paradigm Showcase) ---
     try {
@@ -116,7 +117,33 @@ bool GameScene::init() {
     //    CCLOG("[Err] Entity Spawn Error: %s", e.what());
     //}
 
-    
+    // --- 键盘监听 (用于切换植物：按1选豌豆，按2选向日葵) ---
+    auto keyListener = EventListenerKeyboard::create();
+    keyListener->onKeyPressed = [this](EventKeyboard::KeyCode code, Event* event) {
+        if (code == EventKeyboard::KeyCode::KEY_1) {
+            selectPlant(1001); // 假设 1001 是豌豆
+        } else if (code == EventKeyboard::KeyCode::KEY_2) {
+            selectPlant(1002); // 假设 1002 是向日葵
+        }
+    };
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(keyListener, this);
+
+
+    // --- 鼠标监听 (实现种植) ---
+    auto touchListener = EventListenerTouchOneByOne::create();
+    touchListener->onTouchBegan = [this](Touch* touch, Event* event) {
+        auto loc = touch->getLocation();
+        auto gridPos = this->pixelToGrid(loc);
+        
+        // 如果点击有效且在网格内
+        if (gridPos.first != -1) {
+            CCLOG("[Info] Clicked Grid: [%d, %d]", gridPos.first, gridPos.second);
+            // 尝试种植
+            this->tryPlantAt(gridPos.first, gridPos.second);
+        }
+        return true;
+    };
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
 
     return true;
 }
@@ -160,6 +187,67 @@ void GameScene::spawnZombie(int id, int row) {
     }
     catch (...) {
         CCLOG("[Err] Failed to spawn zombie");
+    }
+}
+
+// 切换植物
+void GameScene::selectPlant(int plantId) {
+    try {
+        // 验证ID是否存在，不存在会抛出异常
+        auto data = DataManager::getInstance().getPlantData(plantId);
+        _selectedPlantId = plantId;
+        CCLOG("[Info] Selected Plant: %s (Cost: %d)", data.name.c_str(), data.cost);
+    }
+    catch (const std::exception& e) {
+        CCLOG("[Err] Cannot select plant %d: %s", plantId, e.what());
+    }
+}
+
+// 核心种植逻辑
+void GameScene::tryPlantAt(int row, int col) {
+	// 1. 检查格子是否已被占用， 若后续有可以种在植物上的植物，可在此处扩展逻辑
+    if (_plantMap[row][col] != nullptr) {
+        CCLOG("[Info] Grid [%d, %d] is already occupied!", row, col);
+        return; // 种植失败
+    }
+
+    try {
+        // 2. 获取当前选中植物的数据
+        const auto& plantData = DataManager::getInstance().getPlantData(_selectedPlantId);
+
+        // 3. 检查阳光是否足够
+        if (_currentSun < plantData.cost) {
+            CCLOG("[Info] Not enough sun! Have: %d, Need: %d", _currentSun, plantData.cost);
+            return;
+        }
+
+        // 4. 生成植物对象
+        auto plant = Plant::createWithData(plantData);
+
+        // 设置位置
+        auto pixelPos = gridToPixel(row, col);
+        plant->setPosition(pixelPos);
+        plant->setRow(row);
+
+        // 添加到场景 (根据 Row 设置 ZOrder，防止遮挡关系错误)
+        this->addChild(plant, row * 100);
+
+        // 5. 更新游戏状态
+        _plants.pushBack(plant);         // 加入容器
+        _plantMap[row][col] = plant;     // 标记网格占用
+        _currentSun -= plantData.cost;   // 扣除阳光
+
+        // 6. 更新 UI
+        if (_sunLabel) {
+            _sunLabel->setString("Sun: " + std::to_string(_currentSun));
+        }
+
+        CCLOG("[Info] Successfully planted %s at [%d, %d]. Sun left: %d",
+            plantData.name.c_str(), row, col, _currentSun);
+
+    }
+    catch (const std::exception& e) {
+        CCLOG("[Err] Planting failed: %s", e.what());
     }
 }
 

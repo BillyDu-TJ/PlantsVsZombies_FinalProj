@@ -5,6 +5,6 @@
     "walkingSpeed": 10,
     "attack": 20,
     "attackSpeed": 1.5,
-    "texture": "zombies/normalzombie.png"
+    "texture": "zombies/normalzombie.gif"
   }
 }

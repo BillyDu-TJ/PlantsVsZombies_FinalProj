@@ -4,10 +4,12 @@
 #define __GAME_SCENE_H__
 
 #include <vector>
+#include <utility>
 
 #include "cocos2d.h"
 #include "../Entities/Zombie.h"
 #include "../Entities/Plant.h"
+#include "../Consts.h"
 
 class GameScene : public cocos2d::Scene {
 public:
@@ -38,6 +40,18 @@ private:
    
 	// 生成僵尸
 	void spawnZombie(int id, int row);
+    // 种植植物
+    void tryPlantAt(int row, int col);
+    void selectPlant(int plantId);
+
+	Plant* _plantMap[GRID_ROWS][GRID_COLS]; // 逻辑网格上的植物指针
+
+    // 游戏状态
+    int _currentSun = 500; // 初始阳光数
+	int _selectedPlantId = -1; // 当前选中的植物ID，-1表示未选择
+
+    // UI Lebel用于显示阳光
+	cocos2d::Label* _sunLabel = nullptr;
 };
 
 #endif // __GAME_SCENE_H__
