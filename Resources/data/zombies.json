@@ -6,5 +6,6 @@
     "damage": 20,
     "attackInterval": 1.5,
     "texture": "zombies/normalzombie.png"
+    
   }
 }
