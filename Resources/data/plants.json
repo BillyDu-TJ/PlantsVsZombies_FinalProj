@@ -1,0 +1,22 @@
+{
+  "1001": {
+    "name": "Peashooter",
+    "type": "shooter",
+    "hp": 300,
+    "cost": 100,
+    "cooldown": 7.5,
+    "attack": 20,
+    "attackSpeed": 1.5,
+    "texture": "plants/peashooter.png"
+  },
+  "1002": {
+    "name": "Sunflower",
+    "type": "producer",
+    "hp": 300,
+    "cost": 50,
+    "cooldown": 7.5,
+    "attack": 0,
+    "produceInterval": 24.0,
+    "texture": "plants/sunflower.png"
+  }
+}
