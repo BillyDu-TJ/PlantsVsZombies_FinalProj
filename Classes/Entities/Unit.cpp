@@ -42,9 +42,12 @@ void Unit::takeDamage(int damage) {
 }
 
 void Unit::die() {
+    if (_state == UnitState::DIE) return; // 防止重复死亡
     _state = UnitState::DIE;
-    // 暂时直接移除，以后可以播放死亡动画
-    this->removeFromParent();
+
+    CCLOG("[Info] Unit died.");
+    this->removeAllChildren(); // 移除子节点（如挂载的红点）
+    this->removeFromParent();  // 从场景移除
 }
 
 void Unit::updateLogic(float dt) {

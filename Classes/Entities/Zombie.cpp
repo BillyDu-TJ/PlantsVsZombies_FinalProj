@@ -58,6 +58,8 @@ void Zombie::setZombieData(const ZombieData& data) {
 void Zombie::updateLogic(float dt) {
     Unit::updateLogic(dt);
 
+	_attackTimer += dt;
+
     if (_state == UnitState::WALK) {
         // 向左移动
         float moveDist = _data.speed * dt;
@@ -71,11 +73,17 @@ void Zombie::updateLogic(float dt) {
         }
     }
     else if (_state == UnitState::ATTACK) {
-        _attackTimer += dt;
-        if (_attackTimer >= _data.attackInterval) {
-            _attackTimer = 0;
-            // TODO: execute attack
-            CCLOG("[Info] Zombie %s attacks! Damage: %d", _data.name.c_str(), _data.damage);
-        }
+		// 攻击逻辑在外部处理，这里只负责状态维护和动画播放
+
     }
+}
+
+
+bool Zombie::canAttack() const {
+    // 如果当前计时器超过了配置的间隔，则可以攻击
+    return _attackTimer >= _data.attackInterval;
+}
+
+void Zombie::resetAttackTimer() {
+    _attackTimer = 0.0f; // 归零，重新冷却
 }

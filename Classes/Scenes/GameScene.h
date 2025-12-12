@@ -9,6 +9,7 @@
 #include "cocos2d.h"
 #include "../Entities/Zombie.h"
 #include "../Entities/Plant.h"
+#include "../Entities/Bullet.h"
 #include "../Consts.h"
 
 class GameScene : public cocos2d::Scene {
@@ -52,6 +53,15 @@ private:
 
     // UI Lebel用于显示阳光
 	cocos2d::Label* _sunLabel = nullptr;
+
+    // 子弹容器
+    cocos2d::Vector<Bullet*> _bullets;
+
+    // 创建子弹的具体逻辑
+    void createBullet(cocos2d::Vec2 startPos, int damage);
+
+    // 核心战斗检测 (Collision & AI Check)
+    void updateCombatLogic();
 };
 
 #endif // __GAME_SCENE_H__

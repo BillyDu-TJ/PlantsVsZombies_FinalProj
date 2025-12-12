@@ -85,38 +85,6 @@ bool GameScene::init() {
 
     this->scheduleUpdate(); // 确保 Update 开启
 
-    //// --- 实体测试 ---
-    //try {
-    //    // 1. 创建一个豌豆射手 (ID 1001)
-    //    auto plantData = DataManager::getInstance().getPlantData(1001);
-    //    auto plant = Plant::createWithData(plantData);
-    //    // 放在第 2 行，第 1 列
-    //    auto pos = gridToPixel(2, 1);
-    //    plant->setPosition(pos);
-    //    plant->setRow(2);
-    //    this->addChild(plant);
-    //    CCLOG("[Info] Spawned plant at Row 2, Col 1");
-
-    //    // 2. 创建一个僵尸
-    //    auto zombie = Zombie::create();
-    //    zombie->setSpeed(20.0f); // 走慢点
-    //    // 放在第 2 行，屏幕最右侧
-    //    auto zPos = gridToPixel(2, 8);
-    //    zombie->setPosition(zPos);
-    //    zombie->setRow(2);
-    //    this->addChild(zombie);
-
-    //    // 让僵尸动起来 (为了演示，直接 schedule updateLogic)
-    //    // 实际上这些应该由 LevelManager 统一遍历调用
-    //    zombie->schedule([zombie](float dt) {
-    //        zombie->updateLogic(dt);
-    //        }, "zombie_update");
-
-    //}
-    //catch (const std::exception& e) {
-    //    CCLOG("[Err] Entity Spawn Error: %s", e.what());
-    //}
-
     // --- 键盘监听 (用于切换植物：按1选豌豆，按2选向日葵) ---
     auto keyListener = EventListenerKeyboard::create();
     keyListener->onKeyPressed = [this](EventKeyboard::KeyCode code, Event* event) {
@@ -163,6 +131,36 @@ void GameScene::update(float dt) {
     // 3. 更新所有植物逻辑
     for (auto plant : _plants) {
         plant->updateLogic(dt);
+    }
+
+    // 4.子弹更新
+    for (auto b : _bullets) {
+        b->updateLogic(dt);
+    }
+
+    // 5.执行战斗判定
+    updateCombatLogic();
+
+    // 6.清理失效对象 (垃圾回收)
+    // 移除死掉的僵尸
+    for (auto it = _zombies.begin(); it != _zombies.end(); ) {
+        if ((*it)->isDead()) {
+            // 从 Scene 移除已经在 die() 里做了，这里只需从 Vector 移除
+            it = _zombies.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+    // 移除失效子弹
+    for (auto it = _bullets.begin(); it != _bullets.end(); ) {
+        if (!(*it)->isActive() || (*it)->getParent() == nullptr) {
+            (*it)->removeFromParent(); // 确保从场景移除
+            it = _bullets.erase(it);
+        }
+        else {
+            ++it;
+        }
     }
 }
 
@@ -224,6 +222,29 @@ void GameScene::tryPlantAt(int row, int col) {
 
         // 4. 生成植物对象
         auto plant = Plant::createWithData(plantData);
+
+        // 绑定射击回调
+        plant->setOnShootCallback([this, row](Vec2 pos, int damage) {
+            // 只有当该行有僵尸时才真的发射 (简单的 AI 优化)
+            // 我们可以遍历一下 _zombies，看看有没有僵尸在当前行且在右边
+            bool enemyInSight = false;
+            for (auto z : this->_zombies) {
+                CCLOG("[Info] Check: ZombieRow %d vs PlantRow %d", z->getRow(), row);
+
+                if (z->getRow() == row && z->getPositionX() > pos.x && !z->isDead()) {
+                    enemyInSight = true;
+                    break;
+                }
+            }
+
+            if (enemyInSight) {
+                CCLOG("[Info] Enemy in sight! PEW PEW!");
+                this->createBullet(pos, damage);
+            }
+            else {
+                CCLOG("[Info] No enemy, holding fire.");
+            }
+            });
 
         // 设置位置
         auto pixelPos = gridToPixel(row, col);
@@ -295,5 +316,98 @@ void GameScene::drawDebugGrid() {
         float yStart = GRID_START_Y;
         float yEnd = GRID_START_Y + GRID_ROWS * CELL_HEIGHT;
         drawNode->drawLine(Vec2(x, yStart), Vec2(x, yEnd), Color4F::WHITE);
+    }
+}
+
+// 2. 实现 createBullet
+void GameScene::createBullet(Vec2 startPos, int damage) {
+    BulletData bData;
+    bData.damage = damage;
+    bData.speed = 400.0f;
+    bData.texturePath = "bullets/pea.png"; // 确保你有这个图，或者代码里会画绿点
+
+    auto bullet = Bullet::create(bData);
+    bullet->setPosition(startPos);
+    // 子弹的行号需要反算一下，或者直接不存行号单纯靠碰撞
+    // 这里简单起见，我们假设子弹是矩形碰撞，不需要严格的 row 属性，
+    // 但为了优化，如果给 Bullet 加 row 属性会更快。
+    // 暂时先只设置 ZOrder
+    this->addChild(bullet, 100);
+    _bullets.pushBack(bullet);
+}
+
+// 实现核心战斗逻辑
+void GameScene::updateCombatLogic() {
+    // A. 子弹 vs 僵尸
+    for (auto bullet : _bullets) {
+        if (!bullet->isActive()) continue;
+
+        // 优化：创建一个稍小的碰撞框，比图片原始 rect 小一点，体验更好
+        Rect bRect = bullet->getBoundingBox();
+
+        for (auto zombie : _zombies) {
+            if (zombie->isDead()) continue;
+
+            // 简单优化：如果子弹和僵尸Y轴差太多（跨行），直接跳过
+            // 假设行高 100，允许误差 30
+            if (std::abs(bullet->getPositionY() - zombie->getPositionY()) > 30) continue;
+
+            if (bRect.intersectsRect(zombie->getBoundingBox())) {
+                // 击中！
+                zombie->takeDamage(bullet->getDamage());
+                bullet->deactivate(); // 子弹消失
+                bullet->removeFromParent();
+
+                CCLOG("[Info] Bullet hit Zombie! Zombie HP: %d", zombie->getHp());
+                break; // 一颗子弹只打一个
+            }
+        }
+    }
+
+    // B. 僵尸吃植物
+    for (auto zombie : _zombies) {
+        if (zombie->isDead()) continue;
+
+        int row = zombie->getRow();
+        float zombieMouthX = zombie->getPositionX() - 30;
+        int col = (int)((zombieMouthX - GRID_START_X) / CELL_WIDTH);
+
+        Plant* targetPlant = nullptr;
+        // 检查当前格是否有效且有植物
+        if (col >= 0 && col < GRID_COLS && row >= 0 && row < GRID_ROWS) {
+            targetPlant = _plantMap[row][col];
+        }
+
+        if (targetPlant && !targetPlant->isDead()) {
+            // 有植物 -> 吃
+            if (zombie->getState() != UnitState::ATTACK) {
+                zombie->setState(UnitState::ATTACK);
+                CCLOG("[Info] Zombie starts eating plant at [%d, %d]", row, col);
+            }
+            
+            // 询问僵尸是否可以攻击
+            if (zombie->canAttack()) {
+                // 造成真实的数值伤害
+                int dmg = zombie->getDamage();
+                targetPlant->takeDamage(dmg);
+
+                // 重置僵尸的攻击 CD
+                zombie->resetAttackTimer();
+
+                CCLOG("[Info] Chomp! Plant HP: %d (Damage: %d)", targetPlant->getHp(), dmg);
+            }
+
+            if (targetPlant->isDead()) {
+                CCLOG("[Info] Plant eaten by zombie!");
+                _plantMap[row][col] = nullptr; // 植物死了，清空格子
+                zombie->setState(UnitState::WALK); // 恢复行走
+            }
+        }
+        else {
+            // 没植物 -> 走
+            if (zombie->getState() == UnitState::ATTACK) {
+                zombie->setState(UnitState::WALK);
+            }
+        }
     }
 }

@@ -64,6 +64,7 @@ list(APPEND GAME_SOURCE
      Classes/Entities/Unit.cpp
      Classes/Entities/Plant.cpp
      Classes/Entities/Zombie.cpp
+     Classes/Entities/Bullet.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
@@ -75,6 +76,7 @@ list(APPEND GAME_HEADER
      Classes/Entities/Unit.h
      Classes/Entities/Plant.h
      Classes/Entities/Zombie.h
+     Classes/Entities/Bullet.h
      Classes/Managers/DataManager.h
      Classes/Managers/LevelManager.h
      )

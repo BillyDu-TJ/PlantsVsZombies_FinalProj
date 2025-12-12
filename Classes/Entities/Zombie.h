@@ -15,6 +15,15 @@ public:
 
     void setZombieData(const ZombieData& data);
 
+    // 检查是否攻击冷却完毕
+    bool canAttack() const;
+
+    // 重置攻击计时器
+    void resetAttackTimer();
+
+    // 获取攻击力
+    int getDamage() const { return _data.damage; }
+
 private:
     ZombieData _data;
 	float _attackTimer = 0.0f;

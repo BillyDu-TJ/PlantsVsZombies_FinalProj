@@ -27,4 +27,13 @@ struct ZombieData {
     std::string texturePath;
 };
 
+// 子弹数据
+struct BulletData {
+    std::string name;
+    int damage = 20;
+    float speed = 300.0f; // 飞行速度
+    std::string texturePath;
+    // 以后可以加减速、溅射范围等属性
+};
+
 #endif // __GAME_DATA_STRUCTURES_H__

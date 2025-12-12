@@ -3,6 +3,8 @@
 #ifndef __PLANT_H__
 #define __PLANT_H__
 
+#include <functional>
+
 #include "Unit.h"
 #include "GameDataStructures.h" // 引用之前定义的数据结构
 
@@ -21,9 +23,13 @@ public:
     // 触发技能（如发射豌豆、生产阳光）
     virtual void triggerSkill();
 
+    // 参数：子弹产生的位置 (Vec2), 伤害 (int) - 也可以传 BulletData
+    void setOnShootCallback(const std::function<void(cocos2d::Vec2, int)>& callback);
+
 protected:
     PlantData _data;
     float _timer; // 用于攻击或生产的计时器
+    std::function<void(cocos2d::Vec2, int)> _onShootCallback;
 };
 
 #endif // __PLANT_H__

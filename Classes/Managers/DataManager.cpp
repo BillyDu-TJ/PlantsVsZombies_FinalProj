@@ -64,6 +64,14 @@ void DataManager::loadPlants(const std::string& filename) {
         data.attack = val.HasMember("attack") ? val["attack"].GetInt() : 0;
         data.texturePath = val["texture"].GetString();
 
+        if (val.HasMember("attackSpeed")) {
+            data.attackSpeed = val["attackSpeed"].GetFloat();
+        }
+        else {
+            data.attackSpeed = 0.0f;
+            CCLOG("[Warn] Plant %d missing 'attackSpeed'", id);
+        }
+
         // ≤Â»ÎµΩ Map ÷–
         _plantDataMap[id] = data;
     }
