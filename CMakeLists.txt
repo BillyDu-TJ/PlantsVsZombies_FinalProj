@@ -65,6 +65,7 @@ list(APPEND GAME_SOURCE
      Classes/Entities/Plant.cpp
      Classes/Entities/Zombie.cpp
      Classes/Entities/Bullet.cpp
+     Classes/UI/SeedCard.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
@@ -79,6 +80,7 @@ list(APPEND GAME_HEADER
      Classes/Entities/Bullet.h
      Classes/Managers/DataManager.h
      Classes/Managers/LevelManager.h
+     Classes/UI/SeedCard.h
      )
 
 if(ANDROID)

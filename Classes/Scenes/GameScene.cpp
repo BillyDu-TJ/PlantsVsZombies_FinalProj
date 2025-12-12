@@ -33,7 +33,8 @@ bool GameScene::init() {
 
     // 1. 基础UI：显示阳光数
     _sunLabel = Label::createWithSystemFont("Sun: " + std::to_string(_currentSun), "Arial", 24);
-    _sunLabel->setPosition(Vec2(100, 680)); // 左上角
+    _sunLabel->setAnchorPoint(Vec2(0, 0.5f));
+    _sunLabel->setPosition(Vec2(20, visibleSize.height - 40)); // 屏幕左上角，留点边距
     _sunLabel->setColor(Color3B::YELLOW);
     this->addChild(_sunLabel, 100);
 
@@ -85,16 +86,38 @@ bool GameScene::init() {
 
     this->scheduleUpdate(); // 确保 Update 开启
 
-    // --- 键盘监听 (用于切换植物：按1选豌豆，按2选向日葵) ---
-    auto keyListener = EventListenerKeyboard::create();
-    keyListener->onKeyPressed = [this](EventKeyboard::KeyCode code, Event* event) {
-        if (code == EventKeyboard::KeyCode::KEY_1) {
-            selectPlant(1001); // 假设 1001 是豌豆
-        } else if (code == EventKeyboard::KeyCode::KEY_2) {
-            selectPlant(1002); // 假设 1002 是向日葵
-        }
-    };
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(keyListener, this);
+    // --- 创建卡槽 (UI) ---
+    std::vector<int> plantIds = { 1001, 1002 }; // 豌豆，向日葵
+
+    float startX = 140.0f;
+	float startY = visibleSize.height - 80.0f - 10.0f; // 卡牌高度 + 10.0f 边距
+    float gapX = 70.0f;
+
+    for (int id : plantIds) {
+        auto card = SeedCard::create(id);
+        card->setPosition(startX, startY);
+
+        // 设置回调：点击卡片时，选中该植物，并显示 Ghost
+        card->setOnSelectCallback([this](int plantId) {
+            this->selectPlant(plantId);
+            });
+
+        this->addChild(card, 200); // UI 层级最高
+        _seedCards.pushBack(card);
+
+		startX += gapX;
+    }
+
+    // --- 创建 Ghost Sprite (初始隐藏) ---
+    _ghostSprite = Sprite::create();
+    _ghostSprite->setOpacity(128); // 半透明
+    _ghostSprite->setVisible(false);
+    this->addChild(_ghostSprite, 150); // 在植物之上，UI之下
+
+    // --- 鼠标移动监听 (Desktop 平台) ---
+    auto mouseListener = EventListenerMouse::create();
+    mouseListener->onMouseMove = CC_CALLBACK_1(GameScene::onMouseMove, this);
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
 
 
     // --- 鼠标监听 (实现种植) ---
@@ -162,6 +185,18 @@ void GameScene::update(float dt) {
             ++it;
         }
     }
+
+    // 7.UI 实时刷新
+    // 更新阳光文字
+    if (_sunLabel) {
+        _sunLabel->setString("Sun: " + std::to_string(_currentSun));
+    }
+
+    // 更新卡片状态 (变亮/变灰)
+    for (auto card : _seedCards) {
+        // 让卡片自己判断：如果拥有阳光 < 卡片花费，就变半透明
+        card->updateSunCheck(_currentSun);
+    }
 }
 
 void GameScene::spawnZombie(int id, int row) {
@@ -195,6 +230,14 @@ void GameScene::selectPlant(int plantId) {
         // 验证ID是否存在，不存在会抛出异常
         auto data = DataManager::getInstance().getPlantData(plantId);
         _selectedPlantId = plantId;
+
+        if (FileUtils::getInstance()->isFileExist(data.texturePath)) {
+            _ghostSprite->setTexture(data.texturePath);
+        }
+        else {
+            _ghostSprite->setTextureRect(Rect(0, 0, 60, 60)); // 兜底
+        }
+        _ghostSprite->setVisible(true);
         CCLOG("[Info] Selected Plant: %s (Cost: %d)", data.name.c_str(), data.cost);
     }
     catch (const std::exception& e) {
@@ -266,6 +309,10 @@ void GameScene::tryPlantAt(int row, int col) {
 
         CCLOG("[Info] Successfully planted %s at [%d, %d]. Sun left: %d",
             plantData.name.c_str(), row, col, _currentSun);
+
+        for (auto card : _seedCards) {
+            card->updateSunCheck(_currentSun);
+        }
 
     }
     catch (const std::exception& e) {
@@ -409,5 +456,40 @@ void GameScene::updateCombatLogic() {
                 zombie->setState(UnitState::WALK);
             }
         }
+    }
+}
+
+// 鼠标移动回调
+void GameScene::onMouseMove(Event* event) {
+    EventMouse* e = (EventMouse*)event;
+    // Cocos 的鼠标坐标原点在左下角，但 Y 轴有时需要转换，视版本而定
+    // v4.0 通常是标准的 GL 坐标
+    Vec2 mousePos = Vec2(e->getCursorX(), e->getCursorY());
+
+    if (_selectedPlantId != -1) {
+        updateGhostPosition(mousePos);
+    }
+}
+
+// 更新幽灵位置 (吸附网格)
+void GameScene::updateGhostPosition(Vec2 mousePos) {
+    auto grid = pixelToGrid(mousePos);
+    int row = grid.first;
+    int col = grid.second;
+
+    if (row != -1) {
+        // 在网格内，吸附到格子中心
+        Vec2 snapPos = gridToPixel(row, col);
+        _ghostSprite->setPosition(snapPos);
+        _ghostSprite->setVisible(true);
+
+        // 颜色提示：如果格子被占用或阳光不足，变红
+        bool canPlant = (_plantMap[row][col] == nullptr);
+        _ghostSprite->setColor(canPlant ? Color3B::WHITE : Color3B::RED);
+    }
+    else {
+        // 在网格外，跟随鼠标 (或者隐藏)
+        _ghostSprite->setPosition(mousePos);
+        // _ghostSprite->setVisible(false); // 可选：出界隐藏
     }
 }

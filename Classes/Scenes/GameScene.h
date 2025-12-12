@@ -10,6 +10,7 @@
 #include "../Entities/Zombie.h"
 #include "../Entities/Plant.h"
 #include "../Entities/Bullet.h"
+#include "../UI/SeedCard.h"
 #include "../Consts.h"
 
 class GameScene : public cocos2d::Scene {
@@ -62,6 +63,18 @@ private:
 
     // 核心战斗检测 (Collision & AI Check)
     void updateCombatLogic();
+
+    // [UI] 卡片容器
+    cocos2d::Vector<SeedCard*> _seedCards;
+
+    // [Ghost] 幽灵精灵（用于预览）
+    cocos2d::Sprite* _ghostSprite;
+
+    // [Input] 鼠标移动监听
+    void onMouseMove(cocos2d::Event* event);
+
+    // [Helper] 更新幽灵位置
+    void updateGhostPosition(cocos2d::Vec2 mousePos);
 };
 
 #endif // __GAME_SCENE_H__
