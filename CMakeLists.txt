@@ -65,6 +65,7 @@ list(APPEND GAME_SOURCE
      Classes/Entities/Plant.cpp
      Classes/Entities/Zombie.cpp
      Classes/Entities/Bullet.cpp
+     Classes/Entities/Sun.cpp
      Classes/UI/SeedCard.cpp
      )
 list(APPEND GAME_HEADER
@@ -78,6 +79,7 @@ list(APPEND GAME_HEADER
      Classes/Entities/Plant.h
      Classes/Entities/Zombie.h
      Classes/Entities/Bullet.h
+     Classes/Entities/Sun.h
      Classes/Managers/DataManager.h
      Classes/Managers/LevelManager.h
      Classes/UI/SeedCard.h

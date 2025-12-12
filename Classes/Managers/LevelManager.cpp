@@ -28,6 +28,17 @@ void LevelManager::loadLevel(const std::string& filename) {
 
     if (doc.HasParseError()) throw GameException("[Err] Level JSON parse error");
 
+    // 解析 assets
+    if (doc.HasMember("assets")) {
+        const Value& a = doc["assets"];
+        _assets.sunBarPath = a["sunBar"].GetString();
+        _assets.seedSlotPath = a["seedSlot"].GetString();
+    }
+
+    if (doc.HasMember("levelInfo")) {
+        _assets.bgPath = doc["levelInfo"]["background"].GetString();
+    }
+
     // 读取 waves 数组
     if (doc.HasMember("waves") && doc["waves"].IsArray()) {
         const Value& waves = doc["waves"];

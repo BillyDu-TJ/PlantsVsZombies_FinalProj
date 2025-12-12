@@ -5,7 +5,7 @@
     "speed": 10,
     "damage": 20,
     "attackInterval": 1.5,
-    "texture": "zombies/normalzombie.png"
+    "texture": "zombies/zm/1.png"
     
   }
 }

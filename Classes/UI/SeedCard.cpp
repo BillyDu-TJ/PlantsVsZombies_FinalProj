@@ -25,9 +25,9 @@ bool SeedCard::init(int plantId) {
 
     // 2. 创建背景 (假设有个 card_bg.png，没有就画个框)
     // 这里我们简单画一个带颜色的 Layer 模拟卡片背景
-    auto bg = LayerColor::create(Color4B(100, 100, 100, 200), 60, 80); // 宽60 高80
+    auto bg = LayerColor::create(Color4B(100, 100, 100, 200), 72, 96); // 宽72 高96
     this->addChild(bg, 0);
-    this->setContentSize(Size(60, 80)); // 设置 Node 大小用于触摸检测
+    this->setContentSize(Size(72, 96)); // 设置 Node 大小用于触摸检测
 
     // 3. 创建图标
     if (FileUtils::getInstance()->isFileExist(data.texturePath)) {

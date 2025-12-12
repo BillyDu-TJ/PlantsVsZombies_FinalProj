@@ -9,6 +9,7 @@
 #include "../Utils/GameException.h"
 #include "../Entities/Plant.h"
 #include "../Entities/Zombie.h"
+#include "../Entities/Sun.h"
 
 USING_NS_CC;
 
@@ -24,55 +25,11 @@ bool GameScene::init() {
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-    // 0. 初始化网格
+    // --- 初始化网格 ---
     for (int r = 0; r < GRID_ROWS; ++r) {
         for (int c = 0; c < GRID_COLS; ++c) {
             _plantMap[r][c] = nullptr;
         }
-    }
-
-    // 1. 基础UI：显示阳光数
-    _sunLabel = Label::createWithSystemFont("Sun: " + std::to_string(_currentSun), "Arial", 24);
-    _sunLabel->setAnchorPoint(Vec2(0, 0.5f));
-    _sunLabel->setPosition(Vec2(20, visibleSize.height - 40)); // 屏幕左上角，留点边距
-    _sunLabel->setColor(Color3B::YELLOW);
-    this->addChild(_sunLabel, 100);
-
-    // 1. 添加一个简单的背景色 (绿色草地)
-    auto background = LayerColor::create(Color4B(0, 128, 0, 255));
-    this->addChild(background, -1);
-
-    // 2. 绘制调试网格 (关键！让你看到格子在哪里)
-    drawDebugGrid();
-
-    // 3. 开启 Update 调度
-    this->scheduleUpdate();
-
-
-    // --- DataManager Test (Paradigm Showcase) ---
-    try {
-        // 1. 加载数据
-        DataManager::getInstance().loadData();
-
-        // 2. 尝试读取一个植物的数据 (豌豆射手 ID 1001)
-        const auto& plantInfo = DataManager::getInstance().getPlantData(1001);
-
-        CCLOG("[Info] TEST: Loaded Plant [%s], HP: %d, Cost: %d",
-            plantInfo.name.c_str(), plantInfo.hp, plantInfo.cost);
-
-        // 3. (可选) 故意测试一个不存在的 ID 来触发异常机制
-        // DataManager::getInstance().getPlantData(9999); 
-
-    }
-    catch (const GameException& e) {
-        // 优雅的异常处理：弹出错误框或返回主菜单
-        CCLOG("[Err] Data Error: %s", e.what());
-        // 实际上这里应该弹出一个 MessageBox
-        return false;
-    }
-    catch (const std::exception& e) {
-        CCLOG("[Err] Standard Error: %s", e.what());
-        return false;
     }
 
     // --- 加载关卡 ---
@@ -84,28 +41,90 @@ bool GameScene::init() {
         CCLOG("[Err] Init Error: %s", e.what());
     }
 
-    this->scheduleUpdate(); // 确保 Update 开启
+    // --- 开启 Update 调度 ---
+    this->scheduleUpdate();
 
-    // --- 创建卡槽 (UI) ---
-    std::vector<int> plantIds = { 1001, 1002 }; // 豌豆，向日葵
+    const auto& assets = LevelManager::getInstance().getAssets();
 
-    float startX = 140.0f;
-	float startY = visibleSize.height - 80.0f - 10.0f; // 卡牌高度 + 10.0f 边距
-    float gapX = 70.0f;
+    // [背景] 如果有背景图就用背景图，没有就用绿底
+    if (FileUtils::getInstance()->isFileExist(assets.bgPath)) {
+        auto bg = Sprite::create(assets.bgPath);
+        bg->setAnchorPoint(Vec2::ZERO);
+
+        float scaleRatio = Director::getInstance()->getVisibleSize().height / bg->getContentSize().height;
+        bg->setScale(scaleRatio); 
+
+        this->addChild(bg, -1);
+    }
+    else {
+        auto bg = LayerColor::create(Color4B(0, 150, 0, 255));
+        this->addChild(bg, -1);
+    }
+
+    // [网格草坪]
+    // drawDebugGrid();
+    
+    // --- UI: 阳光栏与卡槽 (容器化) ---
+
+    // [容器] 创建一个 Node 作为整个顶部 UI 的父节点
+    // 这样以后要移动 UI，只动这个 Node 就行
+    auto uiLayer = Node::create();
+    uiLayer->setPosition(Vec2(20, visibleSize.height - 10)); // 定位到屏幕左上角
+    uiLayer->setScale(0.8f);
+    this->addChild(uiLayer, 1000);
+
+    _sunLabel = Label::createWithTTF(std::to_string(_currentSun), "fonts/Marker Felt.ttf", 32); // 字体稍微改小一点适配缩放
+
+    if (FileUtils::getInstance()->isFileExist(assets.sunBarPath)) {
+        auto sunBar = Sprite::create(assets.sunBarPath);
+        sunBar->setAnchorPoint(Vec2(0, 1)); // 左上角锚点
+        sunBar->setPosition(0, 0);         // 相对 uiLayer (0,0)
+        uiLayer->addChild(sunBar);
+
+        // [修改 4: 文字对齐]
+        // 你的素材是一个阳光图标下面带个卷轴。
+        // 我们需要把文字放在卷轴的中心。
+        // 假设阳光图标宽约 80px，卷轴在图标正下方。
+        // 你需要微调下面这两个数字：
+        float labelX = 55.0f; // 阳光图标的水平中心
+        float labelY = 20.0f; // 卷轴的垂直中心 (相对于图片底部)
+
+        _sunLabel->setPosition(labelX, labelY);
+        _sunLabel->setAnchorPoint(Vec2(0.5f, 0.5f)); // 居中对齐
+        _sunLabel->setColor(Color3B::BLACK);
+
+        // 调试技巧：如果文字被图挡住了，设置 ZOrder
+        sunBar->addChild(_sunLabel, 1);
+    }
+    else {
+        // 兜底逻辑
+        uiLayer->addChild(_sunLabel);
+    }
+
+    std::vector<int> plantIds = { 1001, 1002 };
+
+    // [修改 5: 卡槽位置]
+    // 因为 UI 整体缩小了，这里的坐标是相对于 uiLayer 的内部坐标
+    // 假设阳光栏宽度大约是 85px，我们在它右边一点开始
+    float startX = 120.0f;
+    float startY = -110.0f; // 相对于 uiLayer 顶部向下 40px (垂直居中)
+    float gapX = 80.0f;    // 卡片间距
 
     for (int id : plantIds) {
         auto card = SeedCard::create(id);
-        card->setPosition(startX, startY);
 
-        // 设置回调：点击卡片时，选中该植物，并显示 Ghost
+        // 把卡片加到 uiLayer，而不是加到 sunBar (层级更清晰)
+        card->setPosition(startX, startY);
+        // card->setScale(1.2f); // 卡片再微调大一点点
+
         card->setOnSelectCallback([this](int plantId) {
             this->selectPlant(plantId);
             });
 
-        this->addChild(card, 200); // UI 层级最高
+        uiLayer->addChild(card);
         _seedCards.pushBack(card);
 
-		startX += gapX;
+        startX += gapX;
     }
 
     // --- 创建 Ghost Sprite (初始隐藏) ---
@@ -135,6 +154,29 @@ bool GameScene::init() {
         return true;
     };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
+
+    // 自然产出阳光调度器 (比如每 10 秒掉一个)
+    this->schedule([this](float dt) {
+        auto visibleSize = Director::getInstance()->getVisibleSize();
+
+        // 随机 X 坐标 (在网格范围内)
+        float randomX = GRID_START_X + (rand() % (int)(GRID_COLS * CELL_WIDTH));
+        // 随机 Y 目标 (前半场)
+        float randomY = GRID_START_Y + (rand() % (int)(GRID_ROWS * CELL_HEIGHT));
+
+        auto sun = Sun::create();
+        sun->fallFromSky(randomX, randomY);
+
+        // 设置收集回调
+        sun->setOnCollectedCallback([this](int value) {
+            this->_currentSun += value;
+            // 记得刷新 UI (update 里已经写了，这里其实不需要手动刷，但为了保险)
+            });
+
+        this->addChild(sun, 500); // 层级非常高，在 UI 下面，植物上面
+        CCLOG("[Info] Sun falling from sky.");
+
+        }, 10.0f, "sun_sky_scheduler");
 
     return true;
 }
@@ -184,12 +226,13 @@ void GameScene::update(float dt) {
         else {
             ++it;
         }
+
     }
 
     // 7.UI 实时刷新
     // 更新阳光文字
     if (_sunLabel) {
-        _sunLabel->setString("Sun: " + std::to_string(_currentSun));
+        _sunLabel->setString(std::to_string(_currentSun));
     }
 
     // 更新卡片状态 (变亮/变灰)
@@ -266,28 +309,57 @@ void GameScene::tryPlantAt(int row, int col) {
         // 4. 生成植物对象
         auto plant = Plant::createWithData(plantData);
 
-        // 绑定射击回调
-        plant->setOnShootCallback([this, row](Vec2 pos, int damage) {
-            // 只有当该行有僵尸时才真的发射 (简单的 AI 优化)
-            // 我们可以遍历一下 _zombies，看看有没有僵尸在当前行且在右边
-            bool enemyInSight = false;
-            for (auto z : this->_zombies) {
-                CCLOG("[Info] Check: ZombieRow %d vs PlantRow %d", z->getRow(), row);
+        // 5. 植物逻辑分流：
 
-                if (z->getRow() == row && z->getPositionX() > pos.x && !z->isDead()) {
-                    enemyInSight = true;
-                    break;
+        if (plantData.type == "shooter") {
+            // 绑定射击回调
+            plant->setOnShootCallback([this, row](Vec2 pos, int damage) {
+                // 只有当该行有僵尸时才真的发射 (简单的 AI 优化)
+                // 我们可以遍历一下 _zombies，看看有没有僵尸在当前行且在右边
+                bool enemyInSight = false;
+                for (auto z : this->_zombies) {
+                    CCLOG("[Info] Check: ZombieRow %d vs PlantRow %d", z->getRow(), row);
+
+                    if (z->getRow() == row && z->getPositionX() > pos.x && !z->isDead()) {
+                        enemyInSight = true;
+                        break;
+                    }
                 }
-            }
 
-            if (enemyInSight) {
-                CCLOG("[Info] Enemy in sight! PEW PEW!");
-                this->createBullet(pos, damage);
-            }
-            else {
-                CCLOG("[Info] No enemy, holding fire.");
-            }
-            });
+                if (enemyInSight) {
+                    CCLOG("[Info] Enemy in sight! PEW PEW!");
+                    this->createBullet(pos, damage);
+                }
+                else {
+                    CCLOG("[Info] No enemy, holding fire.");
+                }
+                });
+        }
+        else if (plantData.type == "producer") {
+            // --- 生产者逻辑 (产出阳光) ---
+            plant->setOnShootCallback([this](Vec2 pos, int amount) {
+                // 这里的 amount 参数没用，或者可以代表产出的阳光值
+
+                // 创建阳光实体 (需要 #include "../Entities/Sun.h")
+                auto sun = Sun::create();
+
+                // 设定跳跃目标：从植物位置跳到稍微旁边一点的位置
+                Vec2 targetPos = pos + Vec2(30, -30);
+                sun->jumpFromPlant(pos, targetPos);
+
+                // 设定收集回调：点中阳光加钱
+                sun->setOnCollectedCallback([this](int value) {
+                    this->_currentSun += value;
+                    // 如果需要在收集瞬间刷新UI，可以在这里做，或者等下一帧 update
+                    });
+
+                // 阳光层级设高一点 (500)，保证盖住植物
+                this->addChild(sun, 500);
+
+                CCLOG("[Info] Sunflower produced a sun!");
+                });
+        }
+        
 
         // 设置位置
         auto pixelPos = gridToPixel(row, col);

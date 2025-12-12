@@ -3,6 +3,10 @@
     "name": "Day 1",
     "background": "bg/day.jpg"
   },
+  "assets": {
+    "sunBar": "ui/bar.png",
+    "seedSlot": "ui/seed_slot.png"
+  },
   "waves": [
     {
       "time": 2.0,
