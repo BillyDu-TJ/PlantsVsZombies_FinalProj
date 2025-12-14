@@ -1,0 +1,37 @@
+{
+  "levelInfo": {
+    "name": "Day 1",
+    "background": "bg/day.jpg"
+  },
+  "assets": {
+    "sunBar": "ui/bar.png",
+    "seedSlot": "ui/seed_slot.png"
+  },
+  "waves": [
+    {
+      "time": 2.0,
+      "zombieId": 2001,
+      "row": 2
+    },
+    {
+      "time": 5.0,
+      "zombieId": 2001,
+      "row": 0
+    },
+    {
+      "time": 8.0,
+      "zombieId": 2001,
+      "row": 4
+    },
+    {
+      "time": 10.0,
+      "zombieId": 2001,
+      "row": 1
+    },
+    {
+      "time": 10.0,
+      "zombieId": 2001,
+      "row": 3
+    }
+  ]
+}
