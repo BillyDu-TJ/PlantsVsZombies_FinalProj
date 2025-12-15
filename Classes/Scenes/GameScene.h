@@ -51,6 +51,7 @@ private:
     // 游戏状态
     int _currentSun = 500; // 初始阳光数
 	int _selectedPlantId = -1; // 当前选中的植物ID，-1表示未选择
+    GameState _gameState = GameState::PLAYING; // 游戏状态
 
     // UI Lebel用于显示阳光
 	cocos2d::Label* _sunLabel = nullptr;
@@ -75,6 +76,26 @@ private:
 
     // [Helper] 更新幽灵位置
     void updateGhostPosition(cocos2d::Vec2 mousePos);
+    
+    // [Game Flow] 胜负判定
+    void checkVictoryCondition();
+    void checkGameOverCondition();
+    void endGame(bool isVictory);
+    
+    // [UI] 暂停按钮
+    void createPauseButton();
+    void onPauseButtonClicked(cocos2d::Ref* sender);
+    void pauseGame();
+    void resumeGame();
+
+    // 动态网格参数（如果需要）
+    float _actualGridStartX = GRID_START_X;
+    float _actualGridStartY = GRID_START_Y;
+    float _actualCellWidth = CELL_WIDTH;
+    float _actualCellHeight = CELL_HEIGHT;
+    
+    // 计算实际网格参数的方法
+    void calculateGridParameters(cocos2d::Sprite* background);
 };
 
 #endif // __GAME_SCENE_H__

@@ -79,3 +79,13 @@ void LevelManager::update(float dt, const std::function<void(int, int)>& onSpawn
         cocos2d::log("[Info] Level Waves Finished!");
     }
 }
+
+bool LevelManager::isAllWavesCompleted() const {
+    // 检查是否所有刷怪事件都已完成
+    for (const auto& wave : _waves) {
+        if (!wave.spawned) {
+            return false; // 还有未完成的波次
+        }
+    }
+    return true; // 所有波次都已完成
+}

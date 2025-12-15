@@ -24,13 +24,16 @@
 
 #include "AppDelegate.h"
 #include "HelloWorldScene.h"
-#include "Scenes/GameScene.h"
+#include "Scenes/StartScene.h"  // 改为启动菜单场景
+#include "Managers/AudioManager.h"
+#include "Managers/SceneManager.h"
 
-// #define USE_AUDIO_ENGINE 1
+// 启用音频引擎
+#define USE_AUDIO_ENGINE 1
 
 #if USE_AUDIO_ENGINE
 #include "audio/include/AudioEngine.h"
-using namespace cocos2d::experimental;
+// using namespace cocos2d::experimental;
 #endif
 
 USING_NS_CC;
@@ -108,11 +111,11 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     register_all_packages();
 
-    // create a scene. it's an autorelease object
-    auto scene = GameScene::createScene();
-
-    // run
-    director->runWithScene(scene);
+    // 初始化音频管理器
+    AudioManager::getInstance().preloadAudio();
+    
+    // 启动开始菜单场景而不是直接进游戏
+    SceneManager::getInstance().gotoStartScene();
 
     return true;
 }
@@ -124,6 +127,9 @@ void AppDelegate::applicationDidEnterBackground() {
 #if USE_AUDIO_ENGINE
     AudioEngine::pauseAll();
 #endif
+    
+    // 暂停背景音乐
+    AudioManager::getInstance().pauseBackgroundMusic();
 }
 
 // this function will be called when the app is active again
@@ -133,4 +139,7 @@ void AppDelegate::applicationWillEnterForeground() {
 #if USE_AUDIO_ENGINE
     AudioEngine::resumeAll();
 #endif
+    
+    // 恢复背景音乐
+    AudioManager::getInstance().resumeBackgroundMusic();
 }

@@ -59,8 +59,13 @@ list(APPEND GAME_SOURCE
      Classes/AppDelegate.cpp
      Classes/HelloWorldScene.cpp
      Classes/Scenes/GameScene.cpp
+     Classes/Scenes/StartScene.cpp
+     Classes/Scenes/VictoryScene.cpp
+     Classes/Scenes/GameOverScene.cpp
      Classes/Managers/DataManager.cpp
      Classes/Managers/LevelManager.cpp
+     Classes/Managers/AudioManager.cpp
+     Classes/Managers/SceneManager.cpp
      Classes/Entities/Unit.cpp
      Classes/Entities/Plant.cpp
      Classes/Entities/Zombie.cpp
@@ -73,6 +78,9 @@ list(APPEND GAME_HEADER
      Classes/HelloWorldScene.h
      Classes/Consts.h
      Classes/Scenes/GameScene.h
+     Classes/Scenes/StartScene.h
+     Classes/Scenes/VictoryScene.h
+     Classes/Scenes/GameOverScene.h
      Classes/Utils/GameException.h
      Classes/Entities/GameDataStructures.h
      Classes/Entities/Unit.h
@@ -82,6 +90,8 @@ list(APPEND GAME_HEADER
      Classes/Entities/Sun.h
      Classes/Managers/DataManager.h
      Classes/Managers/LevelManager.h
+     Classes/Managers/AudioManager.h
+     Classes/Managers/SceneManager.h
      Classes/UI/SeedCard.h
      )
 

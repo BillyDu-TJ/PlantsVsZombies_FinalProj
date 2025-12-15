@@ -36,6 +36,9 @@ public:
     // 获取当前关卡素材
     const LevelAssets& getAssets() const { return _assets; }
 
+    // 检查是否所有波次都已完成
+    bool isAllWavesCompleted() const;
+
 private:
     LevelManager() = default;
 

@@ -6,10 +6,13 @@
 #include "../Consts.h" // 引用常量
 #include "../Managers/DataManager.h"
 #include "../Managers/LevelManager.h"
+#include "../Managers/AudioManager.h"
+#include "../Managers/SceneManager.h"  // 添加场景管理器头文件
 #include "../Utils/GameException.h"
 #include "../Entities/Plant.h"
 #include "../Entities/Zombie.h"
 #include "../Entities/Sun.h"
+#include "ui/CocosGUI.h"  // 添加UI组件头文件
 
 USING_NS_CC;
 
@@ -46,23 +49,33 @@ bool GameScene::init() {
 
     const auto& assets = LevelManager::getInstance().getAssets();
 
-    // [背景] 如果有背景图就用背景图，没有就用绿底
+    // [背景] 修改背景加载逻辑，避免错位问题
     if (FileUtils::getInstance()->isFileExist(assets.bgPath)) {
         auto bg = Sprite::create(assets.bgPath);
-        bg->setAnchorPoint(Vec2::ZERO);
-
-        float scaleRatio = Director::getInstance()->getVisibleSize().height / bg->getContentSize().height;
-        bg->setScale(scaleRatio); 
-
+        
+        // 计算合适的缩放比例，保持宽高比的同时填满屏幕
+        Size bgSize = bg->getContentSize();
+        float scaleX = visibleSize.width / bgSize.width;
+        float scaleY = visibleSize.height / bgSize.height;
+        float scale = std::max(scaleX, scaleY); // 使用较大的缩放比，确保完全覆盖屏幕
+        
+        bg->setScale(scale);
+        bg->setPosition(visibleSize.width / 2, visibleSize.height / 2); // 居中显示
+        bg->setAnchorPoint(Vec2(0.5f, 0.5f)); // 中心锚点
+        
         this->addChild(bg, -1);
+        
+        CCLOG("[Info] Background loaded: %s, Original size: %.1fx%.1f, Scale: %.2f", 
+              assets.bgPath.c_str(), bgSize.width, bgSize.height, scale);
     }
     else {
         auto bg = LayerColor::create(Color4B(0, 150, 0, 255));
         this->addChild(bg, -1);
+        CCLOG("[Info] Using fallback green background");
     }
 
-    // [网格草坪]
-    // drawDebugGrid();
+    // [网格草坪] 启用调试网格以验证对齐
+    drawDebugGrid();
     
     // --- UI: 阳光栏与卡槽 (容器化) ---
 
@@ -178,10 +191,16 @@ bool GameScene::init() {
 
         }, 10.0f, "sun_sky_scheduler");
 
+    // 创建暂停按钮
+    createPauseButton();
+
     return true;
 }
 
 void GameScene::update(float dt) {
+    // 如果游戏不在进行状态，不更新逻辑
+    if (_gameState != GameState::PLAYING) return;
+
     // 1. 让 LevelManager 检查是否刷怪
     // 使用 Lambda 表达式作为回调
     LevelManager::getInstance().update(dt, [this](int id, int row) {
@@ -240,6 +259,10 @@ void GameScene::update(float dt) {
         // 让卡片自己判断：如果拥有阳光 < 卡片花费，就变半透明
         card->updateSunCheck(_currentSun);
     }
+    
+    // 8. 胜负判定
+    checkVictoryCondition();
+    checkGameOverCondition();
 }
 
 void GameScene::spawnZombie(int id, int row) {
@@ -386,6 +409,9 @@ void GameScene::tryPlantAt(int row, int col) {
             card->updateSunCheck(_currentSun);
         }
 
+        // 种植成功后播放音效
+        AudioManager::getInstance().playEffect(AudioPath::PLANT_SOUND);
+
     }
     catch (const std::exception& e) {
         CCLOG("[Err] Planting failed: %s", e.what());
@@ -397,21 +423,17 @@ void GameScene::tryPlantAt(int row, int col) {
 * @param col 列号 (0 开始)，从左到右增大，最左边为 0
 */
 cocos2d::Vec2 GameScene::gridToPixel(int row, int col) {
-    // x = 起点 + 列号 * 宽 + 半宽 (居中)
-    float x = GRID_START_X + col * CELL_WIDTH + CELL_WIDTH / 2;
-    // y = 起点 + 行号 * 高 + 半高 (居中)
-    float y = GRID_START_Y + row * CELL_HEIGHT + CELL_HEIGHT / 2;
+    float x = _actualGridStartX + col * _actualCellWidth + _actualCellWidth / 2;
+    float y = _actualGridStartY + row * _actualCellHeight + _actualCellHeight / 2;
     return Vec2(x, y);
 }
 
 std::pair<int, int> GameScene::pixelToGrid(cocos2d::Vec2 pos) {
-    // 算法：(当前坐标 - 起点) / 格子大小
-    int col = (int)((pos.x - GRID_START_X) / CELL_WIDTH);
-    int row = (int)((pos.y - GRID_START_Y) / CELL_HEIGHT);
+    int col = (int)((pos.x - _actualGridStartX) / _actualCellWidth);
+    int row = (int)((pos.y - _actualGridStartY) / _actualCellHeight);
 
-    // 边界检查
     if (col < 0 || col >= GRID_COLS || row < 0 || row >= GRID_ROWS) {
-        return { -1, -1 }; // 无效位置
+        return { -1, -1 };
     }
 
     return { row, col };
@@ -423,19 +445,21 @@ void GameScene::drawDebugGrid() {
 
     // 画横线
     for (int i = 0; i <= GRID_ROWS; i++) {
-        float y = GRID_START_Y + i * CELL_HEIGHT;
-        float xStart = GRID_START_X;
-        float xEnd = GRID_START_X + GRID_COLS * CELL_WIDTH;
+        float y = _actualGridStartY + i * _actualCellHeight;
+        float xStart = _actualGridStartX;
+        float xEnd = _actualGridStartX + GRID_COLS * _actualCellWidth;
         drawNode->drawLine(Vec2(xStart, y), Vec2(xEnd, y), Color4F::WHITE);
     }
 
     // 画竖线
     for (int i = 0; i <= GRID_COLS; i++) {
-        float x = GRID_START_X + i * CELL_WIDTH;
-        float yStart = GRID_START_Y;
-        float yEnd = GRID_START_Y + GRID_ROWS * CELL_HEIGHT;
+        float x = _actualGridStartX + i * _actualCellWidth;
+        float yStart = _actualGridStartY;
+        float yEnd = _actualGridStartY + GRID_ROWS * _actualCellHeight;
         drawNode->drawLine(Vec2(x, yStart), Vec2(x, yEnd), Color4F::WHITE);
     }
+    
+    CCLOG("[Info] Debug grid drawn with dynamic parameters");
 }
 
 // 2. 实现 createBullet
@@ -453,6 +477,9 @@ void GameScene::createBullet(Vec2 startPos, int damage) {
     // 暂时先只设置 ZOrder
     this->addChild(bullet, 100);
     _bullets.pushBack(bullet);
+
+    // 播放射击音效
+    AudioManager::getInstance().playEffect(AudioPath::SHOOT_SOUND);
 }
 
 // 实现核心战斗逻辑
@@ -478,6 +505,12 @@ void GameScene::updateCombatLogic() {
                 bullet->removeFromParent();
 
                 CCLOG("[Info] Bullet hit Zombie! Zombie HP: %d", zombie->getHp());
+                
+                // 在僵尸死亡时播放音效
+                if (zombie->isDead()) {
+                    AudioManager::getInstance().playEffect(AudioPath::ZOMBIE_DIE_SOUND);
+                }
+                
                 break; // 一颗子弹只打一个
             }
         }
@@ -564,4 +597,110 @@ void GameScene::updateGhostPosition(Vec2 mousePos) {
         _ghostSprite->setPosition(mousePos);
         // _ghostSprite->setVisible(false); // 可选：出界隐藏
     }
+}
+
+void GameScene::createPauseButton() {
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    
+    auto pauseButton = ui::Button::create();
+    pauseButton->setTitleText("||");
+    pauseButton->setTitleFontSize(32);
+    pauseButton->setTitleColor(Color3B::WHITE);
+    pauseButton->setColor(Color3B(0, 0, 0));
+    pauseButton->setPosition(Vec2(visibleSize.width - 50, visibleSize.height - 50));
+    pauseButton->addTouchEventListener([this](Ref* sender, ui::Widget::TouchEventType type) {
+        if (type == ui::Widget::TouchEventType::ENDED) {
+            this->onPauseButtonClicked(sender);
+        }
+    });
+    this->addChild(pauseButton, 2000);
+}
+
+void GameScene::onPauseButtonClicked(cocos2d::Ref* sender) {
+    if (_gameState == GameState::PLAYING) {
+        pauseGame();
+    } else if (_gameState == GameState::PAUSED) {
+        resumeGame();
+    }
+}
+
+void GameScene::pauseGame() {
+    _gameState = GameState::PAUSED;
+    Director::getInstance()->pause();
+    AudioManager::getInstance().pauseBackgroundMusic();
+    
+    // 显示暂停提示
+    auto pauseLabel = Label::createWithTTF("PAUSED", "fonts/Marker Felt.ttf", 64);
+    pauseLabel->setPosition(Director::getInstance()->getVisibleSize().width/2, 
+                          Director::getInstance()->getVisibleSize().height/2);
+    pauseLabel->setColor(Color3B::YELLOW);
+    pauseLabel->setTag(999); // 用于查找和删除
+    this->addChild(pauseLabel, 3000);
+}
+
+void GameScene::resumeGame() {
+    _gameState = GameState::PLAYING;
+    Director::getInstance()->resume();
+    AudioManager::getInstance().resumeBackgroundMusic();
+    
+    // 移除暂停提示
+    this->removeChildByTag(999);
+}
+
+void GameScene::checkVictoryCondition() {
+    // 检查是否所有波次完成且场上无僵尸
+    if (LevelManager::getInstance().isAllWavesCompleted() && _zombies.empty()) {
+        endGame(true);
+    }
+}
+
+void GameScene::checkGameOverCondition() {
+    // 检查是否有僵尸到达房屋（最左边）
+    for (auto zombie : _zombies) {
+        if (zombie->getPositionX() < GRID_START_X - 100) { // 到达房屋
+            endGame(false);
+            return;
+        }
+    }
+}
+
+void GameScene::endGame(bool isVictory) {
+    if (_gameState != GameState::PLAYING) return; // 防止重复调用
+    
+    _gameState = isVictory ? GameState::VICTORY : GameState::GAME_OVER;
+    
+    // 延迟跳转，让玩家看到最终结果
+    this->scheduleOnce([this, isVictory](float dt) {
+        if (isVictory) {
+            SceneManager::getInstance().gotoVictoryScene();
+        } else {
+            SceneManager::getInstance().gotoGameOverScene();
+        }
+    }, 2.0f, "end_game_delay");
+    
+    CCLOG("[Info] Game ended: %s", isVictory ? "Victory" : "Game Over");
+}
+
+void GameScene::calculateGridParameters(cocos2d::Sprite* background) {
+    if (!background) return;
+    
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    Size bgOriginalSize = background->getContentSize();
+    float bgScale = background->getScale();
+    
+    // 计算背景的实际显示尺寸
+    Size bgActualSize = Size(bgOriginalSize.width * bgScale, bgOriginalSize.height * bgScale);
+    
+    // 根据背景实际尺寸调整网格参数
+    // 假设原始背景设计分辨率为 1024x768，网格区域占背景的特定比例
+    float bgWidthRatio = bgActualSize.width / 1024.0f;   // 根据你的背景图调整
+    float bgHeightRatio = bgActualSize.height / 768.0f;  // 根据你的背景图调整
+    
+    _actualGridStartX = GRID_START_X * bgWidthRatio + (visibleSize.width - bgActualSize.width) / 2;
+    _actualGridStartY = GRID_START_Y * bgHeightRatio + (visibleSize.height - bgActualSize.height) / 2;
+    _actualCellWidth = CELL_WIDTH * bgWidthRatio;
+    _actualCellHeight = CELL_HEIGHT * bgHeightRatio;
+    
+    CCLOG("[Info] Grid adjusted - Start: (%.1f, %.1f), Cell: (%.1f, %.1f)", 
+          _actualGridStartX, _actualGridStartY, _actualCellWidth, _actualCellHeight);
 }
