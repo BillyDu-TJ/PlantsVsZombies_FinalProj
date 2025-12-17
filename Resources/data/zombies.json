@@ -1,0 +1,11 @@
+{
+  "2001": {
+    "name": "NormalZombie",
+    "hp": 300,
+    "speed": 10,
+    "damage": 20,
+    "attackInterval": 1.5,
+    "texture": "zombies/zm/1.png"
+    
+  }
+}
