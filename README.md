@@ -1,6 +1,6 @@
 # Plants vs Zombies - Final Project
 
-A Plants vs Zombies game implementation using Cocos2d-x C++ framework, developed as the final project for the **程序设计范式 (Programming Paradigms)** course at **Tongji University (同济大学)**.
+A Plants vs Zombies game implementation using Cocos2d-x C++ framework, developed as the final project for the **Programming Paradigms(程序设计范式 )** course at **Tongji University (同济大学)**.
 
 ## 项目简介 (Project Introduction)
 
@@ -172,7 +172,7 @@ PlantsVsZombies_FinalProj/
 
 ## 开发团队 (Development Team)
 
-- **Developer**: BillyDu-TJ
+- **Developer**: BillyDu-TJ,ChangwenZhao
 - **Course**: 程序设计范式 (Programming Paradigms)
 - **Institution**: 同济大学 (Tongji University)
 
