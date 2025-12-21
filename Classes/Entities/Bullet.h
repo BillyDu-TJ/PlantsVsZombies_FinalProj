@@ -1,5 +1,5 @@
-// ×Óµ¯Àà¶¨ÒåÎÄ¼ş
-// 2025.12.12 by BillyDu
+// å­å¼¹ç±»å®šä¹‰æ–‡ä»¶
+// 2025.12.12 by BillyDu 12.21 by Zhao
 #ifndef __BULLET_H__
 #define __BULLET_H__
 
@@ -14,10 +14,16 @@ public:
 
     void setBulletData(const BulletData& data);
 
-    // »ñÈ¡ÉËº¦Öµ
+    // è·å–ä¼¤å®³å€¼
     int getDamage() const { return _data.damage; }
+    
+    // è·å–å­å¼¹ç±»å‹
+    BulletType getType() const { return _data.type; }
+    
+    // è·å–å‡é€Ÿæ•ˆæœå€æ•°
+    float getSlowEffect() const { return _data.slowEffect; }
 
-    // ±ê¼Ç×Óµ¯ÊÇ·ñÒÑ¾­»÷ÖĞ£¨·ÀÖ¹Ò»´Î´©Í¸¶à¸öµĞÈË£©
+    // æ ‡è®°å­å¼¹æ˜¯å¦å·²ç»å‡»ä¸­ï¼ˆé˜²æ­¢ä¸€æ¬¡ç©¿é€å¤šä¸ªæ•Œäººï¼‰
     bool isActive() const { return _active; }
     void deactivate() { _active = false; }
 

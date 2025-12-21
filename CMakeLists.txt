@@ -60,6 +60,8 @@ list(APPEND GAME_SOURCE
      Classes/HelloWorldScene.cpp
      Classes/Scenes/GameScene.cpp
      Classes/Scenes/StartScene.cpp
+     Classes/Scenes/MapSelectScene.cpp
+     Classes/Scenes/PlantSelectScene.cpp
      Classes/Scenes/VictoryScene.cpp
      Classes/Scenes/GameOverScene.cpp
      Classes/Managers/DataManager.cpp
@@ -80,6 +82,8 @@ list(APPEND GAME_HEADER
      Classes/Consts.h
      Classes/Scenes/GameScene.h
      Classes/Scenes/StartScene.h
+     Classes/Scenes/MapSelectScene.h
+     Classes/Scenes/PlantSelectScene.h
      Classes/Scenes/VictoryScene.h
      Classes/Scenes/GameOverScene.h
      Classes/Utils/GameException.h

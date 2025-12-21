@@ -1,4 +1,4 @@
-// LevelManager ¸ºÔğ¹ÜÀí¹Ø¿¨ÖĞµÄÅäÖÃ¼ÓÔØºÍË¢ĞÂ
+// LevelManager è´Ÿè´£ç®¡ç†å…³å¡ä¸­çš„é…ç½®å’Œåˆ·æ–°
 // 2025.12.2 by BillyDu
 #ifndef __LEVEL_MANAGER_H__
 #define __LEVEL_MANAGER_H__
@@ -7,15 +7,15 @@
 #include <string>
 #include <functional> // C++11 std::function
 
-// ¶¨ÒåÒ»¸ö¼òµ¥µÄ½á¹¹Ìå´æË¢¹ÖĞÅÏ¢
+// å®šä¹‰ä¸€ä¸ªç®€å•çš„ç»“æ„å­˜å‚¨åˆ·æ–°ä¿¡æ¯
 struct SpawnEvent {
     float time;
     int zombieId;
     int row;
-    bool spawned = false; // ±ê¼ÇÊÇ·ñÒÑÉú³É
+    bool spawned = false; // æ˜¯å¦å·²åˆ·æ–°
 };
 
-// ¶¨ÒåÒ»¸ö½á¹¹Ìå´¢´æ¹Ø¿¨UIĞÅÏ¢
+// å®šä¹‰ä¸€ä¸ªç»“æ„å­˜å‚¨å…³å¡UIä¿¡æ¯
 struct LevelAssets {
     std::string bgPath;
     std::string sunBarPath;
@@ -26,17 +26,23 @@ class LevelManager {
 public:
     static LevelManager& getInstance();
 
-    // ¼ÓÔØ¹Ø¿¨ÅäÖÃ
+    // åŠ è½½å…³å¡é…ç½®
     void loadLevel(const std::string& filename);
 
-    // Ã¿Ö¡¸üĞÂ£¬¼ì²éÊÇ·ñĞèÒªË¢¹Ö
-    // onSpawnCallback: µ±ĞèÒªË¢¹ÖÊ±µ÷ÓÃµÄ»Øµ÷º¯Êı (²ÎÊı: id, row)
+    // æ¯å¸§æ›´æ–°ï¼Œæ£€æŸ¥æ˜¯å¦éœ€è¦åˆ·æ–°
+    // onSpawnCallback: éœ€è¦åˆ·æ–°æ—¶è°ƒç”¨çš„å›è°ƒå‡½æ•° (å‚æ•°: id, row)
     void update(float dt, const std::function<void(int, int)>& onSpawnCallback);
 
-    // »ñÈ¡µ±Ç°¹Ø¿¨ËØ²Ä
+    // è·å–å½“å‰å…³å¡èµ„æº
     const LevelAssets& getAssets() const { return _assets; }
+    
+    // è®¾ç½®èƒŒæ™¯è·¯å¾„ï¼ˆç”¨äºåœ°å›¾é€‰æ‹©ï¼‰
+    void setBackgroundPath(const std::string& bgPath) { 
+        _assets.bgPath = bgPath; 
+        _isBgPathManuallySet = true; // æ ‡è®°ä¸ºæ‰‹åŠ¨è®¾ç½®
+    }
 
-    // ¼ì²éÊÇ·ñËùÓĞ²¨´Î¶¼ÒÑÍê³É
+    // æ£€æŸ¥æ˜¯å¦æ‰€æœ‰æ³¢æ¬¡éƒ½å·²å®Œæˆ
     bool isAllWavesCompleted() const;
 
 private:
@@ -45,6 +51,7 @@ private:
     std::vector<SpawnEvent> _waves;
     float _gameTime = 0.0f;
     bool _isLevelFinished = false;
+    bool _isBgPathManuallySet = false; // æ ‡è®°èƒŒæ™¯è·¯å¾„æ˜¯å¦è¢«æ‰‹åŠ¨è®¾ç½®
 	LevelAssets _assets;
 };
 

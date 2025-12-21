@@ -27,6 +27,9 @@ public:
     // 设置发射子弹的回调：位置 (Vec2), 伤害 (int) - 也可以传 BulletData
     void setOnShootCallback(const std::function<void(cocos2d::Vec2, int)>& callback);
     
+    // 设置检查是否有攻击目标的回调
+    void setHasTargetCallback(const std::function<bool()>& callback);
+    
     // 动画相关方法
     void playAnimation(const std::string& animName);  // 播放指定动画
     void playDefaultAnimation();  // 播放默认动画
@@ -35,6 +38,7 @@ protected:
     PlantData _data;
     float _timer; // 用于攻击/生产间隔的计时器
     std::function<void(cocos2d::Vec2, int)> _onShootCallback;
+    std::function<bool()> _hasTargetCallback;  // 检查是否有攻击目标的回调
     std::string _currentAnimation;  // 当前播放的动画名称
 };
 

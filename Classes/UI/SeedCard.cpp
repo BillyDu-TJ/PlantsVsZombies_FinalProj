@@ -1,4 +1,4 @@
-// ÖÖÖ²¿¨Æ¬ÀàÊµÏÖ - Ê¹ÓÃPNGËØ²Ä
+// ç§å­å¡ç‰‡ç±» - ä½¿ç”¨PNGèµ„æº
 // 2025.12.15 by BillyDu
 #include "SeedCard.h"
 #include "../Managers/DataManager.h"
@@ -19,29 +19,36 @@ bool SeedCard::init(int plantId) {
     if (!Node::init()) return false;
     _plantId = plantId;
 
-    // 1. »ñÈ¡Êı¾İ
+    // 1. è·å–æ¤ç‰©æ•°æ®
     try {
         auto data = DataManager::getInstance().getPlantData(plantId);
         _cost = data.cost;
         
-        // 2. Éú³É¿¨Æ¬±³¾°Í¼Â·¾¶ - »ùÓÚÖ²ÎïID
-        // ¼ÙÉè¿¨Æ¬ÃüÃû¹æÔò£ºcard_1001.png, card_1002.png µÈ
-        std::string cardBgPath = "cards/card_" + std::to_string(plantId) + ".png";
+        // 2. ç¡®å®šå¡ç‰‡èƒŒæ™¯è·¯å¾„ - ä¼˜å…ˆä½¿ç”¨é…ç½®ä¸­çš„cardImage
+        // å¦‚æœé…ç½®ä¸­æ²¡æœ‰cardImageï¼Œåˆ™ä½¿ç”¨é»˜è®¤å‘½åè§„åˆ™ï¼šcard_1001.png, card_1002.png ç­‰
+        // ç°åœ¨ä¼˜å…ˆä½¿ç”¨é…ç½®ä¸­çš„cardImageï¼Œå¦‚æœæ²¡æœ‰åˆ™ä½¿ç”¨é»˜è®¤å‘½åè§„åˆ™
+        std::string cardBgPath;
+        if (!data.cardImage.empty()) {
+            cardBgPath = data.cardImage;
+        } else {
+            // é»˜è®¤å‘½åè§„åˆ™ï¼šcard_1001.png, card_1002.png ç­‰
+            cardBgPath = "cards/card_" + std::to_string(plantId) + ".png";
+        }
         
-        // 3. ³¢ÊÔ¼ÓÔØ¿¨Æ¬±³¾°Í¼
+        // 3. å°è¯•åŠ è½½å¡ç‰‡èƒŒæ™¯å›¾ç‰‡
         if (FileUtils::getInstance()->isFileExist(cardBgPath)) {
             _bg = Sprite::create(cardBgPath);
             if (_bg) {
-                // µ÷Õû¿¨Æ¬´óĞ¡µ½ 72x96 (±£³Öµ±Ç°UI²¼¾Ö)
+                // è°ƒæ•´èƒŒæ™¯å›¾ç‰‡å¤§å°åˆ° 72x96 (ä¿æŒåŸå§‹UIå°ºå¯¸)
                 Size originalSize = _bg->getContentSize();
                 float scaleX = 72.0f / originalSize.width;
                 float scaleY = 96.0f / originalSize.height;
                 
-                // Ê¹ÓÃÍ³Ò»Ëõ·Å±£³Ö¿í¸ß±È£¬Èç¹ûĞèÒªÍêÈ«Ìî³ä¿ÉÒÔÓÃ²»Í¬µÄscaleXºÍscaleY
+                // ä½¿ç”¨è¾ƒå°çš„ç¼©æ”¾æ¯”ä¾‹ï¼Œç¡®ä¿å›¾ç‰‡å®Œæ•´æ˜¾ç¤ºä¸”ä¸å˜å½¢ï¼ˆå–scaleXå’ŒscaleYçš„è¾ƒå°å€¼ï¼‰
                 float scale = std::min(scaleX, scaleY);
                 _bg->setScale(scale);
                 
-                // ÉèÖÃÃªµãºÍÎ»ÖÃ
+                // è®¾ç½®èƒŒæ™¯é”šç‚¹å’Œä½ç½®
                 _bg->setAnchorPoint(Vec2(0, 0));
                 _bg->setPosition(0, 0);
                 this->addChild(_bg, 0);
@@ -50,7 +57,7 @@ bool SeedCard::init(int plantId) {
             }
         }
         else {
-            // ±¸ÓÃ·½°¸£ºÈç¹ûÃ»ÓĞ×¨ÃÅµÄ¿¨Æ¬Í¼£¬Ê¹ÓÃÍ¨ÓÃ¿¨Æ¬±³¾° + Ö²ÎïÍ¼±ê
+            // å¦‚æœå¡ç‰‡èƒŒæ™¯ä¸å­˜åœ¨ï¼Œå°è¯•ä½¿ç”¨é€šç”¨å¡ç‰‡èƒŒæ™¯ + æ¤ç‰©å›¾æ ‡
             std::string genericCardPath = "cards/card_generic.png";
             
             if (FileUtils::getInstance()->isFileExist(genericCardPath)) {
@@ -66,14 +73,14 @@ bool SeedCard::init(int plantId) {
                     _bg->setPosition(0, 0);
                     this->addChild(_bg, 0);
                     
-                    // ÔÚÍ¨ÓÃ±³¾°ÉÏÌí¼ÓÖ²ÎïÍ¼±ê
+                    // åœ¨é€šç”¨å¡ç‰‡ä¸Šæ·»åŠ æ¤ç‰©å›¾æ ‡
                     if (FileUtils::getInstance()->isFileExist(data.texturePath)) {
                         _icon = Sprite::create(data.texturePath);
                         if (_icon) {
-                            // ½«Ö²ÎïÍ¼±êËõ·Åµ½ÊÊºÏ¿¨Æ¬µÄ´óĞ¡
+                            // è°ƒæ•´æ¤ç‰©å›¾æ ‡å¤§å°ä»¥é€‚åº”å¡ç‰‡
                             float iconScale = 45.0f / std::max(_icon->getContentSize().width, _icon->getContentSize().height);
                             _icon->setScale(iconScale);
-                            _icon->setPosition(36, 60); // ¿¨Æ¬ÖĞĞÄÆ«ÉÏ
+                            _icon->setPosition(36, 60); // å±…ä¸­ä½ç½®
                             this->addChild(_icon, 1);
                         }
                     }
@@ -82,7 +89,7 @@ bool SeedCard::init(int plantId) {
                 }
             }
             else {
-                // ×îºóµÄ±¸ÓÃ·½°¸£º»æÖÆ¼òµ¥±³¾°£¨±£³ÖÔ­ÓĞÂß¼­£©
+                // å¦‚æœé€šç”¨å¡ç‰‡ä¹Ÿä¸å­˜åœ¨ï¼Œåˆ™ç»˜åˆ¶ä¸€ä¸ªç®€å•çš„ç°è‰²èƒŒæ™¯
                 auto bgLayer = LayerColor::create(Color4B(100, 100, 100, 200), 72, 96);
                 this->addChild(bgLayer, 0);
                 
@@ -100,19 +107,19 @@ bool SeedCard::init(int plantId) {
             }
         }
         
-        // 4. ÉèÖÃÕû¸ö½ÚµãµÄÄÚÈİ´óĞ¡
+        // 4. è®¾ç½®å¡ç‰‡å†…å®¹åŒºåŸŸå¤§å°
         this->setContentSize(Size(72, 96));
         
-        // 5. Ìí¼ÓÏûºÄÎÄ×Ö (½öÔÚÃ»ÓĞÍêÕû¿¨Æ¬Í¼Ê±ÏÔÊ¾£¬ÒòÎªÍêÕû¿¨Æ¬Í¼Ó¦¸Ã°üº¬ÏûºÄÊı×Ö)
+        // 5. åˆ›å»ºä»·æ ¼æ ‡ç­¾ (å¦‚æœèƒŒæ™¯ä¸å­˜åœ¨æˆ–å¡ç‰‡èƒŒæ™¯è·¯å¾„ä¸å­˜åœ¨ï¼Œåˆ™æ˜¾ç¤ºä»·æ ¼æ ‡ç­¾)
         if (!_bg || !FileUtils::getInstance()->isFileExist(cardBgPath)) {
             _costLabel = Label::createWithSystemFont(std::to_string(_cost), "Arial", 14);
-            _costLabel->setPosition(36, 10); // µ×²¿¾ÓÖĞ
+            _costLabel->setPosition(36, 10); // åº•éƒ¨å±…ä¸­
             _costLabel->setColor(Color3B::WHITE);
-            _costLabel->enableOutline(Color4B::BLACK, 1); // Ìí¼ÓÂÖÀªÒÔÌá¸ß¿É¶ÁĞÔ
+            _costLabel->enableOutline(Color4B::BLACK, 1); // æ·»åŠ é»‘è‰²æè¾¹ä»¥æé«˜å¯è¯»æ€§
             this->addChild(_costLabel, 2);
         }
         
-        // 6. Ìí¼Ó´¥Ãş¼àÌı
+        // 6. æ·»åŠ è§¦æ‘¸äº‹ä»¶ç›‘å¬
         auto listener = EventListenerTouchOneByOne::create();
         listener->setSwallowTouches(true);
         listener->onTouchBegan = [this](Touch* touch, Event* event) {
@@ -123,7 +130,7 @@ bool SeedCard::init(int plantId) {
                 if (_onSelectCallback) {
                     _onSelectCallback(_plantId);
                 }
-                // µã»÷·´À¡¶¯»­
+                // æ·»åŠ ç‚¹å‡»åŠ¨ç”»æ•ˆæœ
                 this->runAction(Sequence::create(
                     ScaleTo::create(0.1f, 0.95f), 
                     ScaleTo::create(0.1f, 1.0f), 
@@ -146,22 +153,22 @@ bool SeedCard::init(int plantId) {
 void SeedCard::updateSunCheck(int currentSun) {
     this->setCascadeOpacityEnabled(true);
     
-    // ¸ù¾İÑô¹âÊıÁ¿µ÷Õû¿¨Æ¬µÄ¿ÉÓÃ×´Ì¬
+    // æ ¹æ®å½“å‰é˜³å…‰å€¼æ›´æ–°å¡ç‰‡æ˜¾ç¤ºçŠ¶æ€
     if (currentSun < _cost) {
-        this->setOpacity(100);  // ±ä»Ò£¬²»¿ÉÓÃ
+        this->setOpacity(100);  // é˜³å…‰ä¸è¶³æ—¶å˜æš—
         
-        // Èç¹ûÓĞ±³¾°Í¼£¬Ò²¿ÉÒÔ¸Ä±äÑÕÉ«À´±íÊ¾²»¿ÉÓÃ×´Ì¬
+        // åŒæ—¶è°ƒæ•´èƒŒæ™¯å’Œå›¾æ ‡é¢œè‰²ä¸ºç°è‰²
         if (_bg) {
-            _bg->setColor(Color3B(128, 128, 128)); // ±ä»Ò
+            _bg->setColor(Color3B(128, 128, 128)); // ç°è‰²
         }
         if (_icon) {
-            _icon->setColor(Color3B(128, 128, 128)); // Í¼±êÒ²±ä»Ò
+            _icon->setColor(Color3B(128, 128, 128)); // å›¾æ ‡ä¹Ÿå˜ç°
         }
     }
     else {
-        this->setOpacity(255);  // ÍêÈ«²»Í¸Ã÷£¬¿ÉÓÃ
+        this->setOpacity(255);  // é˜³å…‰å……è¶³æ—¶æ¢å¤æ­£å¸¸
         
-        // »Ö¸´Õı³£ÑÕÉ«
+        // æ¢å¤æ­£å¸¸é¢œè‰²
         if (_bg) {
             _bg->setColor(Color3B::WHITE);
         }

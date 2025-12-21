@@ -8,12 +8,20 @@
     "attack": 20,
     "attackSpeed": 1.5,
     "texture": "plants/peashooter/1.png",
+    "cardImage": "cards/card_1001.png",
     "animations": {
       "idle": {
         "frameFormat": "plants/peashooter/%d.png",
         "frameCount": 13,
         "frameDelay": 0.1,
         "loopCount": -1
+      },
+      "shoot": {
+        "frameFormat": "plants/peashooter_shoot/%d.png",
+        "frameCount": 8,
+        "frameDelay": 0.08,
+        "loopCount": 1,
+        "onComplete": "idle"
       }
     },
     "defaultAnimation": "idle"
@@ -28,6 +36,7 @@
     "attack": 0,
     "produceInterval": 24.0,
     "texture": "plants/sunflower/1.png",
+    "cardImage": "cards/card_1002.png",
     "animations": {
       "idle": {
         "frameFormat": "plants/sunflower/%d.png",
@@ -47,6 +56,7 @@
     "cooldown": 30.0,
     "attack": 1800,
     "texture": "plants/cherrybomb/1.png",
+    "cardImage": "cards/card_cherrybomb.png",
     "animations": {
       "idle": {
         "frameFormat": "plants/cherrybomb/%d.png",
@@ -72,6 +82,7 @@
     "cooldown": 20.0,
     "attack": 0,
     "texture": "plants/wallnut/1.png",
+    "cardImage": "cards/card_wallnut.png",
     "animations": {
       "idle": {
         "frameFormat": "plants/wallnut/%d.png",
@@ -103,6 +114,7 @@
     "cooldown": 20.0,
     "attack": 1800,
     "texture": "plants/potatomine/1.png",
+    "cardImage": "cards/card_potatomine.png",
     "animations": {
       "idle": {
         "frameFormat": "plants/potatomine/%d.png",
@@ -135,6 +147,7 @@
     "attack": 20,
     "attackSpeed": 1.5,
     "texture": "plants/snowpea/1.png",
+    "cardImage": "cards/card_snowpea.png",
     "animations": {
       "idle": {
         "frameFormat": "plants/snowpea/%d.png",
@@ -146,7 +159,8 @@
         "frameFormat": "plants/snowpea_shoot/%d.png",
         "frameCount": 8,
         "frameDelay": 0.08,
-        "loopCount": 1
+        "loopCount": 1,
+        "onComplete": "idle"
       }
     },
     "defaultAnimation": "idle"
@@ -160,6 +174,7 @@
     "cooldown": 30.0,
     "attack": 1800,
     "texture": "plants/bigmouth/1.png",
+    "cardImage": "cards/card_bigmouthflower.png",
     "animations": {
       "idle": {
         "frameFormat": "plants/bigmouth/%d.png",
@@ -192,6 +207,7 @@
     "attack": 20,
     "attackSpeed": 1.5,
     "texture": "plants/repeater/1.png",
+    "cardImage": "cards/card_repeaterpea.png",
     "animations": {
       "idle": {
         "frameFormat": "plants/repeater/%d.png",
@@ -203,7 +219,8 @@
         "frameFormat": "plants/repeater_shoot/%d.png",
         "frameCount": 10,
         "frameDelay": 0.08,
-        "loopCount": 1
+        "loopCount": 1,
+        "onComplete": "idle"
       }
     },
     "defaultAnimation": "idle"
@@ -218,6 +235,7 @@
     "attack": 20,
     "attackSpeed": 1.5,
     "texture": "plants/smallgu/1.png",
+    "cardImage": "cards/card_puffshroom.png",
     "animations": {
       "idle": {
         "frameFormat": "plants/smallgu/%d.png",
@@ -229,7 +247,8 @@
         "frameFormat": "plants/smallgu_shoot/%d.png",
         "frameCount": 8,
         "frameDelay": 0.08,
-        "loopCount": 1
+        "loopCount": 1,
+        "onComplete": "idle"
       }
     },
     "defaultAnimation": "idle"
@@ -244,6 +263,7 @@
     "attack": 0,
     "produceInterval": 24.0,
     "texture": "plants/sunshroom/1.png",
+    "cardImage": "cards/card_sunshroom.png",
     "animations": {
       "idle": {
         "frameFormat": "plants/sunshroom/%d.png",
@@ -255,13 +275,15 @@
         "frameFormat": "plants/sunshroom_produce/%d.png",
         "frameCount": 12,
         "frameDelay": 0.1,
-        "loopCount": 1
+        "loopCount": 1,
+        "onComplete": "idle"
       },
       "grow": {
         "frameFormat": "plants/sunshroom_grow/%d.png",
         "frameCount": 15,
         "frameDelay": 0.1,
-        "loopCount": 1
+        "loopCount": 1,
+        "onComplete": "idle"
       }
     },
     "defaultAnimation": "idle"
@@ -276,6 +298,7 @@
     "attack": 20,
     "attackSpeed": 1.5,
     "texture": "plants/scareroom/1.png",
+    "cardImage": "cards/card_scaredyshroom.png",
     "animations": {
       "idle": {
         "frameFormat": "plants/scareroom/%d.png",
@@ -287,20 +310,23 @@
         "frameFormat": "plants/scareroom_shoot/%d.png",
         "frameCount": 10,
         "frameDelay": 0.08,
-        "loopCount": 1
+        "loopCount": 1,
+        "onComplete": "idle"
       }
     },
     "defaultAnimation": "idle"
   },
   
   "1012": {
-    "name": "GraveBuster",
-    "type": "instant",
+    "name": "Spikeweed",
+    "type": "defensive",
     "hp": 300,
-    "cost": 75,
+    "cost": 100,
     "cooldown": 7.5,
-    "attack": 0,
+    "attack": 20,
+    "attackSpeed": 1.0,
     "texture": "plants/spikeweed/1.png",
+    "cardImage": "cards/card_spikeweed.png",
     "animations": {
       "idle": {
         "frameFormat": "plants/spikeweed/%d.png",
@@ -312,20 +338,22 @@
         "frameFormat": "plants/spikeweed_attack/%d.png",
         "frameCount": 12,
         "frameDelay": 0.08,
-        "loopCount": 1
+        "loopCount": 1,
+        "onComplete": "idle"
       }
     },
     "defaultAnimation": "idle"
   },
   
   "1013": {
-    "name": "HypnoShroom",
-    "type": "instant",
-    "hp": 300,
-    "cost": 75,
+    "name": "TallNut",
+    "type": "defensive",
+    "hp": 8000,
+    "cost": 125,
     "cooldown": 30.0,
     "attack": 0,
     "texture": "plants/tallnut/1.png",
+    "cardImage": "cards/card_threepeashooter.png",
     "animations": {
       "idle": {
         "frameFormat": "plants/tallnut/%d.png",
@@ -333,11 +361,17 @@
         "frameDelay": 0.12,
         "loopCount": -1
       },
-      "activate": {
-        "frameFormat": "plants/tallnut_activate/%d.png",
-        "frameCount": 15,
-        "frameDelay": 0.1,
-        "loopCount": 1
+      "damaged": {
+        "frameFormat": "plants/tallnut_damaged/%d.png",
+        "frameCount": 14,
+        "frameDelay": 0.12,
+        "loopCount": -1
+      },
+      "cracked": {
+        "frameFormat": "plants/tallnut_cracked/%d.png",
+        "frameCount": 14,
+        "frameDelay": 0.12,
+        "loopCount": -1
       }
     },
     "defaultAnimation": "idle"
@@ -351,6 +385,7 @@
     "cooldown": 7.5,
     "attack": 0,
     "texture": "plants/lilypad/1.png",
+    "cardImage": "cards/card_1001.png",
     "animations": {
       "idle": {
         "frameFormat": "plants/lilypad/%d.png",

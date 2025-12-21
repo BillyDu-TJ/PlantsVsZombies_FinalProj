@@ -5,7 +5,34 @@
     "speed": 10,
     "damage": 20,
     "attackInterval": 1.5,
-    "texture": "zombies/zm/1.png"
-    
+    "texture": "zombies/zm/1.png",
+    "animations": {
+      "walk": {
+        "frameFormat": "zombies/zm/%d.png",
+        "frameCount": 22,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "eat": {
+        "frameFormat": "zombies/zm_eat/%d.png",
+        "frameCount": 21,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "dead": {
+        "frameFormat": "zombies/zm_dead/%d.png",
+        "frameCount": 20,
+        "frameDelay": 0.12,
+        "loopCount": 1,
+        "onComplete": "remove"
+      },
+      "stand": {
+        "frameFormat": "zombies/zm_stand/%d.png",
+        "frameCount": 11,
+        "frameDelay": 0.15,
+        "loopCount": -1
+      }
+    },
+    "defaultAnimation": "walk"
   }
 }

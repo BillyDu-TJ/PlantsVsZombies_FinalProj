@@ -1,7 +1,9 @@
-// ³¡¾°¹ÜÀíÆ÷ÊµÏÖ
+// åœºæ™¯ç®¡ç†å™¨å®žçŽ°
 // 2025.12.15 by BillyDu
 #include "SceneManager.h"
 #include "../Scenes/StartScene.h"
+#include "../Scenes/MapSelectScene.h"
+#include "../Scenes/PlantSelectScene.h"
 #include "../Scenes/GameScene.h"
 #include "../Scenes/VictoryScene.h"
 #include "../Scenes/GameOverScene.h"
@@ -19,7 +21,25 @@ void SceneManager::gotoStartScene() {
     auto scene = StartScene::createScene();
     replaceSceneWithTransition(scene);
     
-    // ²¥·ÅÖ÷²Ëµ¥ÒôÀÖ
+    // æ’­æ”¾ä¸»èœå•éŸ³ä¹
+    AudioManager::getInstance().playBackgroundMusic(AudioPath::MAIN_MENU_BGM);
+}
+
+void SceneManager::gotoMapSelectScene() {
+    _currentState = GameState::MENU;
+    auto scene = MapSelectScene::createScene();
+    replaceSceneWithTransition(scene);
+    
+    // ä¿æŒèœå•èƒŒæ™¯éŸ³ä¹
+    AudioManager::getInstance().playBackgroundMusic(AudioPath::MAIN_MENU_BGM);
+}
+
+void SceneManager::gotoPlantSelectScene() {
+    _currentState = GameState::MENU;
+    auto scene = PlantSelectScene::createScene();
+    replaceSceneWithTransition(scene);
+    
+    // ä¿æŒèœå•èƒŒæ™¯éŸ³ä¹
     AudioManager::getInstance().playBackgroundMusic(AudioPath::MAIN_MENU_BGM);
 }
 
@@ -28,7 +48,7 @@ void SceneManager::gotoGameScene() {
     auto scene = GameScene::createScene();
     replaceSceneWithTransition(scene);
     
-    // ²¥·ÅÓÎÏ·ÒôÀÖ
+    // æ’­æ”¾æ¸¸æˆéŸ³ä¹
     AudioManager::getInstance().playBackgroundMusic(AudioPath::GAME_BGM);
 }
 
@@ -37,7 +57,7 @@ void SceneManager::gotoVictoryScene() {
     auto scene = VictoryScene::createScene();
     replaceSceneWithTransition(scene);
     
-    // ²¥·ÅÊ¤ÀûÒôÐ§
+    // æ’­æ”¾èƒœåˆ©éŸ³æ•ˆ
     AudioManager::getInstance().playEffect(AudioPath::VICTORY_SOUND);
 }
 
@@ -46,7 +66,7 @@ void SceneManager::gotoGameOverScene() {
     auto scene = GameOverScene::createScene();
     replaceSceneWithTransition(scene);
     
-    // ²¥·ÅÊ§°ÜÒôÐ§
+    // æ’­æ”¾å¤±è´¥éŸ³æ•ˆ
     AudioManager::getInstance().playEffect(AudioPath::LOSE_SOUND);
 }
 
@@ -58,7 +78,7 @@ void SceneManager::restartGame() {
 void SceneManager::replaceSceneWithTransition(cocos2d::Scene* scene) {
     auto director = Director::getInstance();
     
-    // Ê¹ÓÃµ­Èëµ­³ö¹ý¶ÉÐ§¹û
+    // ä½¿ç”¨æ·¡å…¥æ·¡å‡ºè¿‡æ¸¡æ•ˆæžœ
     auto transition = TransitionFade::create(0.5f, scene);
     director->replaceScene(transition);
     

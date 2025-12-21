@@ -1,5 +1,5 @@
 // 定义游戏中植物和僵尸的基本数据结构
-// 2025.11.27 by BillyDu
+// 2025.11.27 by BillyDu 12.21 by Zhao 增加不同bullet的功能
 #ifndef __GAME_DATA_STRUCTURES_H__
 #define __GAME_DATA_STRUCTURES_H__
 
@@ -26,6 +26,7 @@ struct PlantData {
     int attack = 0;
     float attackSpeed = 0.0f; // 攻击速度
     std::string texturePath;
+    std::string cardImage;    // 卡片图片路径（可选，如果没有则使用默认命名规则）
     
     // 动画配置：动画名称 -> 动画配置
     std::unordered_map<std::string, AnimationConfig> animations;
@@ -40,6 +41,16 @@ struct ZombieData {
     float speed = 0.0f;          // 移动速度
     float attackInterval = 1.0f; // 攻击间隔
     std::string texturePath;
+    
+    // 动画配置：动画名称 -> 动画配置
+    std::unordered_map<std::string, AnimationConfig> animations;
+    std::string defaultAnimation; // 默认动画名称，如 "walk"
+};
+
+// 子弹类型枚举
+enum class BulletType {
+    NORMAL,  // 普通子弹
+    ICE      // 冰弹（减速效果）
 };
 
 // 子弹数据
@@ -48,7 +59,12 @@ struct BulletData {
     int damage = 20;
     float speed = 300.0f; // 移动速度
     std::string texturePath;
-    // 以后可以加减速、伤害范围等
+    BulletType type = BulletType::NORMAL; // 子弹类型
+    float slowEffect = 0.1f; // 减速效果（速度倍数，0.5表示速度变为原来的50%）设置为0.1更加明显？
+    
+    // 动画配置（可选，如果设置了则使用动画，否则使用静态纹理）
+    AnimationConfig animationConfig;
+    bool hasAnimation = false; // 是否有动画
 };
 
 #endif // __GAME_DATA_STRUCTURES_H__

@@ -23,7 +23,8 @@
         "frameFormat": "zombies/zm_dead/%d.png",
         "frameCount": 20,
         "frameDelay": 0.12,
-        "loopCount": 1
+        "loopCount": 1,
+        "onComplete": "remove"
       },
       "stand": {
         "frameFormat": "zombies/zm_stand/%d.png",

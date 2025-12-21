@@ -1,18 +1,19 @@
-// ¸ÃÎÄ¼şÊµÏÖÁËÍ·ÎÄ¼şÖĞÉùÃ÷µÄ GameScene ÀàµÄ·½·¨¡£Ö÷Òª¹¦ÄÜ°üÀ¨³¡¾°³õÊ¼»¯¡¢×ø±ê×ª»»ºÍµ÷ÊÔÍø¸ñ»æÖÆ¡£
+// è¿™ä¸ªæ–‡ä»¶å®é™…ä¸Šæ˜¯å¤´æ–‡ä»¶ï¼ŒåŒ…å«äº† GameScene ç±»çš„æ–¹æ³•ï¼Œä¸»è¦åŠŸèƒ½åŒ…æ‹¬æ¸¸æˆçš„å¼€å§‹ã€æš‚åœã€è½¬æ¢å’Œç»“æŸç­‰è®¾è®¡ã€‚
 // 2025.11.27 by BillyDu
+// edited on 2025.12.21 by Zhao
 #include <string> // C++11 string
 
 #include "GameScene.h"
-#include "../Consts.h" // ÒıÓÃ³£Á¿
+#include "../Consts.h" // æ¸¸æˆå¸¸é‡
 #include "../Managers/DataManager.h"
 #include "../Managers/LevelManager.h"
 #include "../Managers/AudioManager.h"
-#include "../Managers/SceneManager.h"  // Ìí¼Ó³¡¾°¹ÜÀíÆ÷Í·ÎÄ¼ş
+#include "../Managers/SceneManager.h"  // æ·»åŠ åœºæ™¯ç®¡ç†å¤´æ–‡ä»¶
 #include "../Utils/GameException.h"
 #include "../Entities/Plant.h"
 #include "../Entities/Zombie.h"
 #include "../Entities/Sun.h"
-#include "ui/CocosGUI.h"  // Ìí¼ÓUI×é¼şÍ·ÎÄ¼ş
+#include "ui/CocosGUI.h"  // æ·»åŠ UIæ§ä»¶å¤´æ–‡ä»¶
 
 USING_NS_CC;
 
@@ -28,45 +29,47 @@ bool GameScene::init() {
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-    // --- ³õÊ¼»¯Íø¸ñ ---
+    // --- åˆå§‹åŒ–ç½‘æ ¼æ•°ç»„ ---
     for (int r = 0; r < GRID_ROWS; ++r) {
         for (int c = 0; c < GRID_COLS; ++c) {
             _plantMap[r][c] = nullptr;
         }
     }
 
-    // --- ¼ÓÔØ¹Ø¿¨ ---
+    // --- åŠ è½½å…³å¡ ---
     try {
-        DataManager::getInstance().loadData(); // È·±£Êı¾İÏÈ¼ÓÔØ
+        DataManager::getInstance().loadData(); // ç¡®ä¿æ•°æ®å…ˆåŠ è½½
         LevelManager::getInstance().loadLevel("data/level_test.json");
     }
     catch (const std::exception& e) {
         CCLOG("[Err] Init Error: %s", e.what());
+        // å¦‚æœæ•°æ®åŠ è½½å¤±è´¥ï¼Œè¿”å›falseï¼Œé˜»æ­¢åœºæ™¯åˆå§‹åŒ–
+        return false;
     }
 
-    // --- ¿ªÆô Update µ÷¶È ---
+    // --- ç»‘å®š Update å›è°ƒ ---
     this->scheduleUpdate();
 
     const auto& assets = LevelManager::getInstance().getAssets();
 
-    // [±³¾°] ĞŞ¸Ä±³¾°¼ÓÔØÂß¼­£¬±ÜÃâ´íÎ»ÎÊÌâ
+    // [åŠ¨æ€] ä¿®æ”¹èƒŒæ™¯åŠ è½½é€»è¾‘ï¼Œé€‚é…ç½‘æ ¼ä½ç½®
     if (FileUtils::getInstance()->isFileExist(assets.bgPath)) {
         auto bg = Sprite::create(assets.bgPath);
-        
-        // ¼ÆËãºÏÊÊµÄËõ·Å±ÈÀı£¬±£³Ö¿í¸ß±ÈµÄÍ¬Ê±ÌîÂúÆÁÄ»
+
+        // ä¿æŒåŸå§‹èƒŒæ™¯å®½é«˜æ¯”çš„åŒæ—¶å¡«æ»¡å±å¹•
         Size bgSize = bg->getContentSize();
         float scaleX = visibleSize.width / bgSize.width;
         float scaleY = visibleSize.height / bgSize.height;
-        float scale = std::max(scaleX, scaleY); // Ê¹ÓÃ½Ï´óµÄËõ·Å±È£¬È·±£ÍêÈ«¸²¸ÇÆÁÄ»
-        
+        float scale = std::max(scaleX, scaleY); // ä½¿ç”¨è¾ƒå¤§ç¼©æ”¾æ¯”ï¼Œç¡®ä¿å®Œå…¨è¦†ç›–å±å¹•
+
         bg->setScale(scale);
-        bg->setPosition(visibleSize.width / 2, visibleSize.height / 2); // ¾ÓÖĞÏÔÊ¾
-        bg->setAnchorPoint(Vec2(0.5f, 0.5f)); // ÖĞĞÄÃªµã
-        
+        bg->setPosition(visibleSize.width / 2, visibleSize.height / 2); // å±…ä¸­æ˜¾ç¤º
+        bg->setAnchorPoint(Vec2(0.5f, 0.5f)); // è®¾ç½®é”šç‚¹
+
         this->addChild(bg, -1);
-        
-        CCLOG("[Info] Background loaded: %s, Original size: %.1fx%.1f, Scale: %.2f", 
-              assets.bgPath.c_str(), bgSize.width, bgSize.height, scale);
+
+        CCLOG("[Info] Background loaded: %s, Original size: %.1fx%.1f, Scale: %.2f",
+            assets.bgPath.c_str(), bgSize.width, bgSize.height, scale);
     }
     else {
         auto bg = LayerColor::create(Color4B(0, 150, 0, 255));
@@ -74,61 +77,70 @@ bool GameScene::init() {
         CCLOG("[Info] Using fallback green background");
     }
 
-    // [Íø¸ñ²İÆº] ÆôÓÃµ÷ÊÔÍø¸ñÒÔÑéÖ¤¶ÔÆë
+    // [è°ƒè¯•ç½‘æ ¼] ç»˜åˆ¶è°ƒè¯•ç½‘æ ¼ä»¥ç¡®ä¿æ­£ç¡®
     drawDebugGrid();
-    
-    // --- UI: Ñô¹âÀ¸Óë¿¨²Û (ÈİÆ÷»¯) ---
 
-    // [ÈİÆ÷] ´´½¨Ò»¸ö Node ×÷ÎªÕû¸ö¶¥²¿ UI µÄ¸¸½Úµã
-    // ÕâÑùÒÔºóÒªÒÆ¶¯ UI£¬Ö»¶¯Õâ¸ö Node ¾ÍĞĞ
+    // --- UI: é˜³å…‰æ˜¾ç¤ºä¸å¡ç‰‡ (å·¦ä¸Šæ–¹) ---
+
+    // [åŠ¨æ€] åˆ›å»ºä¸€ä¸ª Node ä½œä¸ºå®¹å™¨ UI çš„æ ¹èŠ‚ç‚¹
+    // è¿™æ ·ä»¥åè¦ç§»åŠ¨ UIï¼Œåªéœ€ç§»åŠ¨è¿™ä¸ª Node å³å¯
     auto uiLayer = Node::create();
-    uiLayer->setPosition(Vec2(20, visibleSize.height - 10)); // ¶¨Î»µ½ÆÁÄ»×óÉÏ½Ç
+    uiLayer->setPosition(Vec2(20, visibleSize.height - 10)); // å®šä½åˆ°å±å¹•å·¦ä¸Šè§’
     uiLayer->setScale(0.8f);
     this->addChild(uiLayer, 1000);
 
-    _sunLabel = Label::createWithTTF(std::to_string(_currentSun), "fonts/Marker Felt.ttf", 32); // ×ÖÌåÉÔÎ¢¸ÄĞ¡Ò»µãÊÊÅäËõ·Å
+    _sunLabel = Label::createWithTTF(std::to_string(_currentSun), "fonts/Marker Felt.ttf", 32); // è°ƒå°ä¸€ç‚¹å­—ä½“é¿å…é®æŒ¡
 
     if (FileUtils::getInstance()->isFileExist(assets.sunBarPath)) {
         auto sunBar = Sprite::create(assets.sunBarPath);
-        sunBar->setAnchorPoint(Vec2(0, 1)); // ×óÉÏ½ÇÃªµã
-        sunBar->setPosition(0, 0);         // Ïà¶Ô uiLayer (0,0)
+        sunBar->setAnchorPoint(Vec2(0, 1)); // å·¦ä¸Šè§’é”šç‚¹
+        sunBar->setPosition(0, 0);         // æ”¾åœ¨ uiLayer (0,0)
         uiLayer->addChild(sunBar);
 
-        // [ĞŞ¸Ä 4: ÎÄ×Ö¶ÔÆë]
-        // ÄãµÄËØ²ÄÊÇÒ»¸öÑô¹âÍ¼±êÏÂÃæ´ø¸ö¾íÖá¡£
-        // ÎÒÃÇĞèÒª°ÑÎÄ×Ö·ÅÔÚ¾íÖáµÄÖĞĞÄ¡£
-        // ¼ÙÉèÑô¹âÍ¼±ê¿íÔ¼ 80px£¬¾íÖáÔÚÍ¼±êÕıÏÂ·½¡£
-        // ÄãĞèÒªÎ¢µ÷ÏÂÃæÕâÁ½¸öÊı×Ö£º
-        float labelX = 55.0f; // Ñô¹âÍ¼±êµÄË®Æ½ÖĞĞÄ
-        float labelY = 20.0f; // ¾íÖáµÄ´¹Ö±ÖĞĞÄ (Ïà¶ÔÓÚÍ¼Æ¬µ×²¿)
+        // [ä¿®æ”¹ 4: æ‰‹åŠ¨å®šä½]
+        // åŠ è½½èµ„æºåè·å¾—ä¸€ä¸ªé˜³å…‰æ¡èƒŒæ™¯å›¾ï¼Œä¸­å¿ƒå¤§çº¦é å·¦ã€‚
+        // æˆ‘ä»¬éœ€è¦å°†æ•°å­—æ”¾åœ¨é˜³å…‰æ¡å³ä¾§ä¸­å¿ƒã€‚
+        // å‡è®¾é˜³å…‰æ¡å®½çº¦200pxï¼Œé«˜çº¦80pxï¼Œæ•°å­—æ”¾åœ¨å³ä¾§ä¸­å¿ƒ
+        // éœ€è¦å¾®è°ƒæ•°å­—çš„å…·ä½“ä½ç½®ï¼š
+        float labelX = 55.0f; // è·ç¦»é˜³å…‰æ¡å·¦ä¾§çš„æ°´å¹³åç§»
+        float labelY = 20.0f; // è·ç¦»åº•éƒ¨çš„å‚ç›´åç§»ï¼ˆç›¸å¯¹å›¾ç‰‡åº•éƒ¨ï¼‰
 
         _sunLabel->setPosition(labelX, labelY);
-        _sunLabel->setAnchorPoint(Vec2(0.5f, 0.5f)); // ¾ÓÖĞ¶ÔÆë
+        _sunLabel->setAnchorPoint(Vec2(0.5f, 0.5f)); // ä¸­å¿ƒå¯¹é½
         _sunLabel->setColor(Color3B::BLACK);
 
-        // µ÷ÊÔ¼¼ÇÉ£ºÈç¹ûÎÄ×Ö±»Í¼µ²×¡ÁË£¬ÉèÖÃ ZOrder
+        // ç›´æ¥åŠ åœ¨é˜³å…‰æ¡ä¸Šï¼Œç¡®ä¿ä¸ä¼šè¢«å…¶ä»–ä¸œè¥¿é®æŒ¡
         sunBar->addChild(_sunLabel, 1);
     }
     else {
-        // ¶µµ×Âß¼­
+        // å›é€€é€»è¾‘
         uiLayer->addChild(_sunLabel);
     }
 
-    std::vector<int> plantIds = { 1001, 1002 };
+    // ä»SceneManagerè·å–é€‰ä¸­çš„æ¤ç‰©åˆ—è¡¨ï¼Œå¦‚æœæ²¡æœ‰åˆ™ä½¿ç”¨é»˜è®¤åˆ—è¡¨
+    std::vector<int> plantIds = SceneManager::getInstance().getSelectedPlants();
+    if (plantIds.empty()) {
+        // å¦‚æœæ²¡æœ‰é€‰ä¸­çš„æ¤ç‰©ï¼Œä½¿ç”¨é»˜è®¤åˆ—è¡¨
+        plantIds = { 1001, 1002, 1008 };
+        CCLOG("[Info] No plants selected, using default plant list");
+    }
+    else {
+        CCLOG("[Info] Using %zu selected plants", plantIds.size());
+    }
 
-    // [ĞŞ¸Ä 5: ¿¨²ÛÎ»ÖÃ]
-    // ÒòÎª UI ÕûÌåËõĞ¡ÁË£¬ÕâÀïµÄ×ø±êÊÇÏà¶ÔÓÚ uiLayer µÄÄÚ²¿×ø±ê
-    // ¼ÙÉèÑô¹âÀ¸¿í¶È´óÔ¼ÊÇ 85px£¬ÎÒÃÇÔÚËüÓÒ±ßÒ»µã¿ªÊ¼
+    // [ä¿®æ”¹ 5: å¡ç‰‡ä½ç½®]
+    // å› ä¸º UI æ•´ä½“ç¼©å°äº†ï¼Œæ‰€ä»¥æˆ‘ä»¬éœ€è¦è°ƒæ•´å¡ç‰‡åœ¨ uiLayer å†…éƒ¨çš„ä½ç½®
+    // ç°åœ¨é˜³å…‰æ¡å®½åº¦å¤§çº¦85pxï¼Œå¡ç‰‡ä»é˜³å…‰æ¡å³è¾¹ä¸€ç‚¹å¼€å§‹
     float startX = 120.0f;
-    float startY = -110.0f; // Ïà¶ÔÓÚ uiLayer ¶¥²¿ÏòÏÂ 40px (´¹Ö±¾ÓÖĞ)
-    float gapX = 80.0f;    // ¿¨Æ¬¼ä¾à
+    float startY = -110.0f; // ç›¸å¯¹äº uiLayer å¾€ä¸‹ 40pxï¼ˆå‚ç›´å¾€ä¸‹ï¼‰
+    float gapX = 80.0f;    // å¡ç‰‡é—´è·
 
     for (int id : plantIds) {
         auto card = SeedCard::create(id);
 
-        // °Ñ¿¨Æ¬¼Óµ½ uiLayer£¬¶ø²»ÊÇ¼Óµ½ sunBar (²ã¼¶¸üÇåÎú)
+        // æŠŠå¡ç‰‡åŠ åˆ° uiLayerï¼Œè€Œä¸æ˜¯åŠ åˆ° sunBarï¼ˆå±‚çº§é—®é¢˜ï¼‰
         card->setPosition(startX, startY);
-        // card->setScale(1.2f); // ¿¨Æ¬ÔÙÎ¢µ÷´óÒ»µãµã
+        // card->setScale(1.2f); // å¡ç‰‡ç¨å¾®æ”¾å¤§ä¸€ç‚¹
 
         card->setOnSelectCallback([this](int plantId) {
             this->selectPlant(plantId);
@@ -140,106 +152,106 @@ bool GameScene::init() {
         startX += gapX;
     }
 
-    // --- ´´½¨ Ghost Sprite (³õÊ¼Òş²Ø) ---
+    // --- åˆ›å»º Ghost Sprite (ç§æ¤é¢„è§ˆ) ---
     _ghostSprite = Sprite::create();
-    _ghostSprite->setOpacity(128); // °ëÍ¸Ã÷
+    _ghostSprite->setOpacity(128); // åŠé€æ˜
     _ghostSprite->setVisible(false);
-    this->addChild(_ghostSprite, 150); // ÔÚÖ²ÎïÖ®ÉÏ£¬UIÖ®ÏÂ
+    this->addChild(_ghostSprite, 150); // åœ¨æ¤ç‰©ä¹‹ä¸Šï¼ŒUIä¹‹ä¸‹
 
-    // --- Êó±êÒÆ¶¯¼àÌı (Desktop Æ½Ì¨) ---
+    // --- é¼ æ ‡ç§»åŠ¨äº‹ä»¶ (Desktop å¹³å°) ---
     auto mouseListener = EventListenerMouse::create();
     mouseListener->onMouseMove = CC_CALLBACK_1(GameScene::onMouseMove, this);
     _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
 
 
-    // --- Êó±ê¼àÌı (ÊµÏÖÖÖÖ²) ---
+    // --- è§¦æ‘¸äº‹ä»¶ (å®ç°ç§æ¤) ---
     auto touchListener = EventListenerTouchOneByOne::create();
     touchListener->onTouchBegan = [this](Touch* touch, Event* event) {
         auto loc = touch->getLocation();
         auto gridPos = this->pixelToGrid(loc);
-        
-        // Èç¹ûµã»÷ÓĞĞ§ÇÒÔÚÍø¸ñÄÚ
+
+        // åªåœ¨æœ‰æ•ˆç½‘æ ¼å†…å“åº”
         if (gridPos.first != -1) {
             CCLOG("[Info] Clicked Grid: [%d, %d]", gridPos.first, gridPos.second);
-            // ³¢ÊÔÖÖÖ²
+            // å°è¯•ç§æ¤
             this->tryPlantAt(gridPos.first, gridPos.second);
         }
         return true;
-    };
+        };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
 
-    // ×ÔÈ»²ú³öÑô¹âµ÷¶ÈÆ÷ (±ÈÈçÃ¿ 10 ÃëµôÒ»¸ö)
+    // å®šæ—¶ç”Ÿæˆé˜³å…‰ï¼ˆæ¯éš” 10 ç§’ä¸€ä¸ªï¼‰
     this->schedule([this](float dt) {
         auto visibleSize = Director::getInstance()->getVisibleSize();
 
-        // Ëæ»ú X ×ø±ê (ÔÚÍø¸ñ·¶Î§ÄÚ)
+        // éšæœº X åæ ‡ï¼ˆç½‘æ ¼èŒƒå›´å†…ï¼‰
         float randomX = GRID_START_X + (rand() % (int)(GRID_COLS * CELL_WIDTH));
-        // Ëæ»ú Y Ä¿±ê (Ç°°ë³¡)
+        // éšæœº Y åæ ‡ï¼ˆå‰ä¸­åœºï¼‰
         float randomY = GRID_START_Y + (rand() % (int)(GRID_ROWS * CELL_HEIGHT));
 
         auto sun = Sun::create();
         sun->fallFromSky(randomX, randomY);
 
-        // ÉèÖÃÊÕ¼¯»Øµ÷
+        // ç»‘å®šæ”¶é›†å›è°ƒ
         sun->setOnCollectedCallback([this](int value) {
             this->_currentSun += value;
-            // ¼ÇµÃË¢ĞÂ UI (update ÀïÒÑ¾­Ğ´ÁË£¬ÕâÀïÆäÊµ²»ĞèÒªÊÖ¶¯Ë¢£¬µ«ÎªÁË±£ÏÕ)
+            // è®°å¾—åˆ·æ–° UIï¼ˆupdate é‡Œå·²ç»å†™äº†ï¼Œæ‰€ä»¥è¿™é‡Œä¸éœ€è¦æ‰‹åŠ¨åˆ·æ–°ï¼Œä½†ä¸ºäº†å®‰å…¨ï¼‰
             });
 
-        this->addChild(sun, 500); // ²ã¼¶·Ç³£¸ß£¬ÔÚ UI ÏÂÃæ£¬Ö²ÎïÉÏÃæ
+        this->addChild(sun, 500); // å±‚çº§éå¸¸é«˜ï¼Œåœ¨ UI ä¸Šé¢ï¼Œæ¤ç‰©ä¸‹é¢
         CCLOG("[Info] Sun falling from sky.");
 
         }, 10.0f, "sun_sky_scheduler");
 
-    // ´´½¨ÔİÍ£°´Å¥
+    // åˆ›å»ºæš‚åœæŒ‰é’®
     createPauseButton();
 
     return true;
 }
 
 void GameScene::update(float dt) {
-    // Èç¹ûÓÎÏ·²»ÔÚ½øĞĞ×´Ì¬£¬²»¸üĞÂÂß¼­
+    // å¦‚æœæ¸¸æˆä¸åœ¨è¿›è¡ŒçŠ¶æ€ï¼Œä¸æ‰§è¡Œé€»è¾‘
     if (_gameState != GameState::PLAYING) return;
 
-    // 1. ÈÃ LevelManager ¼ì²éÊÇ·ñË¢¹Ö
-    // Ê¹ÓÃ Lambda ±í´ïÊ½×÷Îª»Øµ÷
+    // 1. å‘ LevelManager æŸ¥è¯¢æ˜¯å¦åˆ·æ–°åƒµå°¸
+    // ä½¿ç”¨ Lambda è¡¨è¾¾å¼ä½œä¸ºå›è°ƒ
     LevelManager::getInstance().update(dt, [this](int id, int row) {
         this->spawnZombie(id, row);
         });
 
-    // 2. ¸üĞÂËùÓĞ½©Ê¬µÄÂß¼­
+    // 2. æ›´æ–°æ‰€æœ‰åƒµå°¸é€»è¾‘
     for (auto zombie : _zombies) {
         zombie->updateLogic(dt);
     }
 
-    // 3. ¸üĞÂËùÓĞÖ²ÎïÂß¼­
+    // 3. æ›´æ–°æ‰€æœ‰æ¤ç‰©é€»è¾‘
     for (auto plant : _plants) {
         plant->updateLogic(dt);
     }
 
-    // 4.×Óµ¯¸üĞÂ
+    // 4. å­å¼¹é€»è¾‘
     for (auto b : _bullets) {
         b->updateLogic(dt);
     }
 
-    // 5.Ö´ĞĞÕ½¶·ÅĞ¶¨
+    // 5. æ‰§è¡Œæˆ˜æ–—åˆ¤æ–­
     updateCombatLogic();
 
-    // 6.ÇåÀíÊ§Ğ§¶ÔÏó (À¬»ø»ØÊÕ)
-    // ÒÆ³ıËÀµôµÄ½©Ê¬
+    // 6. æ¸…ç†å¤±æ•ˆå¯¹è±¡ï¼ˆæ­»äº¡ç§»é™¤ï¼‰
+    // ç§»é™¤æ­»äº¡çš„åƒµå°¸
     for (auto it = _zombies.begin(); it != _zombies.end(); ) {
         if ((*it)->isDead()) {
-            // ´Ó Scene ÒÆ³ıÒÑ¾­ÔÚ die() Àï×öÁË£¬ÕâÀïÖ»Ğè´Ó Vector ÒÆ³ı
+            // ä» Scene ç§»é™¤å·²ç»åœ¨ die() é‡Œåšäº†ï¼Œè¿™é‡Œåªä» Vector ç§»é™¤
             it = _zombies.erase(it);
         }
         else {
             ++it;
         }
     }
-    // ÒÆ³ıÊ§Ğ§×Óµ¯
+    // ç§»é™¤å¤±æ•ˆå­å¼¹
     for (auto it = _bullets.begin(); it != _bullets.end(); ) {
         if (!(*it)->isActive() || (*it)->getParent() == nullptr) {
-            (*it)->removeFromParent(); // È·±£´Ó³¡¾°ÒÆ³ı
+            (*it)->removeFromParent(); // ç¡®ä¿ä»åœºæ™¯ç§»é™¤
             it = _bullets.erase(it);
         }
         else {
@@ -248,32 +260,32 @@ void GameScene::update(float dt) {
 
     }
 
-    // 7.UI ÊµÊ±Ë¢ĞÂ
-    // ¸üĞÂÑô¹âÎÄ×Ö
+    // 7. UI å®æ—¶åˆ·æ–°
+    // åˆ·æ–°é˜³å…‰æ˜¾ç¤º
     if (_sunLabel) {
         _sunLabel->setString(std::to_string(_currentSun));
     }
 
-    // ¸üĞÂ¿¨Æ¬×´Ì¬ (±äÁÁ/±ä»Ò)
+    // åˆ·æ–°å¡ç‰‡çŠ¶æ€ï¼ˆå¯ç”¨/ç¦ç”¨ï¼‰
     for (auto card : _seedCards) {
-        // ÈÃ¿¨Æ¬×Ô¼ºÅĞ¶Ï£ºÈç¹ûÓµÓĞÑô¹â < ¿¨Æ¬»¨·Ñ£¬¾Í±ä°ëÍ¸Ã÷
+        // è®©å¡ç‰‡è‡ªå·±åˆ¤æ–­ï¼šå½“å‰é˜³å…‰ < å¡ç‰‡èŠ±è´¹ï¼Œå°±å˜ç°
         card->updateSunCheck(_currentSun);
     }
-    
-    // 8. Ê¤¸ºÅĞ¶¨
+
+    // 8. èƒœè´Ÿåˆ¤æ–­
     checkVictoryCondition();
     checkGameOverCondition();
 }
 
 void GameScene::spawnZombie(int id, int row) {
     try {
-        // 1. [¹Ø¼ü] ´Ó DataManager »ñÈ¡½©Ê¬ÅäÖÃ
+        // 1. [å…³é”®] ä» DataManager è·å–åƒµå°¸æ•°æ®
         const auto& zombieData = DataManager::getInstance().getZombieData(id);
 
-        // 2. [¹Ø¼ü] Ê¹ÓÃ´ø²ÎÊıµÄ create ·½·¨
+        // 2. [å…³é”®] ä½¿ç”¨å·¥å‚æ–¹æ³• create åˆ›å»º
         auto zombie = Zombie::createWithData(zombieData);
 
-        // ... ºóĞøÎ»ÖÃÉèÖÃ´úÂë±£³Ö²»±ä ...
+        // ... è®¾ç½®ä½ç½®ç­‰ä»£ç ä¿æŒä¸å˜ ...
         auto pixelPos = gridToPixel(row, GRID_COLS);
         pixelPos.x += 50.0f;
 
@@ -290,10 +302,10 @@ void GameScene::spawnZombie(int id, int row) {
     }
 }
 
-// ÇĞ»»Ö²Îï
+// é€‰æ‹©æ¤ç‰©
 void GameScene::selectPlant(int plantId) {
     try {
-        // ÑéÖ¤IDÊÇ·ñ´æÔÚ£¬²»´æÔÚ»áÅ×³öÒì³£
+        // éªŒè¯IDæ˜¯å¦å­˜åœ¨ï¼Œä¸å­˜åœ¨ä¼šæŠ›å‡ºå¼‚å¸¸
         auto data = DataManager::getInstance().getPlantData(plantId);
         _selectedPlantId = plantId;
 
@@ -301,7 +313,7 @@ void GameScene::selectPlant(int plantId) {
             _ghostSprite->setTexture(data.texturePath);
         }
         else {
-            _ghostSprite->setTextureRect(Rect(0, 0, 60, 60)); // ¶µµ×
+            _ghostSprite->setTextureRect(Rect(0, 0, 60, 60)); // å ä½
         }
         _ghostSprite->setVisible(true);
         CCLOG("[Info] Selected Plant: %s (Cost: %d)", data.name.c_str(), data.cost);
@@ -311,34 +323,36 @@ void GameScene::selectPlant(int plantId) {
     }
 }
 
-// ºËĞÄÖÖÖ²Âß¼­
+// æ ¸å¿ƒç§æ¤é€»è¾‘
 void GameScene::tryPlantAt(int row, int col) {
-	// 1. ¼ì²é¸ñ×ÓÊÇ·ñÒÑ±»Õ¼ÓÃ£¬ ÈôºóĞøÓĞ¿ÉÒÔÖÖÔÚÖ²ÎïÉÏµÄÖ²Îï£¬¿ÉÔÚ´Ë´¦À©Õ¹Âß¼­
+    // 1. æ£€æŸ¥ä½ç½®æ˜¯å¦å·²è¢«å ç”¨ï¼ˆå¯èƒ½æœ‰å¢“ç¢‘ã€å—ç“œç­‰éšœç¢ç‰©ï¼Œåœ¨æ­¤å¤„æ‰©å±•é€»è¾‘ï¼‰
     if (_plantMap[row][col] != nullptr) {
         CCLOG("[Info] Grid [%d, %d] is already occupied!", row, col);
-        return; // ÖÖÖ²Ê§°Ü
+        return; // ç§æ¤å¤±è´¥
     }
 
     try {
-        // 2. »ñÈ¡µ±Ç°Ñ¡ÖĞÖ²ÎïµÄÊı¾İ
+        // 2. è·å–å½“å‰é€‰ä¸­æ¤ç‰©çš„æ•°æ®
         const auto& plantData = DataManager::getInstance().getPlantData(_selectedPlantId);
 
-        // 3. ¼ì²éÑô¹âÊÇ·ñ×ã¹»
+        // 3. æ£€æŸ¥é˜³å…‰æ˜¯å¦è¶³å¤Ÿ
         if (_currentSun < plantData.cost) {
             CCLOG("[Info] Not enough sun! Have: %d, Need: %d", _currentSun, plantData.cost);
             return;
         }
 
-        // 4. Éú³ÉÖ²Îï¶ÔÏó
+        // 4. åˆ›å»ºæ¤ç‰©å¯¹è±¡
         auto plant = Plant::createWithData(plantData);
 
-        // 5. Ö²ÎïÂß¼­·ÖÁ÷£º
+        // 5. æ¤ç‰©å›è°ƒè®¾ç½®
 
         if (plantData.type == "shooter") {
-            // °ó¶¨Éä»÷»Øµ÷
-            plant->setOnShootCallback([this, row](Vec2 pos, int damage) {
-                // Ö»ÓĞµ±¸ÃĞĞÓĞ½©Ê¬Ê±²ÅÕæµÄ·¢Éä (¼òµ¥µÄ AI ÓÅ»¯)
-                // ÎÒÃÇ¿ÉÒÔ±éÀúÒ»ÏÂ _zombies£¬¿´¿´ÓĞÃ»ÓĞ½©Ê¬ÔÚµ±Ç°ĞĞÇÒÔÚÓÒ±ß
+            // å°„å‡»ç±»æ¤ç‰©
+            // Capture plantId to determine if it's Repeater
+            int currentPlantId = _selectedPlantId;
+            plant->setOnShootCallback([this, row, currentPlantId](Vec2 pos, int damage) {
+                // åªæœ‰å½“å½“å‰è¡Œæœ‰åƒµå°¸æ—¶æ‰å‘å°„ï¼ˆç®€å•çš„ AI ä¼˜åŒ–ï¼‰
+                // æˆ‘ä»¬å¯ä»¥éå† _zombiesï¼Œæ£€æŸ¥æœ‰æ²¡æœ‰åƒµå°¸åœ¨å½“å‰è¡Œä¸”å³ä¾§
                 bool enemyInSight = false;
                 for (auto z : this->_zombies) {
                     CCLOG("[Info] Check: ZombieRow %d vs PlantRow %d", z->getRow(), row);
@@ -351,7 +365,40 @@ void GameScene::tryPlantAt(int row, int col) {
 
                 if (enemyInSight) {
                     CCLOG("[Info] Enemy in sight! PEW PEW!");
-                    this->createBullet(pos, damage);
+
+                    // Repeater (1008) ä¸€æ¬¡å‘å°„ä¸¤ä¸ªè±Œè±†
+                    if (currentPlantId == 1008) {
+                        // å‘å°„ç¬¬ä¸€ä¸ªè±Œè±†
+                        this->createBullet(pos, damage);
+                        // ç¨å¾®å»¶è¿Ÿå‘å°„ç¬¬äºŒä¸ªè±Œè±†ï¼Œè®©å®ƒä»¬ç¨å¾®é”™å¼€
+                        this->runAction(Sequence::create(
+                            DelayTime::create(0.05f),
+                            CallFunc::create([this, pos, damage]() {
+                                this->createBullet(pos, damage);
+                                }),
+                            nullptr
+                        ));
+                        CCLOG("[Info] Repeater shoots two peas!");
+                    }
+                    else if (currentPlantId == 1006) {
+                        // SnowPea (1006) å‘å°„å†°å¼¹
+                        this->createBullet(pos, damage, BulletType::ICE);
+                        CCLOG("[Info] SnowPea shoots ice bullet!");
+                    }
+                    else if (currentPlantId == 1009) {
+                        // PuffShroom (1009) å‘å°„è˜‘è‡å­å¼¹ï¼ˆåŠ¨ç”»ï¼‰
+                        this->createMushroomBullet(pos, damage);
+                        CCLOG("[Info] PuffShroom shoots mushroom bullet!");
+                    }
+                    else if (currentPlantId == 1011) {
+                        // FumeShroom (1011) å‘å°„è˜‘è‡å­å¼¹ï¼ˆåŠ¨ç”»ï¼‰
+                        this->createMushroomBullet(pos, damage);
+                        CCLOG("[Info] FumeShroom shoots mushroom bullet!");
+                    }
+                    else {
+                        // å…¶ä»–å°„å‡»æ¤ç‰©åªå‘å°„ä¸€ä¸ªæ™®é€šå­å¼¹
+                        this->createBullet(pos, damage);
+                    }
                 }
                 else {
                     CCLOG("[Info] No enemy, holding fire.");
@@ -359,45 +406,45 @@ void GameScene::tryPlantAt(int row, int col) {
                 });
         }
         else if (plantData.type == "producer") {
-            // --- Éú²úÕßÂß¼­ (²ú³öÑô¹â) ---
+            // --- ç”Ÿäº§ç±»é€»è¾‘ï¼ˆç”Ÿäº§é˜³å…‰ï¼‰ ---
             plant->setOnShootCallback([this](Vec2 pos, int amount) {
-                // ÕâÀïµÄ amount ²ÎÊıÃ»ÓÃ£¬»òÕß¿ÉÒÔ´ú±í²ú³öµÄÑô¹âÖµ
+                // è¿™é‡Œçš„ amount æš‚æ—¶æ²¡ç”¨ï¼Œæˆ–è€…å¯ä»¥ç”¨æ¥ç”Ÿæˆä¸åŒä»·å€¼çš„é˜³å…‰
 
-                // ´´½¨Ñô¹âÊµÌå (ĞèÒª #include "../Entities/Sun.h")
+                // åˆ›å»ºé˜³å…‰å®ä½“ï¼ˆéœ€è¦ #include "../Entities/Sun.h")
                 auto sun = Sun::create();
 
-                // Éè¶¨ÌøÔ¾Ä¿±ê£º´ÓÖ²ÎïÎ»ÖÃÌøµ½ÉÔÎ¢ÅÔ±ßÒ»µãµÄÎ»ÖÃ
+                // è®¾å®šè·³è·ƒç›®æ ‡ï¼šæ¤ç‰©ä½ç½®å³ä¸‹æ–¹ä¸€ç‚¹
                 Vec2 targetPos = pos + Vec2(30, -30);
                 sun->jumpFromPlant(pos, targetPos);
 
-                // Éè¶¨ÊÕ¼¯»Øµ÷£ºµãÖĞÑô¹â¼ÓÇ®
+                // è®¾å®šæ”¶é›†å›è°ƒï¼šå¢åŠ é‡‘é’±
                 sun->setOnCollectedCallback([this](int value) {
                     this->_currentSun += value;
-                    // Èç¹ûĞèÒªÔÚÊÕ¼¯Ë²¼äË¢ĞÂUI£¬¿ÉÒÔÔÚÕâÀï×ö£¬»òÕßµÈÏÂÒ»Ö¡ update
+                    // å¦‚æœéœ€è¦ç«‹å³åˆ·æ–°UIï¼Œå¯ä»¥åœ¨è¿™é‡Œæ‰‹åŠ¨åˆ·æ–°ï¼Œä½†ä¸€èˆ¬ç­‰ä¸‹ä¸€å¸§ update
                     });
 
-                // Ñô¹â²ã¼¶Éè¸ßÒ»µã (500)£¬±£Ö¤¸Ç×¡Ö²Îï
+                // åŠ ä¸€ä¸ªé«˜å±‚çº§ï¼ˆ500ï¼‰ï¼Œç¡®ä¿ç›–ä½æ¤ç‰©
                 this->addChild(sun, 500);
 
                 CCLOG("[Info] Sunflower produced a sun!");
                 });
         }
-        
 
-        // ÉèÖÃÎ»ÖÃ
+
+        // è®¾ç½®ä½ç½®
         auto pixelPos = gridToPixel(row, col);
         plant->setPosition(pixelPos);
         plant->setRow(row);
 
-        // Ìí¼Óµ½³¡¾° (¸ù¾İ Row ÉèÖÃ ZOrder£¬·ÀÖ¹ÕÚµ²¹ØÏµ´íÎó)
+        // æ·»åŠ åˆ°åœºæ™¯ï¼ˆæ ¹æ® Row è®¾ç½® ZOrderï¼Œé˜²æ­¢å›¾å±‚é”™ä¹±ï¼‰
         this->addChild(plant, row * 10 + 1);
 
-        // 5. ¸üĞÂÓÎÏ·×´Ì¬
-        _plants.pushBack(plant);         // ¼ÓÈëÈİÆ÷
-        _plantMap[row][col] = plant;     // ±ê¼ÇÍø¸ñÕ¼ÓÃ
-        _currentSun -= plantData.cost;   // ¿Û³ıÑô¹â
+        // 5. æ›´æ–°æ¸¸æˆçŠ¶æ€
+        _plants.pushBack(plant);         // åŠ å…¥åˆ—è¡¨
+        _plantMap[row][col] = plant;     // æ ‡è®°å ç”¨
+        _currentSun -= plantData.cost;   // æ‰£é™¤è´¹ç”¨
 
-        // 6. ¸üĞÂ UI
+        // 6. æ›´æ–° UI
         if (_sunLabel) {
             _sunLabel->setString("Sun: " + std::to_string(_currentSun));
         }
@@ -409,7 +456,7 @@ void GameScene::tryPlantAt(int row, int col) {
             card->updateSunCheck(_currentSun);
         }
 
-        // ÖÖÖ²³É¹¦ºó²¥·ÅÒôĞ§
+        // ç§æ¤æˆåŠŸåæ’­æ”¾éŸ³æ•ˆ
         AudioManager::getInstance().playEffect(AudioPath::PLANT_SOUND);
 
     }
@@ -419,8 +466,8 @@ void GameScene::tryPlantAt(int row, int col) {
 }
 
 /**
-* @param row ĞĞºÅ (0 ¿ªÊ¼)£¬´ÓÏÂµ½ÉÏÔö´ó£¬×îÏÂÃæÎª 0
-* @param col ÁĞºÅ (0 ¿ªÊ¼)£¬´Ó×óµ½ÓÒÔö´ó£¬×î×ó±ßÎª 0
+* @param row è¡Œå·ï¼ˆ0 å¼€å§‹ï¼‰ï¼Œä»ä¸Šåˆ°ä¸‹ï¼Œæœ€ä¸Šè¡Œä¸º 0
+* @param col åˆ—å·ï¼ˆ0 å¼€å§‹ï¼‰ï¼Œä»å·¦åˆ°å³ï¼Œæœ€å·¦åˆ—ä¸º 0
 */
 cocos2d::Vec2 GameScene::gridToPixel(int row, int col) {
     float x = _actualGridStartX + col * _actualCellWidth + _actualCellWidth / 2;
@@ -441,9 +488,9 @@ std::pair<int, int> GameScene::pixelToGrid(cocos2d::Vec2 pos) {
 
 void GameScene::drawDebugGrid() {
     auto drawNode = DrawNode::create();
-    this->addChild(drawNode, 10); // Z-Order Éè¸ßÒ»µã£¬»­ÔÚ×îÉÏ²ã
+    this->addChild(drawNode, 10); // Z-Order è®¾é«˜ä¸€ç‚¹ï¼Œæ”¾åœ¨æœ€ä¸Šå±‚
 
-    // »­ºáÏß
+    // ç”»æ¨ªçº¿
     for (int i = 0; i <= GRID_ROWS; i++) {
         float y = _actualGridStartY + i * _actualCellHeight;
         float xStart = _actualGridStartX;
@@ -451,72 +498,129 @@ void GameScene::drawDebugGrid() {
         drawNode->drawLine(Vec2(xStart, y), Vec2(xEnd, y), Color4F::WHITE);
     }
 
-    // »­ÊúÏß
+    // ç”»ç«–çº¿
     for (int i = 0; i <= GRID_COLS; i++) {
         float x = _actualGridStartX + i * _actualCellWidth;
         float yStart = _actualGridStartY;
         float yEnd = _actualGridStartY + GRID_ROWS * _actualCellHeight;
         drawNode->drawLine(Vec2(x, yStart), Vec2(x, yEnd), Color4F::WHITE);
     }
-    
+
     CCLOG("[Info] Debug grid drawn with dynamic parameters");
 }
 
-// 2. ÊµÏÖ createBullet
-void GameScene::createBullet(Vec2 startPos, int damage) {
+// 2. å®ç° createBullet
+void GameScene::createBullet(Vec2 startPos, int damage, BulletType type, const std::string& texturePath) {
     BulletData bData;
     bData.damage = damage;
     bData.speed = 400.0f;
-    bData.texturePath = "bullets/pea.png"; // È·±£ÄãÓĞÕâ¸öÍ¼£¬»òÕß´úÂëÀï»á»­ÂÌµã
+    bData.type = type;
+
+    // Set texture path based on bullet type
+    if (!texturePath.empty()) {
+        bData.texturePath = texturePath;
+    }
+    else if (type == BulletType::ICE) {
+        bData.texturePath = "bullets/PeaIce/PeaIce_0.png";
+    }
+    else {
+        bData.texturePath = "bullets/pea.png";
+    }
+
+    // Set slow effect for ice bullets
+    if (type == BulletType::ICE) {
+        bData.slowEffect = 0.5f; // 50% speed
+    }
+    else {
+        bData.slowEffect = 1.0f; // No slow effect
+    } // ç¡®ä¿å†°å¼¹æœ‰æ­£ç¡®çš„è´´å›¾å’Œå‡é€Ÿæ•ˆæœ
 
     auto bullet = Bullet::create(bData);
     bullet->setPosition(startPos);
-    // ×Óµ¯µÄĞĞºÅĞèÒª·´ËãÒ»ÏÂ£¬»òÕßÖ±½Ó²»´æĞĞºÅµ¥´¿¿¿Åö×²
-    // ÕâÀï¼òµ¥Æğ¼û£¬ÎÒÃÇ¼ÙÉè×Óµ¯ÊÇ¾ØĞÎÅö×²£¬²»ĞèÒªÑÏ¸ñµÄ row ÊôĞÔ£¬
-    // µ«ÎªÁËÓÅ»¯£¬Èç¹û¸ø Bullet ¼Ó row ÊôĞÔ»á¸ü¿ì¡£
-    // ÔİÊ±ÏÈÖ»ÉèÖÃ ZOrder
+    // å­å¼¹çš„è¡Œå·æš‚æ—¶ä¸éœ€è¦è®¾ç½®ï¼Œå› ä¸ºæˆ‘ä»¬ä¸æ˜¯ç²¾ç¡®æŒ‰è¡Œç¢°æ’
+    // åé¢æˆ‘ä»¬å¯ä»¥ä¸ºå­å¼¹å¢åŠ  row å±æ€§æ¥åšæ›´ç²¾ç¡®çš„ç¢°æ’
+    // ä¸´æ—¶æ–¹æ¡ˆï¼šå­å¼¹æ˜¯æŒ‰å…¨å±€ç¢°æ’çš„ï¼Œä¸ä¸¥æ ¼ä¾èµ– row å±æ€§
+    // ä½†å› ä¸ºä¼˜åŒ–éœ€è¦ï¼Œæˆ‘ä»¬å¯ä»¥åœ¨ Bullet ç±»é‡Œå¢åŠ  row å±æ€§
     this->addChild(bullet, 100);
     _bullets.pushBack(bullet);
 
-    // ²¥·ÅÉä»÷ÒôĞ§
+    // æ’­æ”¾å°„å‡»éŸ³æ•ˆ
     AudioManager::getInstance().playEffect(AudioPath::SHOOT_SOUND);
 }
 
-// ÊµÏÖºËĞÄÕ½¶·Âß¼­
+// å®ç°æˆ˜æ–—é€»è¾‘
+// Create mushroom bullet with animation
+void GameScene::createMushroomBullet(Vec2 startPos, int damage) {
+    BulletData bData;
+    bData.damage = damage;
+    bData.speed = 400.0f;
+    bData.type = BulletType::NORMAL;
+    bData.slowEffect = 1.0f; // No slow effect
+
+    // Set up animation config for mushroom bullet
+    bData.hasAnimation = true;
+    bData.animationConfig.frameFormat = "bullets/BulletMushRoom/%d.png";
+    bData.animationConfig.frameCount = 5; // 1.png to 5.png
+    bData.animationConfig.frameDelay = 0.1f;
+    bData.animationConfig.loopCount = -1; // Infinite loop
+    bData.animationConfig.defaultTexture = "bullets/BulletMushRoom/1.png";
+
+    // Fallback texture path
+    bData.texturePath = "bullets/BulletMushRoom/1.png";
+
+    auto bullet = Bullet::create(bData);
+    bullet->setPosition(startPos);
+    this->addChild(bullet, 100);
+    _bullets.pushBack(bullet);
+
+    // Play shoot sound effect
+    AudioManager::getInstance().playEffect(AudioPath::SHOOT_SOUND);
+}
+
 void GameScene::updateCombatLogic() {
-    // A. ×Óµ¯ vs ½©Ê¬
+    // A. å­å¼¹ vs åƒµå°¸
     for (auto bullet : _bullets) {
         if (!bullet->isActive()) continue;
 
-        // ÓÅ»¯£º´´½¨Ò»¸öÉÔĞ¡µÄÅö×²¿ò£¬±ÈÍ¼Æ¬Ô­Ê¼ rect Ğ¡Ò»µã£¬ÌåÑé¸üºÃ
+        // ä¼˜åŒ–ï¼šä½¿ç”¨ä¸€ä¸ªç¨å°çš„ç¢°æ’æ¡†ï¼Œæ¯”å›¾ç‰‡åŸå§‹ rect å°ä¸€ç‚¹ï¼Œé¿å…è¯¯åˆ¤
         Rect bRect = bullet->getBoundingBox();
 
         for (auto zombie : _zombies) {
             if (zombie->isDead()) continue;
 
-            // ¼òµ¥ÓÅ»¯£ºÈç¹û×Óµ¯ºÍ½©Ê¬YÖá²îÌ«¶à£¨¿çĞĞ£©£¬Ö±½ÓÌø¹ı
-            // ¼ÙÉèĞĞ¸ß 100£¬ÔÊĞíÎó²î 30
+            // ç®€å•ä¼˜åŒ–ï¼šå¦‚æœå­å¼¹å’Œåƒµå°¸Yè½´ç›¸å·®å¤ªå¤šï¼ˆè¡Œä¸åŒï¼‰ï¼Œç›´æ¥è·³è¿‡
+            // è¿™é‡Œçš„ 100 æ˜¯é¢„ä¼°è¡Œé«˜ï¼Œå®é™…å¯èƒ½æ˜¯ 30
             if (std::abs(bullet->getPositionY() - zombie->getPositionY()) > 30) continue;
 
             if (bRect.intersectsRect(zombie->getBoundingBox())) {
-                // »÷ÖĞ£¡
+                // å‡»ä¸­ï¼
                 zombie->takeDamage(bullet->getDamage());
-                bullet->deactivate(); // ×Óµ¯ÏûÊ§
+
+                // Apply slow effect if it's an ice bullet
+                if (bullet->getType() == BulletType::ICE) {
+                    CCLOG("[Info] Ice bullet hit zombie! Applying slow effect: %.1f%%", bullet->getSlowEffect() * 100.0f);
+                    zombie->applySlowEffect(bullet->getSlowEffect());
+                }
+                else {
+                    CCLOG("[Info] Normal bullet hit zombie (no slow effect)");
+                }
+
+                bullet->deactivate(); // å­å¼¹æ¶ˆå¤±
                 bullet->removeFromParent();
 
                 CCLOG("[Info] Bullet hit Zombie! Zombie HP: %d", zombie->getHp());
-                
-                // ÔÚ½©Ê¬ËÀÍöÊ±²¥·ÅÒôĞ§
+
+                // åœ¨åƒµå°¸æ­»äº¡æ—¶æ’­æ”¾éŸ³æ•ˆ
                 if (zombie->isDead()) {
                     AudioManager::getInstance().playEffect(AudioPath::ZOMBIE_DIE_SOUND);
                 }
-                
-                break; // Ò»¿Å×Óµ¯Ö»´òÒ»¸ö
+
+                break; // ä¸€é¢—å­å¼¹åªæ‰“ä¸€ä¸ª
             }
         }
     }
 
-    // B. ½©Ê¬³ÔÖ²Îï
+    // B. åƒµå°¸åƒæ¤ç‰©
     for (auto zombie : _zombies) {
         if (zombie->isDead()) continue;
 
@@ -525,25 +629,25 @@ void GameScene::updateCombatLogic() {
         int col = (int)((zombieMouthX - GRID_START_X) / CELL_WIDTH);
 
         Plant* targetPlant = nullptr;
-        // ¼ì²éµ±Ç°¸ñÊÇ·ñÓĞĞ§ÇÒÓĞÖ²Îï
+        // æ£€æŸ¥å½“å‰æ ¼æ˜¯å¦æœ‰æœ‰æ•ˆçš„æ¤ç‰©
         if (col >= 0 && col < GRID_COLS && row >= 0 && row < GRID_ROWS) {
             targetPlant = _plantMap[row][col];
         }
 
         if (targetPlant && !targetPlant->isDead()) {
-            // ÓĞÖ²Îï -> ³Ô
+            // æœ‰æ¤ç‰© -> åƒ
             if (zombie->getState() != UnitState::ATTACK) {
                 zombie->setState(UnitState::ATTACK);
                 CCLOG("[Info] Zombie starts eating plant at [%d, %d]", row, col);
             }
-            
-            // Ñ¯ÎÊ½©Ê¬ÊÇ·ñ¿ÉÒÔ¹¥»÷
+
+            // è¯¢é—®åƒµå°¸æ˜¯å¦å¯ä»¥æ”»å‡»
             if (zombie->canAttack()) {
-                // Ôì³ÉÕæÊµµÄÊıÖµÉËº¦
+                // è¿™é‡Œåº”è¯¥ä½¿ç”¨åƒµå°¸çš„å®é™…ä¼¤å®³å€¼
                 int dmg = zombie->getDamage();
                 targetPlant->takeDamage(dmg);
 
-                // ÖØÖÃ½©Ê¬µÄ¹¥»÷ CD
+                // é‡ç½®åƒµå°¸çš„æ”»å‡» CD
                 zombie->resetAttackTimer();
 
                 CCLOG("[Info] Chomp! Plant HP: %d (Damage: %d)", targetPlant->getHp(), dmg);
@@ -551,12 +655,12 @@ void GameScene::updateCombatLogic() {
 
             if (targetPlant->isDead()) {
                 CCLOG("[Info] Plant eaten by zombie!");
-                _plantMap[row][col] = nullptr; // Ö²ÎïËÀÁË£¬Çå¿Õ¸ñ×Ó
-                zombie->setState(UnitState::WALK); // »Ö¸´ĞĞ×ß
+                _plantMap[row][col] = nullptr; // æ¤ç‰©æ­»äº†ï¼Œæ¸…ç©ºæ ¼å­
+                zombie->setState(UnitState::WALK); // æ¢å¤è¡Œèµ°
             }
         }
         else {
-            // Ã»Ö²Îï -> ×ß
+            // æ²¡æ¤ç‰© -> èµ°
             if (zombie->getState() == UnitState::ATTACK) {
                 zombie->setState(UnitState::WALK);
             }
@@ -564,11 +668,11 @@ void GameScene::updateCombatLogic() {
     }
 }
 
-// Êó±êÒÆ¶¯»Øµ÷
+// é¼ æ ‡ç§»åŠ¨å›è°ƒ
 void GameScene::onMouseMove(Event* event) {
     EventMouse* e = (EventMouse*)event;
-    // Cocos µÄÊó±ê×ø±êÔ­µãÔÚ×óÏÂ½Ç£¬µ« Y ÖáÓĞÊ±ĞèÒª×ª»»£¬ÊÓ°æ±¾¶ø¶¨
-    // v4.0 Í¨³£ÊÇ±ê×¼µÄ GL ×ø±ê
+    // Cocos åæ ‡åŸç‚¹åœ¨å·¦ä¸‹è§’ï¼Œä½† Y è½´å¯èƒ½éœ€è¦è½¬æ¢ï¼Œæ ¹æ®ç‰ˆæœ¬
+    // v4.0 é€šå¸¸æ˜¯æ ‡å‡†çš„ GL åæ ‡ç³»
     Vec2 mousePos = Vec2(e->getCursorX(), e->getCursorY());
 
     if (_selectedPlantId != -1) {
@@ -576,32 +680,32 @@ void GameScene::onMouseMove(Event* event) {
     }
 }
 
-// ¸üĞÂÓÄÁéÎ»ÖÃ (Îü¸½Íø¸ñ)
+// æ›´æ–°å¹½çµä½ç½®ï¼ˆè·Ÿéšé¼ æ ‡ï¼‰
 void GameScene::updateGhostPosition(Vec2 mousePos) {
     auto grid = pixelToGrid(mousePos);
     int row = grid.first;
     int col = grid.second;
 
     if (row != -1) {
-        // ÔÚÍø¸ñÄÚ£¬Îü¸½µ½¸ñ×ÓÖĞĞÄ
+        // ç½‘æ ¼å†…ï¼Œå°±å¸é™„åˆ°ç½‘æ ¼ä¸­å¿ƒ
         Vec2 snapPos = gridToPixel(row, col);
         _ghostSprite->setPosition(snapPos);
         _ghostSprite->setVisible(true);
 
-        // ÑÕÉ«ÌáÊ¾£ºÈç¹û¸ñ×Ó±»Õ¼ÓÃ»òÑô¹â²»×ã£¬±äºì
+        // é¢œè‰²æç¤ºï¼šå¯ä»¥ç§æ¤å°±ç™½è‰²ï¼Œè¢«å ç”¨å°±çº¢è‰²
         bool canPlant = (_plantMap[row][col] == nullptr);
         _ghostSprite->setColor(canPlant ? Color3B::WHITE : Color3B::RED);
     }
     else {
-        // ÔÚÍø¸ñÍâ£¬¸úËæÊó±ê (»òÕßÒş²Ø)
+        // ç½‘æ ¼å¤–ï¼Œå°±è·Ÿéšé¼ æ ‡ï¼ˆæˆ–éšè—ï¼‰
         _ghostSprite->setPosition(mousePos);
-        // _ghostSprite->setVisible(false); // ¿ÉÑ¡£º³ö½çÒş²Ø
+        // _ghostSprite->setVisible(false); // å¯é€‰ï¼šéšè—
     }
 }
 
 void GameScene::createPauseButton() {
     auto visibleSize = Director::getInstance()->getVisibleSize();
-    
+
     auto pauseButton = ui::Button::create();
     pauseButton->setTitleText("||");
     pauseButton->setTitleFontSize(32);
@@ -612,14 +716,15 @@ void GameScene::createPauseButton() {
         if (type == ui::Widget::TouchEventType::ENDED) {
             this->onPauseButtonClicked(sender);
         }
-    });
+        });
     this->addChild(pauseButton, 2000);
 }
 
 void GameScene::onPauseButtonClicked(cocos2d::Ref* sender) {
     if (_gameState == GameState::PLAYING) {
         pauseGame();
-    } else if (_gameState == GameState::PAUSED) {
+    }
+    else if (_gameState == GameState::PAUSED) {
         resumeGame();
     }
 }
@@ -628,13 +733,13 @@ void GameScene::pauseGame() {
     _gameState = GameState::PAUSED;
     Director::getInstance()->pause();
     AudioManager::getInstance().pauseBackgroundMusic();
-    
-    // ÏÔÊ¾ÔİÍ£ÌáÊ¾
+
+    // æ˜¾ç¤ºæš‚åœæç¤º
     auto pauseLabel = Label::createWithTTF("PAUSED", "fonts/Marker Felt.ttf", 64);
-    pauseLabel->setPosition(Director::getInstance()->getVisibleSize().width/2, 
-                          Director::getInstance()->getVisibleSize().height/2);
+    pauseLabel->setPosition(Director::getInstance()->getVisibleSize().width / 2,
+        Director::getInstance()->getVisibleSize().height / 2);
     pauseLabel->setColor(Color3B::YELLOW);
-    pauseLabel->setTag(999); // ÓÃÓÚ²éÕÒºÍÉ¾³ı
+    pauseLabel->setTag(999); // æ–¹ä¾¿æŸ¥æ‰¾å’Œåˆ é™¤
     this->addChild(pauseLabel, 3000);
 }
 
@@ -642,22 +747,22 @@ void GameScene::resumeGame() {
     _gameState = GameState::PLAYING;
     Director::getInstance()->resume();
     AudioManager::getInstance().resumeBackgroundMusic();
-    
-    // ÒÆ³ıÔİÍ£ÌáÊ¾
+
+    // ç§»é™¤æš‚åœæç¤º
     this->removeChildByTag(999);
 }
 
 void GameScene::checkVictoryCondition() {
-    // ¼ì²éÊÇ·ñËùÓĞ²¨´ÎÍê³ÉÇÒ³¡ÉÏÎŞ½©Ê¬
+    // æ£€æŸ¥æ˜¯å¦æ‰€æœ‰æ³¢æ¬¡å·²å®Œæˆä¸”åœºä¸Šæ— åƒµå°¸
     if (LevelManager::getInstance().isAllWavesCompleted() && _zombies.empty()) {
         endGame(true);
     }
 }
 
 void GameScene::checkGameOverCondition() {
-    // ¼ì²éÊÇ·ñÓĞ½©Ê¬µ½´ï·¿Îİ£¨×î×ó±ß£©
+    // æ£€æŸ¥æ˜¯å¦æœ‰åƒµå°¸åˆ°è¾¾æˆ¿å­ï¼ˆæœ€å·¦ç«¯ï¼‰
     for (auto zombie : _zombies) {
-        if (zombie->getPositionX() < GRID_START_X - 100) { // µ½´ï·¿Îİ
+        if (zombie->getPositionX() < GRID_START_X - 100) { // åˆ°è¾¾æˆ¿å­
             endGame(false);
             return;
         }
@@ -665,42 +770,43 @@ void GameScene::checkGameOverCondition() {
 }
 
 void GameScene::endGame(bool isVictory) {
-    if (_gameState != GameState::PLAYING) return; // ·ÀÖ¹ÖØ¸´µ÷ÓÃ
-    
+    if (_gameState != GameState::PLAYING) return; // é˜²æ­¢é‡å¤è§¦å‘
+
     _gameState = isVictory ? GameState::VICTORY : GameState::GAME_OVER;
-    
-    // ÑÓ³ÙÌø×ª£¬ÈÃÍæ¼Ò¿´µ½×îÖÕ½á¹û
+
+    // å»¶è¿Ÿåœºæ™¯è½¬æ¢ï¼Œè®©ç©å®¶çœ‹åˆ°æœ€ç»ˆç»“æœ
     this->scheduleOnce([this, isVictory](float dt) {
         if (isVictory) {
             SceneManager::getInstance().gotoVictoryScene();
-        } else {
+        }
+        else {
             SceneManager::getInstance().gotoGameOverScene();
         }
-    }, 2.0f, "end_game_delay");
-    
+        }, 2.0f, "end_game_delay");
+
     CCLOG("[Info] Game ended: %s", isVictory ? "Victory" : "Game Over");
 }
 
 void GameScene::calculateGridParameters(cocos2d::Sprite* background) {
     if (!background) return;
-    
+
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Size bgOriginalSize = background->getContentSize();
     float bgScale = background->getScale();
-    
-    // ¼ÆËã±³¾°µÄÊµ¼ÊÏÔÊ¾³ß´ç
+
+    // è®¡ç®—èƒŒæ™¯å®é™…æ˜¾ç¤ºå°ºå¯¸
     Size bgActualSize = Size(bgOriginalSize.width * bgScale, bgOriginalSize.height * bgScale);
-    
-    // ¸ù¾İ±³¾°Êµ¼Ê³ß´çµ÷ÕûÍø¸ñ²ÎÊı
-    // ¼ÙÉèÔ­Ê¼±³¾°Éè¼Æ·Ö±æÂÊÎª 1024x768£¬Íø¸ñÇøÓòÕ¼±³¾°µÄÌØ¶¨±ÈÀı
-    float bgWidthRatio = bgActualSize.width / 1024.0f;   // ¸ù¾İÄãµÄ±³¾°Í¼µ÷Õû
-    float bgHeightRatio = bgActualSize.height / 768.0f;  // ¸ù¾İÄãµÄ±³¾°Í¼µ÷Õû
-    
+
+    // æ ¹æ®èƒŒæ™¯å®é™…å°ºå¯¸è°ƒæ•´ç½‘æ ¼
+    // å‡è®¾åŸå§‹è®¾è®¡åˆ†è¾¨ç‡ä¸º 1024x768ï¼Œç½‘æ ¼å æ®ç‰¹å®šåŒºåŸŸ
+    float bgWidthRatio = bgActualSize.width / 1024.0f;   // å®½åº¦ç¼©æ”¾æ¯”ä¾‹
+    float bgHeightRatio = bgActualSize.height / 768.0f;  // é«˜åº¦ç¼©æ”¾æ¯”ä¾‹
+
     _actualGridStartX = GRID_START_X * bgWidthRatio + (visibleSize.width - bgActualSize.width) / 2;
     _actualGridStartY = GRID_START_Y * bgHeightRatio + (visibleSize.height - bgActualSize.height) / 2;
     _actualCellWidth = CELL_WIDTH * bgWidthRatio;
     _actualCellHeight = CELL_HEIGHT * bgHeightRatio;
-    
-    CCLOG("[Info] Grid adjusted - Start: (%.1f, %.1f), Cell: (%.1f, %.1f)", 
-          _actualGridStartX, _actualGridStartY, _actualCellWidth, _actualCellHeight);
+
+    CCLOG("[Info] Grid adjusted - Start: (%.1f, %.1f), Cell: (%.1f, %.1f)",
+        _actualGridStartX, _actualGridStartY, _actualCellWidth, _actualCellHeight);
 }

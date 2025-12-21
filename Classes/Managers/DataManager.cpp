@@ -108,6 +108,11 @@ void DataManager::loadPlants(const std::string& filename) {
         if (val.HasMember("defaultAnimation")) {
             data.defaultAnimation = val["defaultAnimation"].GetString();
         }
+        
+        // 加载卡片图片路径（可选）
+        if (val.HasMember("cardImage")) {
+            data.cardImage = val["cardImage"].GetString();
+        }
 
         // 插入到 Map 中
         _plantDataMap[id] = data;
@@ -157,7 +162,44 @@ void DataManager::loadZombies(const std::string& filename) {
         data.attackInterval = val.HasMember("attackInterval") ? val["attackInterval"].GetFloat() : 1.0f;
         data.texturePath = val.HasMember("texture") ? val["texture"].GetString() : "";
 
+        // 加载动画配置
+        if (val.HasMember("animations") && val["animations"].IsObject()) {
+            const auto& animsObj = val["animations"];
+            for (auto animIt = animsObj.MemberBegin(); animIt != animsObj.MemberEnd(); ++animIt) {
+                std::string animName = animIt->name.GetString();
+                const auto& animVal = animIt->value;
+                
+                AnimationConfig animConfig;
+                animConfig.frameFormat = animVal["frameFormat"].GetString();
+                animConfig.frameCount = animVal["frameCount"].GetInt();
+                animConfig.frameDelay = animVal.HasMember("frameDelay") ? 
+                    animVal["frameDelay"].GetFloat() : 0.1f;
+                animConfig.loopCount = animVal.HasMember("loopCount") ? 
+                    animVal["loopCount"].GetInt() : -1;
+                
+                if (animVal.HasMember("defaultTexture")) {
+                    animConfig.defaultTexture = animVal["defaultTexture"].GetString();
+                } else {
+                    // 如果没有指定，使用第一帧
+                    char defaultPath[256];
+                    snprintf(defaultPath, sizeof(defaultPath), animConfig.frameFormat.c_str(), 1);
+                    animConfig.defaultTexture = defaultPath;
+                }
+                
+                if (animVal.HasMember("onComplete")) {
+                    animConfig.onComplete = animVal["onComplete"].GetString();
+                }
+                
+                data.animations[animName] = animConfig;
+            }
+        }
+        
+        // 加载默认动画名称
+        if (val.HasMember("defaultAnimation")) {
+            data.defaultAnimation = val["defaultAnimation"].GetString();
+        }
+
         _zombieDataMap[id] = data;
-        CCLOG("[Info] Loaded Zombie ID: %d (%s)", id, data.name.c_str());
+        CCLOG("[Info] Loaded Zombie ID: %d (%s) with %zu animations", id, data.name.c_str(), data.animations.size());
     }
 }

@@ -1,4 +1,4 @@
-// ³¡¾°¹ÜÀíÆ÷ - Í³Ò»¹ÜÀí³¡¾°ÇĞ»»
+// åœºæ™¯ç®¡ç†å™¨ - ç»Ÿä¸€ç®¡ç†åœºæ™¯çš„åˆ‡æ¢
 // 2025.12.15 by BillyDu
 #ifndef __SCENE_MANAGER_H__
 #define __SCENE_MANAGER_H__
@@ -10,17 +10,23 @@ class SceneManager {
 public:
     static SceneManager& getInstance();
     
-    // ³¡¾°ÇĞ»»·½·¨
+    // åœºæ™¯åˆ‡æ¢å‡½æ•°
     void gotoStartScene();
+    void gotoMapSelectScene();
+    void gotoPlantSelectScene();
     void gotoGameScene();
     void gotoVictoryScene();
     void gotoGameOverScene();
     
-    // ÓÎÏ·×´Ì¬¹ÜÀí
+    // æ¤ç‰©é€‰æ‹©æ•°æ®ä¼ é€’
+    void setSelectedPlants(const std::vector<int>& plantIds) { _selectedPlantIds = plantIds; }
+    const std::vector<int>& getSelectedPlants() const { return _selectedPlantIds; }
+    
+    // æ¸¸æˆçŠ¶æ€ç®¡ç†
     void setGameState(GameState state) { _currentState = state; }
     GameState getGameState() const { return _currentState; }
     
-    // ÖØĞÂ¿ªÊ¼ÓÎÏ·
+    // é‡æ–°å¼€å§‹æ¸¸æˆ
     void restartGame();
     
 private:
@@ -32,7 +38,10 @@ private:
     
     GameState _currentState = GameState::MENU;
     
-    // ¸¨Öú·½·¨£º°²È«µÄ³¡¾°ÇĞ»»
+    // æ¤ç‰©é€‰æ‹©æ•°æ®
+    std::vector<int> _selectedPlantIds;
+    
+    // ç»Ÿä¸€çš„åœºæ™¯åˆ‡æ¢ï¼Œå¸¦æœ‰è¿‡æ¸¡æ•ˆæœ
     void replaceSceneWithTransition(cocos2d::Scene* scene);
 };
 
