@@ -10,28 +10,33 @@
   "waves": [
     {
       "time": 2.0,
-      "zombieId": 2001,
+      "zombieId": 2002,
       "row": 2
     },
     {
       "time": 5.0,
-      "zombieId": 2001,
+      "zombieId": 2002,
       "row": 0
     },
     {
       "time": 8.0,
-      "zombieId": 2001,
+      "zombieId": 2002,
       "row": 4
     },
     {
       "time": 10.0,
-      "zombieId": 2001,
+      "zombieId": 2002,
       "row": 1
     },
     {
       "time": 10.0,
       "zombieId": 2001,
       "row": 3
+    },
+    {
+      "time": 15.0,
+      "zombieId": 2004,
+      "row": 2
     }
   ]
 }

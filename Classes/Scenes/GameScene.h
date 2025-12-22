@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <utility>
+#include <set>
 
 #include "cocos2d.h"
 #include "../Entities/Zombie.h"
@@ -100,6 +101,9 @@ private:
 
     // 计算网格实际参数的方法
     void calculateGridParameters(cocos2d::Sprite* background);
+    
+    // Boss2 ice tracking (grid positions where ice has been placed)
+    std::set<std::pair<int, int>> _icePositions;  // (row, col) pairs
 };
 
 #endif // __GAME_SCENE_H__

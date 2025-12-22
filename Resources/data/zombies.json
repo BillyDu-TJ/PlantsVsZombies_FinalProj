@@ -5,34 +5,196 @@
     "speed": 10,
     "damage": 20,
     "attackInterval": 1.5,
-    "texture": "zombies/zm/1.png",
+    "texture": "zombies/normalzombie/normalzombie_walk/1.png",
     "animations": {
       "walk": {
-        "frameFormat": "zombies/zm/%d.png",
+        "frameFormat": "zombies/normalzombie/normalzombie_walk/%d.png",
         "frameCount": 22,
         "frameDelay": 0.1,
         "loopCount": -1
       },
       "eat": {
-        "frameFormat": "zombies/zm_eat/%d.png",
+        "frameFormat": "zombies/normalzombie/normalzombie_eat/%d.png",
         "frameCount": 21,
         "frameDelay": 0.1,
         "loopCount": -1
       },
       "dead": {
-        "frameFormat": "zombies/zm_dead/%d.png",
+        "frameFormat": "zombies/normalzombie/normalzombie_dead/%d.png",
         "frameCount": 20,
         "frameDelay": 0.12,
         "loopCount": 1,
         "onComplete": "remove"
       },
       "stand": {
-        "frameFormat": "zombies/zm_stand/%d.png",
+        "frameFormat": "zombies/normalzombie/normalzombie_stand/%d.png",
         "frameCount": 11,
         "frameDelay": 0.15,
         "loopCount": -1
       }
     },
     "defaultAnimation": "walk"
+  },
+  "2002": {
+    "name": "ConeheadZombie",
+    "hp": 640,
+    "speed": 10,
+    "damage": 20,
+    "attackInterval": 1.5,
+    "texture": "zombies/conehead/conehead_walk/1.png",
+    "animations": {
+      "walk": {
+        "frameFormat": "zombies/conehead/conehead_walk/%d.png",
+        "frameCount": 21,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "eat": {
+        "frameFormat": "zombies/conehead/conehead_eat/%d.png",
+        "frameCount": 11,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "dead": {
+        "frameFormat": "zombies/conehead/conehead_dead/%d.png",
+        "frameCount": 20,
+        "frameDelay": 0.12,
+        "loopCount": 1,
+        "onComplete": "remove"
+      },
+      "stand": {
+        "frameFormat": "zombies/conehead/conehead_stand/%d.png",
+        "frameCount": 8,
+        "frameDelay": 0.15,
+        "loopCount": -1
+      }
+    },
+    "defaultAnimation": "walk"
+  },
+  "2003": {
+    "name": "IronheadZombie",
+    "hp": 1370,
+    "speed": 10,
+    "damage": 20,
+    "attackInterval": 1.5,
+    "texture": "zombies/ironhead/ironhead_walk/1.png",
+    "animations": {
+      "walk": {
+        "frameFormat": "zombies/ironhead/ironhead_walk/%d.png",
+        "frameCount": 15,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "eat": {
+        "frameFormat": "zombies/ironhead/ironhead_eat/%d.png",
+        "frameCount": 11,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "dead": {
+        "frameFormat": "zombies/ironhead/ironhead_dead/%d.png",
+        "frameCount": 20,
+        "frameDelay": 0.12,
+        "loopCount": 1,
+        "onComplete": "remove"
+      },
+      "stand": {
+        "frameFormat": "zombies/ironhead/ironhead_stand/%d.png",
+        "frameCount": 1,
+        "frameDelay": 0.15,
+        "loopCount": -1
+      }
+    },
+    "defaultAnimation": "walk"
+  },
+  "2004": {
+    "name": "Boss1",
+    "hp": 5000,
+    "speed": 8,
+    "damage": 50,
+    "attackInterval": 1.0,
+    "texture": "zombies/boss1/boss1_move1/1.png",
+    "animations": {
+      "move1": {
+        "frameFormat": "zombies/boss1/boss1_move1/%d.png",
+        "frameCount": 11,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "move2": {
+        "frameFormat": "zombies/boss1/boss1_move2/%d.png",
+        "frameCount": 11,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "eat1": {
+        "frameFormat": "zombies/boss1/boss1_eat1/%d.png",
+        "frameCount": 10,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "eat2": {
+        "frameFormat": "zombies/boss1/boss1_eat2/%d.png",
+        "frameCount": 11,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "die": {
+        "frameFormat": "zombies/boss1/boss1_die/%d.png",
+        "frameCount": 7,
+        "frameDelay": 0.15,
+        "loopCount": 1,
+        "onComplete": "remove"
+      },
+      "stand1": {
+        "frameFormat": "zombies/boss1/boss1_stand1/%d.png",
+        "frameCount": 15,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      }
+    },
+    "defaultAnimation": "move1"
+  },
+  "2005": {
+    "name": "Boss2",
+    "hp": 6000,
+    "speed": 12,
+    "damage": 9999,
+    "attackInterval": 0.0,
+    "texture": "zombies/boss2/boss2_move1/1.png",
+    "animations": {
+      "move1": {
+        "frameFormat": "zombies/boss2/boss2_move1/%d.png",
+        "frameCount": 12,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "move2": {
+        "frameFormat": "zombies/boss2/boss2_move2/%d.png",
+        "frameCount": 11,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "move3": {
+        "frameFormat": "zombies/boss2/boss2_move3/%d.png",
+        "frameCount": 11,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "move4": {
+        "frameFormat": "zombies/boss2/boss2_move4/%d.png",
+        "frameCount": 29,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "die": {
+        "frameFormat": "zombies/boss2/boss2_die/%d.png",
+        "frameCount": 7,
+        "frameDelay": 0.15,
+        "loopCount": 1,
+        "onComplete": "remove"
+      }
+    },
+    "defaultAnimation": "move1"
   }
 }

@@ -620,11 +620,67 @@ void GameScene::updateCombatLogic() {
         }
     }
 
-    // B. 僵尸吃植物
+    // B. 僵尸吃植物 / Boss2碾压植物
     for (auto zombie : _zombies) {
         if (zombie->isDead()) continue;
 
         int row = zombie->getRow();
+        
+        // Boss2 (snow sled) crushes plants directly without stopping
+        if (zombie->isCrushingType()) {
+            // Check all grid cells that Boss2 is passing through
+            float zombieX = zombie->getPositionX();
+            float zombieLeft = zombieX - 50;  // Approximate left edge
+            float zombieRight = zombieX + 50;  // Approximate right edge
+            
+            // Check each column that Boss2 covers
+            for (int col = 0; col < GRID_COLS; col++) {
+                float cellLeft = GRID_START_X + col * CELL_WIDTH;
+                float cellRight = cellLeft + CELL_WIDTH;
+                
+                // If Boss2 overlaps with this cell
+                if (zombieRight > cellLeft && zombieLeft < cellRight) {
+                    Plant* plant = _plantMap[row][col];
+                    if (plant && !plant->isDead()) {
+                        // Crush the plant instantly (9999 damage)
+                        CCLOG("[Info] Boss2 crushed plant at [%d, %d]!", row, col);
+                        plant->takeDamage(9999);
+                        if (plant->isDead()) {
+                            _plantMap[row][col] = nullptr;
+                        }
+                    }
+                }
+            }
+            
+            // Place ice effect behind Boss2 (one ice per grid cell)
+            // Calculate which grid cell Boss2 is currently in
+            float currentX = zombie->getPositionX();
+            int currentCol = (int)((currentX - _actualGridStartX) / _actualCellWidth);
+            
+            if (currentCol >= 0 && currentCol < GRID_COLS) {
+                // Check if ice already exists at this grid position
+                std::pair<int, int> iceKey = std::make_pair(row, currentCol);
+                if (_icePositions.find(iceKey) == _icePositions.end()) {
+                    // Place ice at the center of this grid cell
+                    Vec2 icePos = gridToPixel(row, currentCol);
+                    icePos.x += _actualCellWidth / 2;
+                    
+                    auto iceSprite = Sprite::create("zombies/boss2/ice.png");
+                    if (iceSprite) {
+                        iceSprite->setPosition(icePos);
+                        iceSprite->setTag(9999);  // Tag to identify ice sprites
+                        iceSprite->setLocalZOrder(-1);  // Behind everything
+                        this->addChild(iceSprite);
+                        _icePositions.insert(iceKey);  // Mark this position as having ice
+                        CCLOG("[Info] Boss2 placed ice at grid [%d, %d]", row, currentCol);
+                    }
+                }
+            }
+            
+            continue;  // Skip normal attack logic for Boss2
+        }
+
+        // Normal zombie attack logic
         float zombieMouthX = zombie->getPositionX() - 30;
         int col = (int)((zombieMouthX - GRID_START_X) / CELL_WIDTH);
 

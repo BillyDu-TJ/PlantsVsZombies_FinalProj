@@ -33,11 +33,23 @@ public:
     void playAnimation(const std::string& animName);  // Play specified animation
     void playDefaultAnimation();  // Play default animation
 
+    // Check if this zombie is a crushing type (like Boss2 snow sled)
+    bool isCrushingType() const { return _data.name == "Boss2"; }
+    
+    // Get current phase for multi-phase bosses
+    int getCurrentPhase() const { return _currentPhase; }
+
 private:
     ZombieData _data;
 	float _attackTimer = 0.0f;
     std::string _currentAnimation;  // Current playing animation name
     float _speedMultiplier = 1.0f;  // Current speed multiplier (1.0 = normal, 0.5 = slowed)
+    bool _isPhase2 = false;  // Track if boss has entered phase 2 (30% HP threshold for Boss1)
+    int _currentPhase = 1;   // Current phase for multi-phase bosses (Boss2: 1-4)
+    float _lastIceX = -1.0f; // Last X position where ice was placed (for Boss2)
+    
+    // Check and update phase based on HP threshold
+    void checkPhaseTransition();
 };
 
 #endif // __ZOMBIE_H__

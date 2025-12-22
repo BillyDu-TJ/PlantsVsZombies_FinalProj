@@ -61,7 +61,7 @@
                         "frameFormat": {
                           "type": "string",
                           "pattern": ".*%d.*",
-                          "description": "帧文件路径格式，必须包含%d占位符，例如：zombies/zm/%d.png"
+                          "description": "帧文件路径格式，必须包含%d占位符，例如：zombies/normalzombie/normalzombie_walk/%d.png"
                         },
                         "frameCount": {
                           "type": "integer",

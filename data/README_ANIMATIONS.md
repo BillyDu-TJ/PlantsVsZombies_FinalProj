@@ -22,7 +22,7 @@
         "name": "NormalZombie",
         "animations": {
           "walk": {
-            "frameFormat": "zombies/zm/%d.png",
+            "frameFormat": "zombies/normalzombie/normalzombie_walk/%d.png",
             "frameCount": 22,
             "frameDelay": 0.1,
             "loopCount": -1
@@ -44,7 +44,7 @@
 | `name` | string | 是 | 动画名称（内部标识），如 "walk", "eat", "dead" |
 | `displayName` | string | 否 | 动画显示名称，用于UI显示 |
 | `type` | string | 是 | 动画类型：`loop`(循环)、`once`(播放一次)、`pingpong`(往返) |
-| `frameFormat` | string | 是 | 帧文件路径格式，必须包含`%d`占位符，如 `"zombies/zm/%d.png"` |
+| `frameFormat` | string | 是 | 帧文件路径格式，必须包含`%d`占位符，如 `"zombies/normalzombie/normalzombie_walk/%d.png"` |
 | `frameCount` | integer | 是 | 总帧数 |
 | `startFrame` | integer | 否 | 起始帧序号（默认1） |
 | `endFrame` | integer | 否 | 结束帧序号（默认等于frameCount） |
@@ -55,30 +55,30 @@
 
 ## 当前配置示例
 
-### 僵尸动画（zombies/zm/）
+### 僵尸动画（zombies/normalzombie/）
 
 已配置的僵尸动画包括：
 
 1. **walk（行走）**
-   - 路径：`zombies/zm/%d.png`
+   - 路径：`zombies/normalzombie/normalzombie_walk/%d.png`
    - 帧数：22帧（1.png 到 22.png）
    - 延迟：0.1秒/帧
    - 循环：无限循环
 
 2. **eat（吃植物）**
-   - 路径：`zombies/zm_eat/%d.png`
+   - 路径：`zombies/normalzombie/normalzombie_eat/%d.png`
    - 帧数：21帧
    - 延迟：0.1秒/帧
    - 循环：无限循环
 
 3. **dead（死亡）**
-   - 路径：`zombies/zm_dead/%d.png`
+   - 路径：`zombies/normalzombie/normalzombie_dead/%d.png`
    - 帧数：20帧
    - 延迟：0.12秒/帧
    - 循环：播放一次
 
 4. **stand（站立）**
-   - 路径：`zombies/zm_stand/%d.png`
+   - 路径：`zombies/normalzombie/normalzombie_stand/%d.png`
    - 帧数：11帧
    - 延迟：0.15秒/帧
    - 循环：无限循环
@@ -100,7 +100,7 @@ Sprite* zombie = Sprite::create(walkAnim.defaultTexture);
 // 4. 创建动画
 Animation* animation = createAnimationFromConfig(walkAnim);
 // animation包含：
-// - 帧序列：zombies/zm/1.png 到 zombies/zm/22.png
+// - 帧序列：zombies/normalzombie/normalzombie_walk/1.png 到 zombies/normalzombie/normalzombie_walk/22.png
 // - 每帧延迟：0.1秒
 // - 循环：无限循环
 

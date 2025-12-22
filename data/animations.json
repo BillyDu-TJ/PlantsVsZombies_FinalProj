@@ -14,39 +14,39 @@
             "name": "walk",
             "displayName": "行走",
             "type": "loop",
-            "frameFormat": "zombies/zm/%d.png",
+            "frameFormat": "zombies/normalzombie/normalzombie_walk/%d.png",
             "frameCount": 22,
             "startFrame": 1,
             "endFrame": 22,
             "frameDelay": 0.1,
             "loopCount": -1,
-            "defaultTexture": "zombies/zm/1.png"
+            "defaultTexture": "zombies/normalzombie/normalzombie_walk/1.png"
           },
           
           "eat": {
             "name": "eat",
             "displayName": "吃植物",
             "type": "loop",
-            "frameFormat": "zombies/zm_eat/%d.png",
+            "frameFormat": "zombies/normalzombie/normalzombie_eat/%d.png",
             "frameCount": 21,
             "startFrame": 1,
             "endFrame": 21,
             "frameDelay": 0.1,
             "loopCount": -1,
-            "defaultTexture": "zombies/zm_eat/1.png"
+            "defaultTexture": "zombies/normalzombie/normalzombie_eat/1.png"
           },
           
           "dead": {
             "name": "dead",
             "displayName": "死亡",
             "type": "once",
-            "frameFormat": "zombies/zm_dead/%d.png",
+            "frameFormat": "zombies/normalzombie/normalzombie_dead/%d.png",
             "frameCount": 20,
             "startFrame": 1,
             "endFrame": 20,
             "frameDelay": 0.12,
             "loopCount": 1,
-            "defaultTexture": "zombies/zm_dead/1.png",
+            "defaultTexture": "zombies/normalzombie/normalzombie_dead/1.png",
             "onComplete": "remove"
           },
           
@@ -54,18 +54,313 @@
             "name": "stand",
             "displayName": "站立",
             "type": "loop",
-            "frameFormat": "zombies/zm_stand/%d.png",
+            "frameFormat": "zombies/normalzombie/normalzombie_stand/%d.png",
             "frameCount": 11,
             "startFrame": 1,
             "endFrame": 11,
             "frameDelay": 0.15,
             "loopCount": -1,
-            "defaultTexture": "zombies/zm_stand/1.png"
+            "defaultTexture": "zombies/normalzombie/normalzombie_stand/1.png"
           }
         },
         
         "defaultAnimation": "walk",
-        "defaultTexture": "zombies/zm/1.png"
+        "defaultTexture": "zombies/normalzombie/normalzombie_walk/1.png"
+      },
+      
+      "2002": {
+        "id": "2002",
+        "name": "ConeheadZombie",
+        "description": "路障僵尸动画组",
+        
+        "animations": {
+          "walk": {
+            "name": "walk",
+            "displayName": "行走",
+            "type": "loop",
+            "frameFormat": "zombies/conehead/conehead_walk/%d.png",
+            "frameCount": 21,
+            "startFrame": 1,
+            "endFrame": 21,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/conehead/conehead_walk/1.png"
+          },
+          
+          "eat": {
+            "name": "eat",
+            "displayName": "吃植物",
+            "type": "loop",
+            "frameFormat": "zombies/conehead/conehead_eat/%d.png",
+            "frameCount": 11,
+            "startFrame": 1,
+            "endFrame": 11,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/conehead/conehead_eat/1.png"
+          },
+          
+          "dead": {
+            "name": "dead",
+            "displayName": "死亡",
+            "type": "once",
+            "frameFormat": "zombies/conehead/conehead_dead/%d.png",
+            "frameCount": 20,
+            "startFrame": 1,
+            "endFrame": 20,
+            "frameDelay": 0.12,
+            "loopCount": 1,
+            "defaultTexture": "zombies/conehead/conehead_dead/1.png",
+            "onComplete": "remove"
+          },
+          
+          "stand": {
+            "name": "stand",
+            "displayName": "站立",
+            "type": "loop",
+            "frameFormat": "zombies/conehead/conehead_stand/%d.png",
+            "frameCount": 8,
+            "startFrame": 1,
+            "endFrame": 8,
+            "frameDelay": 0.15,
+            "loopCount": -1,
+            "defaultTexture": "zombies/conehead/conehead_stand/1.png"
+          }
+        },
+        
+        "defaultAnimation": "walk",
+        "defaultTexture": "zombies/conehead/conehead_walk/1.png"
+      },
+      
+      "2003": {
+        "id": "2003",
+        "name": "IronheadZombie",
+        "description": "铁桶僵尸动画组",
+        
+        "animations": {
+          "walk": {
+            "name": "walk",
+            "displayName": "行走",
+            "type": "loop",
+            "frameFormat": "zombies/ironhead/ironhead_walk/%d.png",
+            "frameCount": 15,
+            "startFrame": 1,
+            "endFrame": 15,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/ironhead/ironhead_walk/1.png"
+          },
+          
+          "eat": {
+            "name": "eat",
+            "displayName": "吃植物",
+            "type": "loop",
+            "frameFormat": "zombies/ironhead/ironhead_eat/%d.png",
+            "frameCount": 11,
+            "startFrame": 1,
+            "endFrame": 11,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/ironhead/ironhead_eat/1.png"
+          },
+          
+          "dead": {
+            "name": "dead",
+            "displayName": "死亡",
+            "type": "once",
+            "frameFormat": "zombies/ironhead/ironhead_dead/%d.png",
+            "frameCount": 20,
+            "startFrame": 1,
+            "endFrame": 20,
+            "frameDelay": 0.12,
+            "loopCount": 1,
+            "defaultTexture": "zombies/ironhead/ironhead_dead/1.png",
+            "onComplete": "remove"
+          },
+          
+          "stand": {
+            "name": "stand",
+            "displayName": "站立",
+            "type": "loop",
+            "frameFormat": "zombies/ironhead/ironhead_stand/%d.png",
+            "frameCount": 1,
+            "startFrame": 1,
+            "endFrame": 1,
+            "frameDelay": 0.15,
+            "loopCount": -1,
+            "defaultTexture": "zombies/ironhead/ironhead_stand/1.png"
+          }
+        },
+        
+        "defaultAnimation": "walk",
+        "defaultTexture": "zombies/ironhead/ironhead_walk/1.png"
+      },
+      
+      "2004": {
+        "id": "2004",
+        "name": "Boss1",
+        "description": "Boss1动画组",
+        
+        "animations": {
+          "move1": {
+            "name": "move1",
+            "displayName": "移动1（第一阶段）",
+            "type": "loop",
+            "frameFormat": "zombies/boss1/boss1_move1/%d.png",
+            "frameCount": 11,
+            "startFrame": 1,
+            "endFrame": 11,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/boss1/boss1_move1/1.png"
+          },
+          
+          "move2": {
+            "name": "move2",
+            "displayName": "移动2（第二阶段）",
+            "type": "loop",
+            "frameFormat": "zombies/boss1/boss1_move2/%d.png",
+            "frameCount": 11,
+            "startFrame": 1,
+            "endFrame": 11,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/boss1/boss1_move2/1.png"
+          },
+          
+          "eat1": {
+            "name": "eat1",
+            "displayName": "吃植物1（第一阶段）",
+            "type": "loop",
+            "frameFormat": "zombies/boss1/boss1_eat1/%d.png",
+            "frameCount": 10,
+            "startFrame": 1,
+            "endFrame": 10,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/boss1/boss1_eat1/1.png"
+          },
+          
+          "eat2": {
+            "name": "eat2",
+            "displayName": "吃植物2（第二阶段）",
+            "type": "loop",
+            "frameFormat": "zombies/boss1/boss1_eat2/%d.png",
+            "frameCount": 11,
+            "startFrame": 1,
+            "endFrame": 11,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/boss1/boss1_eat2/1.png"
+          },
+          
+          "die": {
+            "name": "die",
+            "displayName": "死亡",
+            "type": "once",
+            "frameFormat": "zombies/boss1/boss1_die/%d.png",
+            "frameCount": 7,
+            "startFrame": 1,
+            "endFrame": 7,
+            "frameDelay": 0.15,
+            "loopCount": 1,
+            "defaultTexture": "zombies/boss1/boss1_die/1.png",
+            "onComplete": "remove"
+          },
+          
+          "stand1": {
+            "name": "stand1",
+            "displayName": "站立",
+            "type": "loop",
+            "frameFormat": "zombies/boss1/boss1_stand1/%d.png",
+            "frameCount": 15,
+            "startFrame": 1,
+            "endFrame": 15,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/boss1/boss1_stand1/1.png"
+          }
+        },
+        
+        "defaultAnimation": "move1",
+        "defaultTexture": "zombies/boss1/boss1_move1/1.png"
+      },
+      
+      "2005": {
+        "id": "2005",
+        "name": "Boss2",
+        "description": "Boss2雪橇车僵尸动画组",
+        
+        "animations": {
+          "move1": {
+            "name": "move1",
+            "displayName": "移动1（100%-75%）",
+            "type": "loop",
+            "frameFormat": "zombies/boss2/boss2_move1/%d.png",
+            "frameCount": 12,
+            "startFrame": 1,
+            "endFrame": 12,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/boss2/boss2_move1/1.png"
+          },
+          
+          "move2": {
+            "name": "move2",
+            "displayName": "移动2（75%-40%）",
+            "type": "loop",
+            "frameFormat": "zombies/boss2/boss2_move2/%d.png",
+            "frameCount": 11,
+            "startFrame": 1,
+            "endFrame": 11,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/boss2/boss2_move2/1.png"
+          },
+          
+          "move3": {
+            "name": "move3",
+            "displayName": "移动3（40%-20%）",
+            "type": "loop",
+            "frameFormat": "zombies/boss2/boss2_move3/%d.png",
+            "frameCount": 11,
+            "startFrame": 1,
+            "endFrame": 11,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/boss2/boss2_move3/1.png"
+          },
+          
+          "move4": {
+            "name": "move4",
+            "displayName": "移动4（20%-0%）",
+            "type": "loop",
+            "frameFormat": "zombies/boss2/boss2_move4/%d.png",
+            "frameCount": 29,
+            "startFrame": 1,
+            "endFrame": 29,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/boss2/boss2_move4/1.png"
+          },
+          
+          "die": {
+            "name": "die",
+            "displayName": "死亡",
+            "type": "once",
+            "frameFormat": "zombies/boss2/boss2_die/%d.png",
+            "frameCount": 7,
+            "startFrame": 1,
+            "endFrame": 7,
+            "frameDelay": 0.15,
+            "loopCount": 1,
+            "defaultTexture": "zombies/boss2/boss2_die/1.png",
+            "onComplete": "remove"
+          }
+        },
+        
+        "defaultAnimation": "move1",
+        "defaultTexture": "zombies/boss2/boss2_move1/1.png"
       }
     },
     

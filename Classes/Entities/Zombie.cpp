@@ -127,15 +127,96 @@ void Zombie::playDefaultAnimation() {
     }
 }
 
+void Zombie::checkPhaseTransition() {
+    if (_maxHp <= 0) return;
+    
+    int currentHp = getHp();
+    float hpPercent = (float)currentHp / (float)_maxHp * 100.0f;
+    
+    // Boss1: 30% threshold (move1/eat1 -> move2/eat2)
+    if (_data.name == "Boss1" && !_isPhase2) {
+        if (hpPercent <= 30.0f) {
+            _isPhase2 = true;
+            CCLOG("[Info] Boss1 entered Phase 2! HP: %.1f%% (%d/%d)", hpPercent, currentHp, _maxHp);
+            
+            // Switch animations based on current state
+            if (_state == UnitState::WALK) {
+                if (_currentAnimation == "move1") {
+                    playAnimation("move2");
+                }
+            }
+            else if (_state == UnitState::ATTACK) {
+                if (_currentAnimation == "eat1") {
+                    playAnimation("eat2");
+                }
+            }
+        }
+    }
+    // Boss2: Multi-phase transitions (75% -> move2, 40% -> move3, 20% -> move4)
+    else if (_data.name == "Boss2") {
+        int targetPhase = 1;
+        if (hpPercent <= 20.0f) {
+            targetPhase = 4;
+        }
+        else if (hpPercent <= 40.0f) {
+            targetPhase = 3;
+        }
+        else if (hpPercent <= 75.0f) {
+            targetPhase = 2;
+        }
+        
+        if (targetPhase != _currentPhase) {
+            int oldPhase = _currentPhase;
+            _currentPhase = targetPhase;
+            std::string animName = "move" + std::to_string(targetPhase);
+            CCLOG("[Info] Boss2 phase transition: %d -> %d (HP: %.1f%%)", oldPhase, targetPhase, hpPercent);
+            playAnimation(animName);
+        }
+    }
+}
+
 void Zombie::updateLogic(float dt) {
     Unit::updateLogic(dt);
 
 	_attackTimer += dt;
+    
+    // Check for phase transition (for boss zombies)
+    checkPhaseTransition();
+
+    // Boss2 (snow sled) always moves forward, never stops
+    if (_data.name == "Boss2") {
+        // Always use move animation based on current phase
+        std::string targetAnim = "move" + std::to_string(_currentPhase);
+        if (_currentAnimation != targetAnim) {
+            playAnimation(targetAnim);
+        }
+        
+        // Always move forward (crushing type, never stops)
+        float moveDist = _data.speed * _speedMultiplier * dt;
+        this->setPositionX(this->getPositionX() - moveDist);
+        
+        // Simple boundary check
+        if (this->getPositionX() < -50) {
+            this->removeFromParent();
+            CCLOG("[Info] Boss2 reached the house! Game Over?");
+			// TODO: Trigger game over logic
+        }
+        return; // Boss2 doesn't use normal attack logic
+    }
 
     if (_state == UnitState::WALK) {
-        // Play walk animation if not already playing
-        if (_currentAnimation != "walk") {
-            playAnimation("walk");
+        // For boss1, use move1/move2 instead of walk
+        if (_data.name == "Boss1") {
+            std::string targetAnim = _isPhase2 ? "move2" : "move1";
+            if (_currentAnimation != targetAnim) {
+                playAnimation(targetAnim);
+            }
+        }
+        else {
+            // Normal zombies use "walk"
+            if (_currentAnimation != "walk") {
+                playAnimation("walk");
+            }
         }
         
         // Move left (apply speed multiplier for slow effects)
@@ -150,9 +231,18 @@ void Zombie::updateLogic(float dt) {
         }
     }
     else if (_state == UnitState::ATTACK) {
-        // Play eat animation if not already playing
-        if (_currentAnimation != "eat") {
-            playAnimation("eat");
+        // For boss1, use eat1/eat2 instead of eat
+        if (_data.name == "Boss1") {
+            std::string targetAnim = _isPhase2 ? "eat2" : "eat1";
+            if (_currentAnimation != targetAnim) {
+                playAnimation(targetAnim);
+            }
+        }
+        else {
+            // Normal zombies use "eat"
+            if (_currentAnimation != "eat") {
+                playAnimation("eat");
+            }
         }
 		// Attack logic is handled externally, here we only maintain state and animation
     }
@@ -161,10 +251,13 @@ void Zombie::updateLogic(float dt) {
 void Zombie::die() {
     CCLOG("Zombie %s died!", _data.name.c_str());
     
+    // For boss1 and boss2, use "die" animation
+    std::string deathAnim = ((_data.name == "Boss1") || (_data.name == "Boss2")) ? "die" : "dead";
+    
     // If has death animation, play it
-    auto deadIt = _data.animations.find("dead");
+    auto deadIt = _data.animations.find(deathAnim);
     if (deadIt != _data.animations.end()) {
-        playAnimation("dead");
+        playAnimation(deathAnim);
     } else {
         // No death animation, directly call parent's die
         Unit::die();
