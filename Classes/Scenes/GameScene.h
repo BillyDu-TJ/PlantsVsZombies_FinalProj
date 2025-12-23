@@ -47,6 +47,8 @@ private:
     // 种植植物
     void tryPlantAt(int row, int col);
     void selectPlant(int plantId);
+    // 挖取植物
+    void tryDigAt(int row, int col);
 
     Plant* _plantMap[6][GRID_COLS]; // 逻辑网格上的植物指针（最大6行，Map2/Map4使用6行，Map1/Map3使用5行）
 
@@ -57,6 +59,13 @@ private:
     int _currentSun = 500; // 初始阳光值
     int _selectedPlantId = -1; // 当前选中的植物ID，-1表示未选中
     GameState _gameState = GameState::PLAYING; // 游戏状态
+    
+    // 冷却时间计算相关
+    int _minCost = 0;  // 最小阳光值
+    int _maxCost = 0;  // 最大阳光值
+    
+    // 根据阳光值计算冷却时间（最少5秒，最多10秒）
+    float calculateCooldownByCost(int cost) const;
 
     // UI Label：用于显示阳光
     cocos2d::Label* _sunLabel = nullptr;
@@ -70,6 +79,9 @@ private:
     // 创建蘑菇子弹（带动画）
     void createMushroomBullet(cocos2d::Vec2 startPos, int damage);
 
+    // 创建爆炸动画（boom1用于CherryBomb，boom2用于PotatoMine）
+    void createExplosionAnimation(cocos2d::Vec2 pos, const std::string& boomType, int damage, int row, int col);
+
     // 战斗逻辑更新（碰撞检测和AI检查）
     void updateCombatLogic();
 
@@ -78,6 +90,13 @@ private:
 
     // [Ghost] 种植预览（半透明预览）
     cocos2d::Sprite* _ghostSprite;
+
+    // [Shovel] 铲子相关
+    cocos2d::Sprite* _shovel = nullptr;        // 铲子精灵
+    cocos2d::Sprite* _shovelSlot = nullptr;     // 铲子槽精灵
+    cocos2d::Vec2 _shovelOriginalPos;          // 铲子原始位置（在槽中）
+    bool _isShovelSelected = false;             // 是否选中了铲子
+    bool _isShovelDragging = false;             // 是否正在拖动铲子
 
     // [Input] 鼠标移动处理
     void onMouseMove(cocos2d::Event* event);
@@ -97,6 +116,10 @@ private:
     void resumeGame();
     void showPauseMenu();
     void hidePauseMenu();
+
+    // [Shovel] 铲子相关函数
+    void createShovelUI(cocos2d::Node* uiLayer, float x, float y);
+    void resetShovel();
 
     // 动态网格参数（根据背景大小调整）
     float _actualGridStartX = GRID_START_X;

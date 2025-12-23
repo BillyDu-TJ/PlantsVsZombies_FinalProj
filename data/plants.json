@@ -54,7 +54,7 @@
     "hp": 300,
     "cost": 150,
     "cooldown": 30.0,
-    "attack": 1800,
+    "attack": 5000,
     "texture": "plants/cherrybomb/1.png",
     "cardImage": "cards/card_cherrybomb.png",
     "animations": {
@@ -112,7 +112,7 @@
     "hp": 300,
     "cost": 25,
     "cooldown": 20.0,
-    "attack": 1800,
+    "attack": 5000,
     "texture": "plants/potatomine/1.png",
     "cardImage": "cards/card_potatomine.png",
     "animations": {
@@ -172,7 +172,7 @@
     "hp": 300,
     "cost": 150,
     "cooldown": 30.0,
-    "attack": 1800,
+    "attack": 2000,
     "texture": "plants/bigmouth/1.png",
     "cardImage": "cards/card_bigmouthflower.png",
     "animations": {
@@ -353,7 +353,7 @@
     "cooldown": 30.0,
     "attack": 0,
     "texture": "plants/tallnut/1.png",
-    "cardImage": "cards/card_threepeashooter.png",
+    "cardImage": "cards/card_tallnut.jpg",
     "animations": {
       "idle": {
         "frameFormat": "plants/tallnut/%d.png",

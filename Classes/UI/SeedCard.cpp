@@ -2,6 +2,7 @@
 // 2025.12.15 by BillyDu
 #include "SeedCard.h"
 #include "../Managers/DataManager.h"
+#include <cmath>
 
 USING_NS_CC;
 
@@ -119,7 +120,15 @@ bool SeedCard::init(int plantId) {
             this->addChild(_costLabel, 2);
         }
         
-        // 6. 添加触摸事件监听
+        // 6. 创建冷却倒计时标签（初始隐藏）
+        _cooldownLabel = Label::createWithSystemFont("", "Arial", 32);
+        _cooldownLabel->setPosition(36, 48); // 卡片中心
+        _cooldownLabel->setColor(Color3B::BLACK);
+        _cooldownLabel->enableOutline(Color4B::WHITE, 2); // 添加白色描边以提高可读性
+        _cooldownLabel->setVisible(false);
+        this->addChild(_cooldownLabel, 10); // 最高层级，确保显示在最上层
+        
+        // 7. 添加触摸事件监听
         auto listener = EventListenerTouchOneByOne::create();
         listener->setSwallowTouches(true);
         listener->onTouchBegan = [this](Touch* touch, Event* event) {
@@ -180,4 +189,27 @@ void SeedCard::updateSunCheck(int currentSun) {
 
 void SeedCard::setOnSelectCallback(const std::function<void(int)>& callback) {
     _onSelectCallback = callback;
+}
+
+void SeedCard::startCooldown(float cooldownTime) {
+    _cooldownTotal = cooldownTime;
+    _cooldownRemaining = cooldownTime;
+    _cooldownLabel->setVisible(true);
+    updateCooldown(0.0f); // 立即更新一次显示
+}
+
+void SeedCard::updateCooldown(float dt) {
+    if (_cooldownRemaining > 0.0f) {
+        _cooldownRemaining -= dt;
+        
+        if (_cooldownRemaining <= 0.0f) {
+            _cooldownRemaining = 0.0f;
+            _cooldownLabel->setVisible(false);
+        } else {
+            // 显示倒计时（向上取整）
+            int seconds = static_cast<int>(std::ceil(_cooldownRemaining));
+            _cooldownLabel->setString(std::to_string(seconds));
+            _cooldownLabel->setVisible(true);
+        }
+    }
 }

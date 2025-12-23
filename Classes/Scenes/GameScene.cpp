@@ -3,6 +3,8 @@
 // edited on 2025.12.21 by Zhao//the problems before are a lots...
 #include <string> // C++11 string
 #include <unordered_map>
+#include <set>
+#include <climits>  // for INT_MAX
 
 #include "GameScene.h"
 #include "../Consts.h" // 游戏常量
@@ -164,6 +166,27 @@ bool GameScene::init() {
     float startY = -110.0f; // 相对于 uiLayer 往下 40px（垂直往下）
     float gapX = 80.0f;    // 卡片间距
 
+    // 计算阳光值范围（用于冷却时间计算）
+    _minCost = INT_MAX;
+    _maxCost = 0;
+    for (int id : plantIds) {
+        try {
+            auto data = DataManager::getInstance().getPlantData(id);
+            if (data.cost < _minCost) _minCost = data.cost;
+            if (data.cost > _maxCost) _maxCost = data.cost;
+        } catch (const std::exception& e) {
+            CCLOG("[Warn] Failed to get plant data for id %d: %s", id, e.what());
+        }
+    }
+    
+    // 如果只有一个植物或所有植物阳光值相同，设置默认范围
+    if (_minCost == INT_MAX || _minCost == _maxCost) {
+        _minCost = 0;
+        _maxCost = 200; // 默认最大阳光值
+    }
+    
+    CCLOG("[Info] Cost range: min=%d, max=%d", _minCost, _maxCost);
+
     for (int id : plantIds) {
         auto card = SeedCard::create(id);
 
@@ -181,6 +204,15 @@ bool GameScene::init() {
         startX += gapX;
     }
 
+    // --- 创建铲子UI ---
+    // 计算最后一个卡片的位置，将铲子放在其右侧
+    float lastCardX = startX - gapX; // 最后一个卡片的X位置
+    float cardWidth = 72.0f; // 卡片宽度（从SeedCard的setContentSize得知）
+    float shovelOffsetX = cardWidth / 2.0f + 20.0f; // 卡片右侧的偏移（卡片宽度的一半 + 间距）
+    // 向右移动大约半个画面（注意uiLayer的缩放是0.8，所以需要除以0.8来补偿）
+    float screenHalfWidth = visibleSize.width / 2.0f / 0.8f; // 转换为uiLayer的本地坐标
+    createShovelUI(uiLayer, lastCardX + shovelOffsetX + screenHalfWidth, startY);
+
     // --- 创建 Ghost Sprite (种植预览) ---
     _ghostSprite = Sprite::create();
     _ghostSprite->setOpacity(128); // 半透明
@@ -193,13 +225,51 @@ bool GameScene::init() {
     _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
 
 
-    // --- 触摸事件 (实现种植) ---
+    // --- 触摸事件 (实现种植和挖取) ---
     auto touchListener = EventListenerTouchOneByOne::create();
     touchListener->onTouchBegan = [this](Touch* touch, Event* event) {
         auto loc = touch->getLocation();
+        
+        // 检查是否点击了铲子
+        if (_shovel && _shovelSlot) {
+            Vec2 shovelWorldPos = _shovel->getParent()->convertToWorldSpace(_shovel->getPosition());
+            Size shovelSize = _shovel->getContentSize();
+            float shovelScale = _shovel->getScale();
+            Rect shovelRect(
+                shovelWorldPos.x - shovelSize.width * shovelScale * 0.5f,
+                shovelWorldPos.y - shovelSize.height * shovelScale * 0.5f,
+                shovelSize.width * shovelScale,
+                shovelSize.height * shovelScale
+            );
+            
+            if (shovelRect.containsPoint(loc)) {
+                // 点击了铲子，开始拖动
+                _isShovelSelected = true;
+                _isShovelDragging = true;
+                _selectedPlantId = -1; // 取消植物选择
+                // 隐藏ghost sprite
+                if (_ghostSprite) {
+                    _ghostSprite->setVisible(false);
+                }
+                CCLOG("[Info] Shovel selected");
+                return true;
+            }
+        }
+        
+        // 如果正在拖动铲子，检查是否点击在网格上
+        if (_isShovelDragging) {
+            auto gridPos = this->pixelToGrid(loc);
+            if (gridPos.first != -1) {
+                CCLOG("[Info] Shovel clicked Grid: [%d, %d]", gridPos.first, gridPos.second);
+                this->tryDigAt(gridPos.first, gridPos.second);
+                // 挖取后重置铲子状态
+                resetShovel();
+            }
+            return true;
+        }
+        
+        // 普通种植逻辑
         auto gridPos = this->pixelToGrid(loc);
-
-        // 只在有效网格内响应
         if (gridPos.first != -1) {
             CCLOG("[Info] Clicked Grid: [%d, %d]", gridPos.first, gridPos.second);
             // 尝试种植
@@ -207,6 +277,35 @@ bool GameScene::init() {
         }
         return true;
         };
+    
+    touchListener->onTouchMoved = [this](Touch* touch, Event* event) {
+        if (_isShovelDragging && _shovel && _shovel->getParent()) {
+            // 拖动铲子跟随鼠标
+            auto loc = touch->getLocation();
+            // 将世界坐标转换为uiLayer的本地坐标
+            Vec2 localPos = _shovel->getParent()->convertToNodeSpace(loc);
+            _shovel->setPosition(localPos);
+        }
+        return true;
+        };
+    
+    touchListener->onTouchEnded = [this](Touch* touch, Event* event) {
+        if (_isShovelDragging) {
+            auto loc = touch->getLocation();
+            auto gridPos = this->pixelToGrid(loc);
+            
+            // 如果释放在网格上，尝试挖取
+            if (gridPos.first != -1) {
+                CCLOG("[Info] Shovel released on Grid: [%d, %d]", gridPos.first, gridPos.second);
+                this->tryDigAt(gridPos.first, gridPos.second);
+            }
+            
+            // 重置铲子位置
+            resetShovel();
+        }
+        return true;
+        };
+    
     _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
 
     // --- 键盘事件：ESC 暂停/继续 ---
@@ -330,6 +429,8 @@ void GameScene::update(float dt) {
     for (auto card : _seedCards) {
         // 让卡片自己判断：当前阳光 < 卡片花费，就变灰
         card->updateSunCheck(_currentSun);
+        // 更新冷却状态
+        card->updateCooldown(dt);
     }
 
     // 8. 胜负判断
@@ -423,6 +524,19 @@ void GameScene::spawnZombie(int id, int row) {
 // 选择植物
 void GameScene::selectPlant(int plantId) {
     try {
+        // 检查是否在冷却中
+        for (auto card : _seedCards) {
+            if (card->getPlantId() == plantId && card->isInCooldown()) {
+                CCLOG("[Info] Plant %d is in cooldown, cannot select", plantId);
+                return; // 冷却中，不能选择
+            }
+        }
+        
+        // 取消铲子选择
+        if (_isShovelSelected || _isShovelDragging) {
+            resetShovel();
+        }
+        
         // 验证ID是否存在，不存在会抛出异常
         auto data = DataManager::getInstance().getPlantData(plantId);
         _selectedPlantId = plantId;
@@ -444,6 +558,14 @@ void GameScene::selectPlant(int plantId) {
 // 核心种植逻辑
 void GameScene::tryPlantAt(int row, int col) {
     try {
+        // 0. 检查是否在冷却中
+        for (auto card : _seedCards) {
+            if (card->getPlantId() == _selectedPlantId && card->isInCooldown()) {
+                CCLOG("[Info] Plant %d is in cooldown, cannot plant", _selectedPlantId);
+                return; // 冷却中，不能种植
+            }
+        }
+        
         // 1. 获取当前选中植物的数据
         const auto& plantData = DataManager::getInstance().getPlantData(_selectedPlantId);
         
@@ -655,9 +777,43 @@ void GameScene::tryPlantAt(int row, int col) {
         for (auto card : _seedCards) {
             card->updateSunCheck(_currentSun);
         }
+        
+        // 启动冷却
+        for (auto card : _seedCards) {
+            if (card->getPlantId() == _selectedPlantId) {
+                float cooldownTime = calculateCooldownByCost(plantData.cost);
+                card->startCooldown(cooldownTime);
+                CCLOG("[Info] Started cooldown for plant %d: %.2f seconds", _selectedPlantId, cooldownTime);
+                break;
+            }
+        }
 
         // 种植成功后播放音效
         AudioManager::getInstance().playEffect(AudioPath::PLANT_SOUND);
+
+        // 樱桃炸弹（CherryBomb）特殊逻辑：种植后立即爆炸
+        if (plantData.name == "CherryBomb") {
+            CCLOG("[Info] CherryBomb planted at [%d, %d], triggering immediate explosion!", row, col);
+            
+            // 延迟一帧后爆炸，确保植物已经添加到场景中
+            this->scheduleOnce([this, row, col, pixelPos](float dt) {
+                // 获取植物伤害值
+                int damage = 5000; // CherryBomb固定伤害5000
+                
+                // 播放爆炸动画
+                this->createExplosionAnimation(pixelPos, "boom1", damage, row, col);
+                
+                // 移除植物
+                Plant* plant = _plantMap[row][col];
+                if (plant) {
+                    _plantMap[row][col] = nullptr;
+                    _plants.eraseObject(plant);
+                    plant->removeFromParent();
+                    plant->release();
+                    CCLOG("[Info] CherryBomb removed after explosion");
+                }
+            }, 0.1f, "cherrybomb_explode");
+        }
 
     }
     catch (const std::exception& e) {
@@ -778,6 +934,151 @@ void GameScene::createMushroomBullet(Vec2 startPos, int damage) {
     AudioManager::getInstance().playEffect(AudioPath::SHOOT_SOUND);
 }
 
+// 创建爆炸动画
+void GameScene::createExplosionAnimation(Vec2 pos, const std::string& boomType, int damage, int row, int col) {
+    // boomType: "boom1" 用于CherryBomb, "boom2" 用于PotatoMine
+    std::string frameFormat = "bullets/" + boomType + "/%d.png";
+    
+    CCLOG("[Info] Creating explosion animation: type=%s, pos=(%.1f, %.1f), damage=%d, row=%d, col=%d", 
+          boomType.c_str(), pos.x, pos.y, damage, row, col);
+    
+    // 创建爆炸动画精灵
+    auto explosionSprite = Sprite::create();
+    explosionSprite->setPosition(pos);
+    this->addChild(explosionSprite, 1000); // 最高层级，确保显示在最上层
+    
+    // 加载动画帧（自动检测帧数）
+    Vector<SpriteFrame*> frames;
+    float frameDelay = 0.08f;
+    
+    // 尝试加载最多30帧（足够覆盖大多数爆炸动画）
+    bool hasFrames = false;
+    int frameCount = 0;
+    for (int i = 1; i <= 30; ++i) {
+        char framePath[256];
+        snprintf(framePath, sizeof(framePath), frameFormat.c_str(), i);
+        
+        if (FileUtils::getInstance()->isFileExist(framePath)) {
+            // 先加载纹理，然后创建SpriteFrame
+            Texture2D* texture = Director::getInstance()->getTextureCache()->addImage(framePath);
+            if (texture) {
+                Size textureSize = texture->getContentSize();
+                Rect rect = Rect(0, 0, textureSize.width, textureSize.height);
+                SpriteFrame* frame = SpriteFrame::createWithTexture(texture, rect);
+                if (frame) {
+                    frames.pushBack(frame);
+                    hasFrames = true;
+                    frameCount++;
+                    CCLOG("[Debug] Loaded explosion frame %d: %s", i, framePath);
+                } else {
+                    CCLOG("[Warn] Failed to create SpriteFrame from texture: %s", framePath);
+                }
+            } else {
+                CCLOG("[Warn] Failed to load texture: %s", framePath);
+            }
+        } else {
+            // 如果当前帧不存在，且已经有帧了，说明动画结束
+            if (hasFrames) {
+                CCLOG("[Info] Explosion animation ends at frame %d (total %d frames loaded)", i - 1, frameCount);
+                break;
+            }
+        }
+    }
+    
+    if (!hasFrames) {
+        CCLOG("[Err] No explosion frames found for %s (format: %s), using placeholder", boomType.c_str(), frameFormat.c_str());
+        // 使用占位符
+        explosionSprite->setTextureRect(Rect(0, 0, 100, 100));
+        explosionSprite->setColor(Color3B::RED);
+    } else {
+        CCLOG("[Info] Created explosion animation with %d frames for %s", frameCount, boomType.c_str());
+        // 创建动画
+        auto animation = Animation::createWithSpriteFrames(frames, frameDelay);
+        auto animate = Animate::create(animation);
+        
+        // 设置初始纹理为第一帧
+        if (!frames.empty()) {
+            explosionSprite->setSpriteFrame(frames.at(0));
+        }
+        
+        // 播放动画后移除
+        explosionSprite->runAction(Sequence::create(
+            animate,
+            CallFunc::create([explosionSprite]() {
+                explosionSprite->removeFromParent();
+            }),
+            nullptr
+        ));
+    }
+    
+    // 对周围僵尸造成伤害
+    if (boomType == "boom1") {
+        // CherryBomb: 炸死周围8个格子的僵尸（3x3范围，中心+周围8个）
+        for (int dr = -1; dr <= 1; ++dr) {
+            for (int dc = -1; dc <= 1; ++dc) {
+                int checkRow = row + dr;
+                int checkCol = col + dc;
+                
+                if (checkRow >= 0 && checkRow < _actualGridRows && 
+                    checkCol >= 0 && checkCol < GRID_COLS) {
+                    // 检查该位置的僵尸
+                    for (auto zombie : _zombies) {
+                        if (zombie->isDead()) continue;
+                        if (zombie->getRow() != checkRow) continue;
+                        
+                        // 检查僵尸是否在这个格子内
+                        Vec2 zombiePos = zombie->getPosition();
+                        Vec2 cellPos = gridToPixel(checkRow, checkCol);
+                        float distX = std::abs(zombiePos.x - cellPos.x);
+                        float distY = std::abs(zombiePos.y - cellPos.y);
+                        
+                        if (distX < _actualCellWidth / 2 && distY < _actualCellHeight / 2) {
+                            zombie->takeDamage(damage);
+                            CCLOG("[Info] CherryBomb explosion damages zombie at [%d, %d] for %d", 
+                                  checkRow, checkCol, damage);
+                            if (zombie->isDead()) {
+                                AudioManager::getInstance().playEffect(AudioPath::ZOMBIE_DIE_SOUND);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        // PotatoMine: 炸死同一行的所有僵尸（确保能炸到，扩大范围）
+        // 检查当前格及前后两格（共5格范围），确保能覆盖到所有可能的僵尸位置
+        for (int offset = -2; offset <= 2; ++offset) {
+            int checkCol = col + offset;
+            if (checkCol < 0 || checkCol >= GRID_COLS) continue;
+            
+            Vec2 checkCellPos = gridToPixel(row, checkCol);
+            
+            for (auto zombie : _zombies) {
+                if (zombie->isDead()) continue;
+                if (zombie->getRow() != row) continue;
+                
+                // 检查僵尸是否在这个格子范围内（使用很大的检测范围）
+                Vec2 zombiePos = zombie->getPosition();
+                float distX = std::abs(zombiePos.x - checkCellPos.x);
+                float distY = std::abs(zombiePos.y - checkCellPos.y);
+                
+                // 使用非常大的检测范围（1.5倍格子大小），确保一定能炸到僵尸
+                if (distX < _actualCellWidth * 1.5f && distY < _actualCellHeight * 1.5f) {
+                    int zombieHpBefore = zombie->getHp();
+                    zombie->takeDamage(damage);
+                    int zombieHpAfter = zombie->getHp();
+                    CCLOG("[Info] PotatoMine explosion damages zombie at [%d, %d] (checkCol: %d, offset: %d) for %d (HP: %d -> %d)", 
+                          row, col, checkCol, offset, damage, zombieHpBefore, zombieHpAfter);
+                    if (zombie->isDead()) {
+                        CCLOG("[Info] Zombie killed by PotatoMine explosion!");
+                        AudioManager::getInstance().playEffect(AudioPath::ZOMBIE_DIE_SOUND);
+                    }
+                }
+            }
+        }
+    }
+}
+
 void GameScene::updateCombatLogic() {
     // A. 子弹 vs 僵尸
     for (auto bullet : _bullets) {
@@ -877,6 +1178,28 @@ void GameScene::updateCombatLogic() {
                                     _plantMap[row][col] = nullptr;
                                 }
                             }
+                        } else if (plant->getName() == "PotatoMine") {
+                            // 土豆雷：Boss2碾压时触发爆炸
+                            CCLOG("[Info] Boss2 triggers PotatoMine at [%d, %d]!", row, col);
+                            int damage = plant->getData().attack;
+                            if (damage <= 0) damage = 5000;
+                            Vec2 plantPos = plant->getPosition();
+                            
+                            // 播放爆炸动画
+                            createExplosionAnimation(plantPos, "boom2", damage, row, col);
+                            
+                            // 标记植物为死亡，延迟移除（避免在遍历时修改集合）
+                            plant->takeDamage(9999);
+                            _plantMap[row][col] = nullptr;
+                            
+                            // 延迟移除，避免在遍历时修改集合
+                            Plant* plantToRemove = plant;
+                            this->scheduleOnce([this, plantToRemove](float dt) {
+                                if (plantToRemove && plantToRemove->getParent()) {
+                                    _plants.eraseObject(plantToRemove);
+                                    plantToRemove->removeFromParent();
+                                }
+                            }, 0.01f, "remove_potatomine_boss2");
                         } else {
                             // 其他植物：直接碾压死亡
                             CCLOG("[Info] Boss2 crushed plant at [%d, %d]!", row, col);
@@ -994,6 +1317,67 @@ void GameScene::updateCombatLogic() {
 
             // 询问僵尸是否可以攻击
             if (zombie->canAttack()) {
+                // 土豆雷（PotatoMine）特殊逻辑：当僵尸开始eat时立即爆炸
+                if (targetPlant->getName() == "PotatoMine" && !targetPlant->isDead()) {
+                    CCLOG("[Info] PotatoMine at [%d, %d] triggered by zombie eating!", row, col);
+                    
+                    // 获取植物伤害值
+                    int damage = targetPlant->getData().attack;
+                    if (damage <= 0) damage = 5000;
+                    
+                    Vec2 plantPos = targetPlant->getPosition();
+                    
+                    // 播放爆炸动画
+                    createExplosionAnimation(plantPos, "boom2", damage, row, col);
+                    
+                    // 找到所有同一行的僵尸并杀死它们（扩大范围，确保能炸到）
+                    // 检查当前格及前后两格（共5格范围），确保能覆盖到所有可能的僵尸位置
+                    for (int offset = -2; offset <= 2; ++offset) {
+                        int checkCol = col + offset;
+                        if (checkCol < 0 || checkCol >= GRID_COLS) continue;
+                        
+                        Vec2 checkCellPos = gridToPixel(row, checkCol);
+                        
+                        for (auto z : _zombies) {
+                            if (z->isDead()) continue;
+                            if (z->getRow() != row) continue;
+                            
+                            // 检查僵尸是否在这个格子范围内（使用很大的检测范围）
+                            Vec2 zombiePos = z->getPosition();
+                            float distX = std::abs(zombiePos.x - checkCellPos.x);
+                            float distY = std::abs(zombiePos.y - checkCellPos.y);
+                            
+                            // 使用非常大的检测范围（1.5倍格子大小），确保一定能炸到僵尸
+                            if (distX < _actualCellWidth * 1.5f && distY < _actualCellHeight * 1.5f) {
+                                // 这个僵尸在爆炸范围内，杀死它
+                                int zombieHp = z->getHp();
+                                z->takeDamage(damage);
+                                CCLOG("[Info] Zombie at [%d, %d] (checkCol: %d, offset: %d) killed by PotatoMine explosion! (HP: %d -> %d)", 
+                                      row, col, checkCol, offset, zombieHp, z->getHp());
+                                if (z->isDead()) {
+                                    AudioManager::getInstance().playEffect(AudioPath::ZOMBIE_DIE_SOUND);
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 标记植物为死亡，延迟移除（避免在遍历时修改集合）
+                    targetPlant->takeDamage(9999);
+                    _plantMap[row][col] = nullptr;
+                    
+                    // 延迟移除，避免在遍历时修改集合
+                    Plant* plantToRemove = targetPlant;
+                    this->scheduleOnce([this, plantToRemove](float dt) {
+                        if (plantToRemove && plantToRemove->getParent()) {
+                            _plants.eraseObject(plantToRemove);
+                            plantToRemove->removeFromParent();
+                        }
+                    }, 0.01f, "remove_potatomine_eat");
+                    
+                    // 跳过后续攻击逻辑
+                    continue;
+                }
+                
                 // 这里应该使用僵尸的实际伤害值
                 int dmg = zombie->getDamage();
                 targetPlant->takeDamage(dmg);
@@ -1226,4 +1610,138 @@ void GameScene::calculateGridParameters(cocos2d::Sprite* background) {
 
     CCLOG("[Info] Grid adjusted - Start: (%.1f, %.1f), Cell: (%.1f, %.1f)",
         _actualGridStartX, _actualGridStartY, _actualCellWidth, _actualCellHeight);
+}
+
+// 创建铲子UI
+void GameScene::createShovelUI(cocos2d::Node* uiLayer, float x, float y) {
+    // 创建铲子槽
+    if (FileUtils::getInstance()->isFileExist("ui/shovelSlot.png")) {
+        _shovelSlot = Sprite::create("ui/shovelSlot.png");
+        if (_shovelSlot) {
+            // 获取shovelSlot的高度，向上移动半个高度
+            float slotHeight = _shovelSlot->getContentSize().height;
+            float adjustedY = y + slotHeight / 2.0f;
+            // 将铲子槽放在卡片右侧，向上移动半个高度
+            _shovelSlot->setPosition(x, adjustedY);
+            uiLayer->addChild(_shovelSlot);
+            CCLOG("[Info] Shovel slot created at (%.1f, %.1f) (adjusted from %.1f by +%.1f)", 
+                  x, adjustedY, y, slotHeight / 2.0f);
+        }
+    } else {
+        CCLOG("[Warn] Shovel slot image not found: ui/shovelSlot.png");
+    }
+    
+    // 创建铲子
+    if (FileUtils::getInstance()->isFileExist("ui/shovel.png")) {
+        _shovel = Sprite::create("ui/shovel.png");
+        if (_shovel && _shovelSlot) {
+            // 铲子初始位置在槽中
+            _shovelOriginalPos = _shovelSlot->getPosition();
+            _shovel->setPosition(_shovelOriginalPos);
+            uiLayer->addChild(_shovel, 10); // 较高层级，确保在槽之上
+            CCLOG("[Info] Shovel created at (%.1f, %.1f)", _shovelOriginalPos.x, _shovelOriginalPos.y);
+        }
+    } else {
+        CCLOG("[Warn] Shovel image not found: ui/shovel.png");
+    }
+}
+
+// 重置铲子位置
+void GameScene::resetShovel() {
+    if (_shovel) {
+        _shovel->setPosition(_shovelOriginalPos);
+        _isShovelSelected = false;
+        _isShovelDragging = false;
+        CCLOG("[Info] Shovel reset to original position");
+    }
+}
+
+// 挖取植物
+void GameScene::tryDigAt(int row, int col) {
+    try {
+        // 检查网格范围
+        if (row < 0 || row >= _actualGridRows || col < 0 || col >= GRID_COLS) {
+            CCLOG("[Warn] Invalid grid position [%d, %d]", row, col);
+            return;
+        }
+        
+        // 检查该位置是否有植物
+        Plant* plant = _plantMap[row][col];
+        
+        // 检查是否是睡莲上的植物
+        int currentMapId = SceneManager::getInstance().getCurrentMapId();
+        bool isWaterRow = (currentMapId == 2 || currentMapId == 4) && (row == 2 || row == 3);
+        
+        // 如果是水池行，优先检查是否有在睡莲上的植物
+        if (isWaterRow && plant && plant->getName() == "LilyPad") {
+            // 检查睡莲上是否有其他植物
+            Plant* plantOnLilyPad = nullptr;
+            for (auto p : _plants) {
+                if (p && !p->isDead() && p != plant) {
+                    auto pGridPos = pixelToGrid(p->getPosition());
+                    if (pGridPos.first == row && pGridPos.second == col) {
+                        plantOnLilyPad = p;
+                        break;
+                    }
+                }
+            }
+            
+            if (plantOnLilyPad) {
+                // 挖取睡莲上的植物
+                CCLOG("[Info] Digging plant %s on LilyPad at [%d, %d]", 
+                      plantOnLilyPad->getName().c_str(), row, col);
+                _plants.eraseObject(plantOnLilyPad);
+                plantOnLilyPad->removeFromParent();
+                plantOnLilyPad->release();
+                // 播放音效
+                AudioManager::getInstance().playEffect(AudioPath::PLANT_SOUND);
+                CCLOG("[Info] Successfully dug plant on LilyPad at [%d, %d]", row, col);
+                return;
+            }
+        }
+        
+        // 如果没有睡莲上的植物，挖取_plantMap中的植物
+        if (plant == nullptr) {
+            CCLOG("[Info] No plant at [%d, %d] to dig", row, col);
+            return;
+        }
+        
+        // 挖取植物
+        CCLOG("[Info] Digging plant %s at [%d, %d]", plant->getName().c_str(), row, col);
+        
+        // 从_plantMap中移除
+        _plantMap[row][col] = nullptr;
+        
+        // 从_plants列表中移除并销毁
+        _plants.eraseObject(plant);
+        plant->removeFromParent();
+        plant->release();
+        
+        // 播放音效
+        AudioManager::getInstance().playEffect(AudioPath::PLANT_SOUND);
+        
+        CCLOG("[Info] Successfully dug plant at [%d, %d]", row, col);
+        
+    } catch (const std::exception& e) {
+        CCLOG("[Err] Digging failed: %s", e.what());
+    }
+}
+
+// 根据阳光值计算冷却时间（最少5秒，最多10秒）
+float GameScene::calculateCooldownByCost(int cost) const {
+    // 如果范围无效，返回默认值
+    if (_minCost >= _maxCost) {
+        return 7.5f; // 默认7.5秒
+    }
+    
+    // 线性插值：最少阳光值对应5秒，最多阳光值对应10秒
+    // cooldown = 5 + (cost - minCost) / (maxCost - minCost) * (10 - 5)
+    float ratio = static_cast<float>(cost - _minCost) / static_cast<float>(_maxCost - _minCost);
+    float cooldown = 5.0f + ratio * 5.0f; // 5秒到10秒之间
+    
+    // 确保在范围内
+    if (cooldown < 5.0f) cooldown = 5.0f;
+    if (cooldown > 10.0f) cooldown = 10.0f;
+    
+    return cooldown;
 }

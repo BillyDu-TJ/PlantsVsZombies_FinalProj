@@ -1,4 +1,4 @@
-// ÖÖÖ²¿¨Æ¬ÀàÍ·ÎÄ¼ş
+// ç§å­å¡ç‰‡ç±»å¤´æ–‡ä»¶
 // 2025.12.15 by BillyDu
 #ifndef __SEED_CARD_H__
 #define __SEED_CARD_H__
@@ -11,11 +11,20 @@ class SeedCard : public cocos2d::Node {
 public:
     static SeedCard* create(int plantId);
     
-    // ÉèÖÃÑ¡Ôñ»Øµ÷
+    // è®¾ç½®é€‰æ‹©å›è°ƒ
     void setOnSelectCallback(const std::function<void(int)>& callback);
     
-    // ¸ù¾İÑô¹âÊÇ·ñ×ã¹» (ÓÃÓÚ¸Ä±ä¿¨Æ¬±ä»Ò/¸ßÁÁ×´Ì¬)
+    // æ›´æ–°é˜³å…‰æ˜¯å¦è¶³å¤Ÿ (ç”¨äºæ”¹å˜å¡ç‰‡é¢œè‰²/ç¦ç”¨çŠ¶æ€)
     void updateSunCheck(int currentSun);
+    
+    // æ›´æ–°å†·å´çŠ¶æ€
+    void updateCooldown(float dt);
+    
+    // å¯åŠ¨å†·å´
+    void startCooldown(float cooldownTime);
+    
+    // æ£€æŸ¥æ˜¯å¦åœ¨å†·å´ä¸­
+    bool isInCooldown() const { return _cooldownRemaining > 0.0f; }
     
     int getPlantId() const { return _plantId; }
 
@@ -25,10 +34,15 @@ private:
     int _plantId;
     int _cost;
     
-    // UI ×é¼ş
-    cocos2d::Sprite* _bg = nullptr;        // ¿¨Æ¬±³¾°£¨PNGËØ²Ä£©
-    cocos2d::Sprite* _icon = nullptr;      // Ö²ÎïÍ¼±ê£¨Èç¹ûĞèÒª£©
-    cocos2d::Label* _costLabel = nullptr;  // ÏûºÄÊı×Ö£¨±¸ÓÃ£©
+    // å†·å´ç›¸å…³
+    float _cooldownRemaining = 0.0f;  // å‰©ä½™å†·å´æ—¶é—´
+    float _cooldownTotal = 0.0f;      // æ€»å†·å´æ—¶é—´
+    
+    // UI ç»„ä»¶
+    cocos2d::Sprite* _bg = nullptr;        // å¡ç‰‡èƒŒæ™¯PNGç´ æï¼Œ
+    cocos2d::Sprite* _icon = nullptr;      // æ¤ç‰©å›¾æ ‡ï¼ˆå¦‚æœéœ€è¦ï¼‰
+    cocos2d::Label* _costLabel = nullptr;  // ä»·æ ¼æ ‡ç­¾ï¼ˆå¤‡ç”¨ï¼‰
+    cocos2d::Label* _cooldownLabel = nullptr;  // å†·å´å€’è®¡æ—¶æ ‡ç­¾
     
     std::function<void(int)> _onSelectCallback;
 };
