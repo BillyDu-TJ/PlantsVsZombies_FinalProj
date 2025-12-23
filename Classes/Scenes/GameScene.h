@@ -1,6 +1,8 @@
 ﻿// 游戏场景头文件，定义了游戏的核心架构和功能
 // 2025.11.27 by BillyDu
 //edited on 2025.12.21 by Zhao
+// 更新：添加按阳光值计算冷却时间功能（最少5秒，最多10秒），种植后启动冷却
+// by Zhao.12.23
 #ifndef __GAME_SCENE_H__
 #define __GAME_SCENE_H__
 

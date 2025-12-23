@@ -1,5 +1,7 @@
 // 种子卡片类 - 使用PNG资源
 // 2025.12.15 by BillyDu
+// 更新：实现冷却倒计时显示功能，种植后显示倒计时数字，冷却期间禁用种植
+// by Zhao.12.23
 #include "SeedCard.h"
 #include "../Managers/DataManager.h"
 #include <cmath>

@@ -1,6 +1,8 @@
 // 这个文件实际上是头文件，包含了 GameScene 类的方法，主要功能包括游戏的开始、暂停、转换和结束等设计。
 // 2025.11.27 by BillyDu
 // edited on 2025.12.21 by Zhao//the problems before are a lots...
+// 更新：实现植物种植冷却系统，根据阳光值动态计算冷却时间，种植后启动冷却并更新卡片状态
+// by Zhao.12.23
 #include <string> // C++11 string
 #include <unordered_map>
 #include <set>

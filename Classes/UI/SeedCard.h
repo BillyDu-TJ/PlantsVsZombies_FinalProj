@@ -1,5 +1,7 @@
 // 种子卡片类头文件
 // 2025.12.15 by BillyDu
+// 更新：添加植物种植冷却功能，包括冷却倒计时显示和状态管理
+// by Zhao.12.23
 #ifndef __SEED_CARD_H__
 #define __SEED_CARD_H__
 
