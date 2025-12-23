@@ -48,7 +48,10 @@ private:
     void tryPlantAt(int row, int col);
     void selectPlant(int plantId);
 
-    Plant* _plantMap[GRID_ROWS][GRID_COLS]; // 逻辑网格上的植物指针
+    Plant* _plantMap[6][GRID_COLS]; // 逻辑网格上的植物指针（最大6行，Map2/Map4使用6行，Map1/Map3使用5行）
+
+    // 动态网格行数（根据地图类型：Map1/Map3=5行，Map2/Map4=6行）
+    int _actualGridRows = GRID_ROWS;
 
     // 游戏状态
     int _currentSun = 500; // 初始阳光值
@@ -87,11 +90,13 @@ private:
     void checkGameOverCondition();
     void endGame(bool isVictory);
 
-    // [UI] 暂停按钮
+    // [UI] 暂停按钮 / 暂停菜单
     void createPauseButton();
     void onPauseButtonClicked(cocos2d::Ref* sender);
     void pauseGame();
     void resumeGame();
+    void showPauseMenu();
+    void hidePauseMenu();
 
     // 动态网格参数（根据背景大小调整）
     float _actualGridStartX = GRID_START_X;
@@ -104,6 +109,9 @@ private:
     
     // Boss2 ice tracking (grid positions where ice has been placed)
     std::set<std::pair<int, int>> _icePositions;  // (row, col) pairs
+
+    // 暂停菜单层（ESC 或暂停按钮弹出）
+    cocos2d::LayerColor* _pauseLayer = nullptr;
 };
 
 #endif // __GAME_SCENE_H__

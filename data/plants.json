@@ -32,9 +32,9 @@
     "type": "producer",
     "hp": 300,
     "cost": 50,
-    "cooldown": 7.5,
+    "cooldown": 6.5,
     "attack": 0,
-    "produceInterval": 24.0,
+    "produceInterval": 6.0,
     "texture": "plants/sunflower/1.png",
     "cardImage": "cards/card_1002.png",
     "animations": {
@@ -232,7 +232,7 @@
     "hp": 300,
     "cost": 0,
     "cooldown": 7.5,
-    "attack": 20,
+    "attack": 500,
     "attackSpeed": 1.5,
     "texture": "plants/smallgu/1.png",
     "cardImage": "cards/card_puffshroom.png",
@@ -261,7 +261,7 @@
     "cost": 25,
     "cooldown": 7.5,
     "attack": 0,
-    "produceInterval": 24.0,
+    "produceInterval": 12.0,
     "texture": "plants/sunshroom/1.png",
     "cardImage": "cards/card_sunshroom.png",
     "animations": {
@@ -385,7 +385,7 @@
     "cooldown": 7.5,
     "attack": 0,
     "texture": "plants/lilypad/1.png",
-    "cardImage": "cards/card_1001.png",
+    "cardImage": "cards/card_lilypad.png",
     "animations": {
       "idle": {
         "frameFormat": "plants/lilypad/%d.png",

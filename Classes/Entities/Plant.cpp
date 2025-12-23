@@ -186,15 +186,44 @@ void Plant::triggerSkill() {
         }
     }
     else if (_data.type == "producer") {
-        // If has produce animation, play it
+        // 生产类植物（向日葵、阳光菇等）
+        CCLOG("[Info] Plant %s produces!", _data.name.c_str());
+
+        // 如果有生产动画，播放一次
         auto produceIt = _data.animations.find("produce");
         if (produceIt != _data.animations.end()) {
             playAnimation("produce");
         }
-        // ...
+
+        // 调用回调，由 GameScene 决定具体产生什么（这里是生成阳光）
+        if (_onShootCallback) {
+            // 生成位置：以植物中心为基准，稍微偏上一点
+            cocos2d::Vec2 spawnPos = this->getPosition() + cocos2d::Vec2(0, 20);
+            _onShootCallback(spawnPos, 0);
+        } else {
+            CCLOG("[Err] _onShootCallback for producer is NULL! Did you set it in GameScene?");
+        }
     } 
+    else if (_data.type == "defensive") {
+        // 防御类植物（如 Spikeweed 等）
+        CCLOG("[Info] Defensive plant %s triggers skill!", _data.name.c_str());
+
+        // Spikeweed 有攻击动画
+        auto atkIt = _data.animations.find("attack");
+        if (atkIt != _data.animations.end()) {
+            playAnimation("attack");
+        }
+
+        if (_onShootCallback) {
+            // 使用植物当前位置作为作用中心
+            cocos2d::Vec2 centerPos = this->getPosition();
+            _onShootCallback(centerPos, _data.attack);
+        } else {
+            CCLOG("[Debug] Defensive plant %s has no callback set.", _data.name.c_str());
+        }
+    }
     else {
-        CCLOG("[Err] Plant type mismatch! Expected 'shooter', got '%s'", _data.type.c_str());
+        CCLOG("[Err] Plant type mismatch! Unsupported type '%s' for plant %s", _data.type.c_str(), _data.name.c_str());
     }
 }
 

@@ -27,7 +27,35 @@ bool MapSelectScene::init() {
     createTitle();
     createMapButtons();
     createBackButton();
-    
+
+    // 使用键盘数字键 1~4 选择对应地图，取消鼠标选图，避免误触
+    auto keyboardListener = EventListenerKeyboard::create();
+    keyboardListener->onKeyReleased = [this](EventKeyboard::KeyCode keyCode, Event* event) {
+        int mapId = -1;
+        switch (keyCode) {
+        case EventKeyboard::KeyCode::KEY_1:
+            mapId = 1;
+            break;
+        case EventKeyboard::KeyCode::KEY_2:
+            mapId = 2;
+            break;
+        case EventKeyboard::KeyCode::KEY_3:
+            mapId = 3;
+            break;
+        case EventKeyboard::KeyCode::KEY_4:
+            mapId = 4;
+            break;
+        default:
+            break;
+        }
+
+        if (mapId != -1 && isMapUnlocked(mapId)) {
+            CCLOG("[Info] Map %d selected by keyboard", mapId);
+            this->onMapButtonClicked(nullptr, mapId);
+        }
+    };
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(keyboardListener, this);
+
     return true;
 }
 
@@ -51,16 +79,48 @@ void MapSelectScene::createTitle() {
 }
 
 void MapSelectScene::createMapButtons() {
-    float centerX = _visibleSize.width/2 + _origin.x;
-    float startY = _visibleSize.height * 0.55f + _origin.y;
-    float buttonSpacing = 120.0f;
-    float buttonWidth = 200.0f;
+    // 以屏幕中心为基准，做一个 2x2 的网格布局，让每个地图按钮之间间距更大，避免误触
+    float centerX = _visibleSize.width / 2 + _origin.x;
+    float centerY = _visibleSize.height * 0.55f + _origin.y;
+
+    float buttonWidth = 220.0f;
     float buttonHeight = 150.0f;
+
+    // 水平和垂直间距：保证按钮之间有明显空隙
+    float horizontalSpacing = 260.0f;
+    float verticalSpacing = 220.0f;
     
-    // 创建4个地图按钮
+    // 创建4个地图按钮，排列成 2x2：
+    // 视觉上我们希望：
+    // [3] [4]
+    // [1] [2]
+    // 因此这里对 mapId 做一次手动映射，保证显示位置与点击判定一致
     for (int mapId = 1; mapId <= 4; ++mapId) {
-        float x = centerX - (4 - mapId) * buttonSpacing + buttonSpacing * 1.5f;
-        float y = startY;
+        int row = 0;
+        int col = 0;
+
+        switch (mapId) {
+        case 3: // Map1 放在左下
+            row = 1; col = 0;
+            break;
+        case 4: // Map2 放在右下
+            row = 1; col = 1;
+            break;
+        case 1: // Map3 放在左上
+            row = 0; col = 0;
+            break;
+        case 2: // Map4 放在右上
+            row = 0; col = 1;
+            break;
+        default:
+            row = 0; col = 0;
+            break;
+        }
+
+        // 让左列在 centerX 左侧一点，右列在右侧一点；
+        // 上排在 centerY 上方，下排在下方。
+        float x = centerX + (col == 0 ? -horizontalSpacing / 2 : horizontalSpacing / 2);
+        float y = centerY + (row == 0 ? verticalSpacing / 2 : -verticalSpacing / 2);
         
         // 创建按钮容器
         auto buttonContainer = Node::create();
@@ -98,58 +158,9 @@ void MapSelectScene::createMapButtons() {
         mapLabel->setColor(isMapUnlocked(mapId) ? Color3B::WHITE : Color3B::GRAY);
         buttonContainer->addChild(mapLabel, 2);
         
-        // 创建可点击按钮（覆盖整个区域）
+        // 已解锁地图：仅展示，不再使用鼠标/点击选择，改为数字键 1~4 选择
         if (isMapUnlocked(mapId)) {
-            // 使用 ui::Button 支持触摸和鼠标
-            auto button = ui::Button::create();
-            button->setContentSize(Size(buttonWidth, buttonHeight));
-            button->setTitleText("");
-            button->setPosition(Vec2::ZERO);
-            button->setAnchorPoint(Vec2(0.5f, 0.5f));
-            button->setOpacity(0); // 透明，但可点击
-            button->setSwallowTouches(true);
-            button->setEnabled(true);
-            button->setBright(true); // 确保按钮可交互
-            
-            // 添加悬停效果和点击事件
-            button->addTouchEventListener([this, buttonContainer, mapId](Ref* sender, ui::Widget::TouchEventType type) {
-                if (type == ui::Widget::TouchEventType::BEGAN) {
-                    buttonContainer->runAction(ScaleTo::create(0.1f, 1.1f));
-                    CCLOG("[Debug] Button touch began for map %d", mapId);
-                } else if (type == ui::Widget::TouchEventType::ENDED) {
-                    buttonContainer->runAction(ScaleTo::create(0.1f, 1.0f));
-                    CCLOG("[Debug] Button touch ended for map %d", mapId);
-                    this->onMapButtonClicked(sender, mapId);
-                } else if (type == ui::Widget::TouchEventType::CANCELED) {
-                    buttonContainer->runAction(ScaleTo::create(0.1f, 1.0f));
-                }
-            });
-            buttonContainer->addChild(button, 10);
-            
-            // 添加鼠标事件监听（确保鼠标点击也能工作）
-            auto mouseListener = EventListenerMouse::create();
-            mouseListener->onMouseDown = [this, mapId, x, y, buttonWidth, buttonHeight, buttonContainer](EventMouse* event) {
-                if (event->getMouseButton() == EventMouse::MouseButton::BUTTON_LEFT) {
-                    Vec2 location = event->getLocationInView();
-                    Vec2 worldPos = Director::getInstance()->convertToGL(location);
-                    
-                    // 检查点击是否在按钮范围内（使用世界坐标）
-                    Rect buttonRect(x - buttonWidth/2, y - buttonHeight/2, buttonWidth, buttonHeight);
-                    if (buttonRect.containsPoint(worldPos)) {
-                        CCLOG("[Debug] Mouse clicked on map %d at world pos (%.1f, %.1f)", mapId, worldPos.x, worldPos.y);
-                        // 添加点击反馈
-                        buttonContainer->runAction(Sequence::create(
-                            ScaleTo::create(0.05f, 1.1f),
-                            ScaleTo::create(0.05f, 1.0f),
-                            CallFunc::create([this, mapId]() {
-                                this->onMapButtonClicked(nullptr, mapId);
-                            }),
-                            nullptr
-                        ));
-                    }
-                }
-            };
-            this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(mouseListener, buttonContainer);
+            // 这里保留 buttonContainer 作为纯展示用容器，不添加额外输入事件
         } else {
             // 未解锁的地图显示锁定图标
             auto lockLabel = Label::createWithTTF("🔒", "fonts/Marker Felt.ttf", 40);
@@ -180,19 +191,15 @@ void MapSelectScene::onMapButtonClicked(cocos2d::Ref* sender, int mapId) {
     CCLOG("[Info] Map %d selected", mapId);
     AudioManager::getInstance().playEffect(AudioPath::PLANT_SOUND);
     
+    // 记录当前地图ID（用于难度和夜晚限制）
+    SceneManager::getInstance().setCurrentMapId(mapId);
+
     // 设置选中的地图背景
     std::string bgPath = getMapBackgroundPath(mapId);
     
     // 先设置LevelManager中的背景路径（在loadLevel之前）
     LevelManager::getInstance().setBackgroundPath(bgPath);
     CCLOG("[Info] Map %d selected, background set to: %s", mapId, bgPath.c_str());
-    
-    // 加载默认的level配置（loadLevel现在不会覆盖已设置的背景路径）
-    try {
-        LevelManager::getInstance().loadLevel("data/level_test.json");
-    } catch (...) {
-        CCLOG("[Warn] Failed to load default level config");
-    }
     
     // 进入植物选择场景
     SceneManager::getInstance().gotoPlantSelectScene();

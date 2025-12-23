@@ -28,6 +28,10 @@ public:
     
     // 重新开始游戏
     void restartGame();
+
+    // 当前地图（章节）ID：1~4
+    void setCurrentMapId(int mapId) { _currentMapId = mapId; }
+    int getCurrentMapId() const { return _currentMapId; }
     
 private:
     SceneManager() = default;
@@ -37,6 +41,9 @@ private:
     SceneManager& operator=(const SceneManager&) = delete;
     
     GameState _currentState = GameState::MENU;
+
+    // 当前地图（章节）ID：1=白天1，2=白天2，3=夜晚1，4=夜晚2
+    int _currentMapId = 1;
     
     // 植物选择数据
     std::vector<int> _selectedPlantIds;

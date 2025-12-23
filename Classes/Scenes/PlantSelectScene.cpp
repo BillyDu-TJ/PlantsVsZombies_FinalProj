@@ -71,18 +71,33 @@ void PlantSelectScene::createCardArea() {
     _cardArea->setPosition(_origin);
     this->addChild(_cardArea, 5); // Higher z-order to be visible on PanelBackground
     
-    // Get all available plant IDs
-    std::vector<int> availablePlantIds = {
+    // Get all available plant IDs（基础池）
+    std::vector<int> basePlantIds = {
         1001, 1002, 1004, 1005, 1006, 1007, 1008, 1009, 1010, 1011, 1012, 1013, 1014
     };
+
+    // 根据当前地图（章节）调整可选植物：夜晚地图禁止使用向日葵（1002）
+    int currentMapId = SceneManager::getInstance().getCurrentMapId();
+    bool isNightMap = (currentMapId == 3 || currentMapId == 4);
+
+    std::vector<int> availablePlantIds;
+    availablePlantIds.reserve(basePlantIds.size());
+    for (int id : basePlantIds) {
+        // 夜晚地图禁止向日葵，鼓励使用阳光菇
+        if (isNightMap && id == 1002) {
+            continue;
+        }
+        availablePlantIds.push_back(id);
+    }
     
-    // Calculate card positions - arrange them in a grid on PanelBackground
-    // Place cards in the middle-lower area of the screen
-    float cardAreaY = _visibleSize.height * 0.35f + _origin.y;
-    float cardStartX = _visibleSize.width / 2 + _origin.x;
+    // Calculate card positions - arrange them in a single row, centered
     float cardGap = 90.0f; // Card spacing
+    float centerX = _visibleSize.width / 2 + _origin.x;
+    float centerY = _visibleSize.height * 0.5f + _origin.y;
+    
+    // Calculate starting X position to center all cards
     float totalWidth = (availablePlantIds.size() - 1) * cardGap;
-    float startX = cardStartX - totalWidth / 2;
+    float startX = centerX - totalWidth / 2.0f;
     
     // Create all available cards
     for (size_t i = 0; i < availablePlantIds.size(); ++i) {
@@ -91,8 +106,11 @@ void PlantSelectScene::createCardArea() {
         try {
             auto card = SeedCard::create(plantId);
             if (card) {
+                // Calculate card position in a single row
                 float x = startX + i * cardGap;
-                card->setPosition(x, cardAreaY);
+                float y = centerY;
+                
+                card->setPosition(x, y);
                 card->setScale(1.2f); // Initial card scale
                 
                 // Cards don't need individual event listeners, handled by global mouse listener
@@ -101,7 +119,7 @@ void PlantSelectScene::createCardArea() {
                 _availableCards.push_back(card);
                 _cardSelectedMap[card] = false; // Initialize as not selected
                 
-                CCLOG("[Info] Created card for plant %d at (%.1f, %.1f)", plantId, x, cardAreaY);
+                CCLOG("[Info] Created card for plant %d at (%.1f, %.1f)", plantId, x, y);
             } else {
                 CCLOG("[Err] Failed to create card for plant %d: SeedCard::create returned nullptr", plantId);
             }

@@ -1,0 +1,64 @@
+{
+  "levelInfo": {
+    "name": "Night 2",
+    "background": "bg/night2.jpg"
+  },
+  "assets": {
+    "sunBar": "ui/bar.png",
+    "seedSlot": "ui/seed_slot.png"
+  },
+  "waves": [
+    {
+      "time": 2.0,
+      "zombieId": 2001,
+      "row": 0
+    },
+    {
+      "time": 3.0,
+      "zombieId": 2002,
+      "row": 2
+    },
+    {
+      "time": 5.0,
+      "zombieId": 2001,
+      "row": 1
+    },
+    {
+      "time": 6.0,
+      "zombieId": 2001,
+      "row": 3
+    },
+    {
+      "time": 8.0,
+      "zombieId": 2002,
+      "row": 4
+    },
+    {
+      "time": 10.0,
+      "zombieId": 2002,
+      "row": 2
+    },
+    {
+      "time": 12.0,
+      "zombieId": 2001,
+      "row": 5
+    },
+    {
+      "time": 15.0,
+      "zombieId": 2004,
+      "row": 3
+    },
+    {
+      "time": 18.0,
+      "zombieId": 2002,
+      "row": 2
+    },
+    {
+      "time": 20.0,
+      "zombieId": 2005,
+      "row": 2
+    }
+  ]
+}
+
+

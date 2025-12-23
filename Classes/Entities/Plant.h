@@ -1,5 +1,6 @@
 // 植物类定义，继承自Unit类，包含植物特有的属性和方法
 // 2025.12.2 by BillyDu
+//12.22 by Zhao 神人植物开挂提升攻击力（记得修改回去）
 #ifndef __PLANT_H__
 #define __PLANT_H__
 
@@ -33,6 +34,11 @@ public:
     // 动画相关方法
     void playAnimation(const std::string& animName);  // 播放指定动画
     void playDefaultAnimation();  // 播放默认动画
+
+    // --- 只读访问器 ---
+    const std::string& getName() const { return _data.name; }
+    const std::string& getType() const { return _data.type; }
+    const PlantData& getData() const { return _data; }
 
 protected:
     PlantData _data;

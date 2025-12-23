@@ -64,12 +64,28 @@ void DataManager::loadPlants(const std::string& filename) {
         data.attack = val.HasMember("attack") ? val["attack"].GetInt() : 0;
         data.texturePath = val["texture"].GetString();
 
+        // 攻击/生产间隔：
+        // - 射击类植物：使用 attackSpeed
+        // - 生产类植物（向日葵、阳光菇）：优先使用 produceInterval，如果没有则退回 attackSpeed
         if (val.HasMember("attackSpeed")) {
             data.attackSpeed = val["attackSpeed"].GetFloat();
         }
         else {
             data.attackSpeed = 0.0f;
-            CCLOG("[Warn] Plant %d missing 'attackSpeed'", id);
+        }
+
+        // 兼容 JSON 中的 produceInterval 字段（仅生产型植物有）
+        if (val.HasMember("produceInterval")) {
+            float produceInterval = val["produceInterval"].GetFloat();
+            // 如果 attackSpeed 为空或非正数，则直接用生产间隔作为计时用的 attackSpeed
+            if (data.attackSpeed <= 0.0f) {
+                data.attackSpeed = produceInterval;
+            }
+            cocos2d::log("[Info] Plant %d (%s) use produceInterval: %.2f", id, data.name.c_str(), data.attackSpeed);
+        }
+        else if (data.attackSpeed <= 0.0f) {
+            // 既没有 attackSpeed 也没有 produceInterval，给个警告方便排查
+            CCLOG("[Warn] Plant %d missing both 'attackSpeed' and 'produceInterval'", id);
         }
 
         // 加载动画配置

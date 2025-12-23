@@ -107,6 +107,78 @@
     },
     "defaultAnimation": "walk"
   },
+  "2006": {
+    "name": "DuckZombie",
+    "hp": 300,
+    "speed": 10,
+    "damage": 20,
+    "attackInterval": 1.5,
+    "texture": "zombies/duck1/duck1_walk1/1.png",
+    "animations": {
+      "walk1": {
+        "frameFormat": "zombies/duck1/duck1_walk1/%d.png",
+        "frameCount": 15,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "walk2": {
+        "frameFormat": "zombies/duck1/duck1_walk2/%d.png",
+        "frameCount": 15,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "eat": {
+        "frameFormat": "zombies/duck1/duck1_eat/%d.png",
+        "frameCount": 15,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "dead": {
+        "frameFormat": "zombies/duck1/duck1_die/%d.png",
+        "frameCount": 15,
+        "frameDelay": 0.12,
+        "loopCount": 1,
+        "onComplete": "remove"
+      }
+    },
+    "defaultAnimation": "walk1"
+  },
+  "2007": {
+    "name": "DuckConeheadZombie",
+    "hp": 640,
+    "speed": 10,
+    "damage": 20,
+    "attackInterval": 1.5,
+    "texture": "zombies/duck2/duck2_walk1/1.png",
+    "animations": {
+      "walk1": {
+        "frameFormat": "zombies/duck2/duck2_walk1/%d.png",
+        "frameCount": 15,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "walk2": {
+        "frameFormat": "zombies/duck2/duck2_walk2/%d.png",
+        "frameCount": 15,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "eat": {
+        "frameFormat": "zombies/duck2/duck2_eat/%d.png",
+        "frameCount": 15,
+        "frameDelay": 0.1,
+        "loopCount": -1
+      },
+      "dead": {
+        "frameFormat": "zombies/duck2/duck2_die/%d.png",
+        "frameCount": 15,
+        "frameDelay": 0.12,
+        "loopCount": 1,
+        "onComplete": "remove"
+      }
+    },
+    "defaultAnimation": "walk1"
+  },
   "2004": {
     "name": "Boss1",
     "hp": 5000,

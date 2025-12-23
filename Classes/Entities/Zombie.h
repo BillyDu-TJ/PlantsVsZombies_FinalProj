@@ -42,6 +42,7 @@ public:
 private:
     ZombieData _data;
 	float _attackTimer = 0.0f;
+    float _lifeTimer = 0.0f;  // Timer to track zombie lifetime (for walk1->walk2 transition)
     std::string _currentAnimation;  // Current playing animation name
     float _speedMultiplier = 1.0f;  // Current speed multiplier (1.0 = normal, 0.5 = slowed)
     bool _isPhase2 = false;  // Track if boss has entered phase 2 (30% HP threshold for Boss1)

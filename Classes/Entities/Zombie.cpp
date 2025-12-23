@@ -26,6 +26,7 @@ bool Zombie::init() {
     _type = UnitType::ZOMBIE;
     _state = UnitState::WALK;
     _attackTimer = 0.0f;
+    _lifeTimer = 0.0f;  // Initialize life timer
     _currentAnimation = "";
 
     return true;
@@ -179,6 +180,7 @@ void Zombie::updateLogic(float dt) {
     Unit::updateLogic(dt);
 
 	_attackTimer += dt;
+    _lifeTimer += dt;  // Update life timer for walk1->walk2 transition
     
     // Check for phase transition (for boss zombies)
     checkPhaseTransition();
@@ -213,9 +215,20 @@ void Zombie::updateLogic(float dt) {
             }
         }
         else {
-            // Normal zombies use "walk"
-            if (_currentAnimation != "walk") {
-                playAnimation("walk");
+            // 普通僵尸：如果有 walk1/walk2，则先走10秒walk1，然后自动切换为walk2（游泳）
+            auto itWalk1 = _data.animations.find("walk1");
+            auto itWalk2 = _data.animations.find("walk2");
+            if (itWalk1 != _data.animations.end() && itWalk2 != _data.animations.end()) {
+                // 游泳僵尸：前10秒用walk1，10秒后自动切换为walk2
+                std::string targetAnim = (_lifeTimer >= 15.0f) ? "walk2" : "walk1";
+                if (_currentAnimation != targetAnim) {
+                    playAnimation(targetAnim);
+                }
+            } else {
+                // 普通只有一个 "walk" 动画的僵尸
+                if (_currentAnimation != "walk") {
+                    playAnimation("walk");
+                }
             }
         }
         

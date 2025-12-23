@@ -37,6 +37,11 @@
       "time": 15.0,
       "zombieId": 2004,
       "row": 2
+    },
+    {
+      "time": 20.0,
+      "zombieId": 2005,
+      "row": 2
     }
   ]
 }
