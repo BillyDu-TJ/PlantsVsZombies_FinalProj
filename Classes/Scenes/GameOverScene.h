@@ -1,4 +1,4 @@
-// сно╥й╖╟эЁ║╬╟
+// Ф╦╦Ф┬▐Е╓╠Х╢╔Е°╨Ф≥╞
 // 2025.12.15 by BillyDu
 #ifndef __GAME_OVER_SCENE_H__
 #define __GAME_OVER_SCENE_H__

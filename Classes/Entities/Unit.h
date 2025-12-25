@@ -1,11 +1,11 @@
-// »ù´¡µ¥Î»Àà£¬ËùÓĞÖ²Îï¡¢½©Ê¬¡¢×Óµ¯µÈ¶¼¼Ì³Ğ×Ô´ËÀà
+// åŸºç¡€å•ä½ç±»ï¼Œæ‰€æœ‰æ¤ç‰©ã€åƒµå°¸ã€å­å¼¹ç­‰éƒ½ç»§æ‰¿è‡ªæ­¤ç±»
 // 2025.12.2 by BillyDu
 #ifndef __UNIT_H__
 #define __UNIT_H__
 
 #include "cocos2d.h"
 
-// Ê¹ÓÃÇ¿ÀàĞÍÃ¶¾Ù (C++11 scoped enum)
+// ä½¿ç”¨å¼ºç±»å‹æšä¸¾ (C++11 scoped enum)
 enum class UnitType {
     PLANT,
     ZOMBIE,
@@ -22,42 +22,42 @@ enum class UnitState {
 
 class Unit : public cocos2d::Sprite {
 public:
-    // ¹¹Ôìº¯ÊıÖĞ³õÊ¼»¯³ÉÔ±±äÁ¿ (C++11)
+    // æ„é€ å‡½æ•°ä¸­åˆå§‹åŒ–æˆå‘˜å˜é‡ (C++11)
     Unit();
     virtual ~Unit() = default;
 
-    // »ù´¡³õÊ¼»¯
+    // åŸºç¡€åˆå§‹åŒ–
     virtual bool init() override;
 
-    // --- ºËĞÄÓÎÏ·Âß¼­½Ó¿Ú (¶àÌ¬) ---
-    // ÊÜµ½ÉËº¦
+    // --- æ ¸å¿ƒæ¸¸æˆé€»è¾‘æ¥å£ (å¤šæ€) ---
+    // å—åˆ°ä¼¤å®³
     virtual void takeDamage(int damage);
 
-    // ËÀÍöÂß¼­ (²¥·Å¶¯»­¡¢ÒÆ³ı×Ô¼ºµÈ)
+    // æ­»äº¡é€»è¾‘ (æ’­æ”¾åŠ¨ç”»ã€ç§»é™¤è‡ªå·±ç­‰)
     virtual void die();
 
-    // Ã¿Ö¡Âß¼­¸üĞÂ (ÒÆ¶¯¡¢¹¥»÷µ¹¼ÆÊ±)
+    // æ¯å¸§é€»è¾‘æ›´æ–° (ç§»åŠ¨ã€æ”»å‡»å€’è®¡æ—¶)
     virtual void updateLogic(float dt);
 
     // --- Getters & Setters ---
-    // Ê¹ÓÃ CC_SYNTHESIZE ºê¿ìËÙÉú³É get/set£¬»òÕßÊÖĞ´ÒÔ¿ØÖÆÈ¨ÏŞ
-    // ĞĞºÅ (ÓÃÓÚÓÅ»¯Åö×²¼ì²â)
+    // ä½¿ç”¨ CC_SYNTHESIZE å®å¿«é€Ÿç”Ÿæˆ get/setï¼Œæˆ–è€…æ‰‹å†™ä»¥æ§åˆ¶æƒé™
+    // è¡Œå· (ç”¨äºä¼˜åŒ–ç¢°æ’æ£€æµ‹)
     CC_SYNTHESIZE(int, _row, Row);
-    // ÀàĞÍ
+    // ç±»å‹
     CC_SYNTHESIZE(UnitType, _type, UnitType);
-    // ×´Ì¬
+    // çŠ¶æ€
     CC_SYNTHESIZE(UnitState, _state, State);
 
-    // ÊôĞÔ
+    // å±æ€§
     int getHp() const { return _hp; }
-    void setHp(int hp) { _hp = hp; _maxHp = hp; } // ÉèÖÃ³õÊ¼ÑªÁ¿Í¬Ê±ÉèÖÃ×î´óÑªÁ¿
+    void setHp(int hp) { _hp = hp; _maxHp = hp; } // è®¾ç½®åˆå§‹è¡€é‡åŒæ—¶è®¾ç½®æœ€å¤§è¡€é‡
 
     bool isDead() const { return _hp <= 0; }
 
 protected:
     int _hp;
     int _maxHp;
-    // Ò²Ğí»¹ĞèÒªÊÜ»÷ÉÁ°×Ğ§¹ûµÄ¼ÆÊ±Æ÷µÈ
+    // ä¹Ÿè®¸è¿˜éœ€è¦å—å‡»é—ªç™½æ•ˆæœçš„è®¡æ—¶å™¨ç­‰
 };
 
 #endif // __UNIT_H__

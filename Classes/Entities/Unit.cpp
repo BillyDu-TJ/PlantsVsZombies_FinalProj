@@ -1,4 +1,4 @@
-// ÊµÏÖ Unit Àà
+// å®ç° Unit ç±»
 // 2025.12.2 by BillyDu
 #include "Unit.h"
 
@@ -17,9 +17,9 @@ bool Unit::init() {
     if (!Sprite::init()) {
         return false;
     }
-    // ¿ªÆô update µ÷¶È£¬ÕâÑù update(dt) »á±»ÒıÇæ×Ô¶¯µ÷ÓÃ
-    // µ«ÎÒÃÇ¿ÉÒÔ¶¨Òå×Ô¼ºµÄ updateLogic ¹© GameManager Í³Ò»µ÷ÓÃ£¬»òÕßÖ±½ÓÓÃÒıÇæµÄ
-    // ÕâÀïÎªÁËÑİÊ¾£¬ÎÒÃÇÏÈ²» scheduleUpdate£¬ÓÉÉÏ²ã¹ÜÀíÆ÷Í³Ò»¿ØÖÆÂß¼­¿ÉÄÜ¸üÓÅ
+    // å¼€å¯ update è°ƒåº¦ï¼Œè¿™æ · update(dt) ä¼šè¢«å¼•æ“è‡ªåŠ¨è°ƒç”¨
+    // ä½†æˆ‘ä»¬å¯ä»¥å®šä¹‰è‡ªå·±çš„ updateLogic ä¾› GameManager ç»Ÿä¸€è°ƒç”¨ï¼Œæˆ–è€…ç›´æ¥ç”¨å¼•æ“çš„
+    // è¿™é‡Œä¸ºäº†æ¼”ç¤ºï¼Œæˆ‘ä»¬å…ˆä¸ scheduleUpdateï¼Œç”±ä¸Šå±‚ç®¡ç†å™¨ç»Ÿä¸€æ§åˆ¶é€»è¾‘å¯èƒ½æ›´ä¼˜
     return true;
 }
 
@@ -27,9 +27,9 @@ void Unit::takeDamage(int damage) {
     if (isDead()) return;
 
     _hp -= damage;
-    // ¼òµ¥µÄÊÜ»÷·´À¡£º±äºìÒ»ÏÂ
+    // ç®€å•çš„å—å‡»åé¦ˆï¼šå˜çº¢ä¸€ä¸‹
     this->setColor(Color3B::RED);
-    // Ê¹ÓÃ Lambda ÑÓ³Ù»Ö¸´ÑÕÉ« (C++11)
+    // ä½¿ç”¨ Lambda å»¶è¿Ÿæ¢å¤é¢œè‰² (C++11)
     auto delay = DelayTime::create(0.1f);
     auto restore = CallFunc::create([this]() {
         this->setColor(Color3B::WHITE);
@@ -42,14 +42,14 @@ void Unit::takeDamage(int damage) {
 }
 
 void Unit::die() {
-    if (_state == UnitState::DIE) return; // ·ÀÖ¹ÖØ¸´ËÀÍö
+    if (_state == UnitState::DIE) return; // é˜²æ­¢é‡å¤æ­»äº¡
     _state = UnitState::DIE;
 
     CCLOG("[Info] Unit died.");
-    this->removeAllChildren(); // ÒÆ³ı×Ó½Úµã£¨Èç¹ÒÔØµÄºìµã£©
-    this->removeFromParent();  // ´Ó³¡¾°ÒÆ³ı
+    this->removeAllChildren(); // ç§»é™¤å­èŠ‚ç‚¹ï¼ˆå¦‚æŒ‚è½½çš„çº¢ç‚¹ï¼‰
+    this->removeFromParent();  // ä»åœºæ™¯ç§»é™¤
 }
 
 void Unit::updateLogic(float dt) {
-    // »ùÀàÔİÊ±Ã»ÓĞÍ¨ÓÃÂß¼­
+    // åŸºç±»æš‚æ—¶æ²¡æœ‰é€šç”¨é€»è¾‘
 }

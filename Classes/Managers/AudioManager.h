@@ -1,4 +1,4 @@
-// ÒôÆµ¹ÜÀíÆ÷ - Í³Ò»¹ÜÀí±³¾°ÒôÀÖºÍÒôĞ§
+// éŸ³é¢‘ç®¡ç†å™¨ - ç»Ÿä¸€ç®¡ç†èƒŒæ™¯éŸ³ä¹å’ŒéŸ³æ•ˆ
 // 2025.12.15 by BillyDu
 #ifndef __AUDIO_MANAGER_H__
 #define __AUDIO_MANAGER_H__
@@ -10,28 +10,28 @@ class AudioManager {
 public:
     static AudioManager& getInstance();
     
-    // ±³¾°ÒôÀÖ¿ØÖÆ
+    // èƒŒæ™¯éŸ³ä¹æ§åˆ¶
     void playBackgroundMusic(const std::string& filename, bool loop = true);
     void stopBackgroundMusic();
     void pauseBackgroundMusic();
     void resumeBackgroundMusic();
     
-    // ÒôĞ§¿ØÖÆ
+    // éŸ³æ•ˆæ§åˆ¶
     void playEffect(const std::string& filename);
     
-    // ÒôÁ¿¿ØÖÆ
+    // éŸ³é‡æ§åˆ¶
     void setMusicVolume(float volume);      // 0.0f - 1.0f
     void setEffectVolume(float volume);     // 0.0f - 1.0f
     float getMusicVolume() const;
     float getEffectVolume() const;
     
-    // ¿ª¹Ø¿ØÖÆ
+    // å¼€å…³æ§åˆ¶
     void setMusicEnabled(bool enabled);
     void setEffectEnabled(bool enabled);
     bool isMusicEnabled() const { return _musicEnabled; }
     bool isEffectEnabled() const { return _effectEnabled; }
     
-    // Ô¤¼ÓÔØÒôÆµÎÄ¼ş
+    // é¢„åŠ è½½éŸ³é¢‘æ–‡ä»¶
     void preloadAudio();
     
 private:

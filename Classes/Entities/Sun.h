@@ -1,4 +1,4 @@
-// Ñô¹âÀà¶¨Òå
+// é˜³å…‰ç±»å®šä¹‰
 //  2025.12.12 by BillyDu
 #ifndef __SUN_H__
 #define __SUN_H__
@@ -11,23 +11,23 @@ public:
     static Sun* create();
     virtual bool init() override;
 
-    // ÉèÖÃÊÕ¼¯»Øµ÷£¨µ±Ñô¹â·Éµ½×óÉÏ½Çºóµ÷ÓÃ£©
+    // è®¾ç½®æ”¶é›†å›è°ƒï¼ˆå½“é˜³å…‰é£åˆ°å·¦ä¸Šè§’åè°ƒç”¨ï¼‰
     void setOnCollectedCallback(const std::function<void(int)>& callback);
 
-    // ¶¯×÷Ä£Ê½ 1: ´ÓÌì¶ø½µ
-    // targetY: µôÂäµ½µÄµØÃæ¸ß¶È
+    // åŠ¨ä½œæ¨¡å¼ 1: ä»å¤©è€Œé™
+    // targetY: æ‰è½åˆ°çš„åœ°é¢é«˜åº¦
     void fallFromSky(float startX, float targetY);
 
-    // ¶¯×÷Ä£Ê½ 2: ´ÓÖ²Îï²ú³ö (Å×ÎïÏßÌøÔ¾)
+    // åŠ¨ä½œæ¨¡å¼ 2: ä»æ¤ç‰©äº§å‡º (æŠ›ç‰©çº¿è·³è·ƒ)
     void jumpFromPlant(cocos2d::Vec2 startPos, cocos2d::Vec2 targetPos);
 
 private:
-    // ´¦Àíµã»÷ÊÕ¼¯Âß¼­
+    // å¤„ç†ç‚¹å‡»æ”¶é›†é€»è¾‘
     void collect();
 
-    bool _isCollected = false; // ·ÀÖ¹ÖØ¸´µã»÷
+    bool _isCollected = false; // é˜²æ­¢é‡å¤ç‚¹å‡»
     std::function<void(int)> _onCollectedCallback;
-    int _value = 25; // Ò»¸öÑô¹â 25 µã
+    int _value = 25; // ä¸€ä¸ªé˜³å…‰ 25 ç‚¹
 };
 
 #endif // __SUN_H__

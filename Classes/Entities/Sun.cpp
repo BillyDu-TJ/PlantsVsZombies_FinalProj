@@ -1,4 +1,4 @@
-//  µœ÷—Ùπ‚¿‡
+// ÂÆûÁé∞Èò≥ÂÖâÁ±ª
 // 2025.12.12 by BillyDu
 #include "Sun.h"
 
@@ -14,13 +14,13 @@ Sun* Sun::create() {
 }
 
 bool Sun::init() {
-    // ºŸ…Ëƒ„”–√˚Œ™ "general/sun.png" µƒÕº∆¨£¨»Áπ˚√ª”–£¨‘› ±”√ Sprite::create() ª· ß∞‹
-    // ’‚¿ÔŒ“√«œ»”√“ª∏ˆºÚµ•µƒ‘≤»¶∂µµ◊£¨µ»ƒ„”–¡ÀÀÿ≤ƒ‘Ÿªª "general/sun.png"
+    // ÂÅáËÆæ‰Ω†ÊúâÂêç‰∏∫ "general/sun.png" ÁöÑÂõæÁâáÔºåÂ¶ÇÊûúÊ≤°ÊúâÔºåÊöÇÊó∂Áî® Sprite::create() ‰ºöÂ§±Ë¥•
+    // ËøôÈáåÊàë‰ª¨ÂÖàÁî®‰∏Ä‰∏™ÁÆÄÂçïÁöÑÂúÜÂúàÂÖúÂ∫ïÔºåÁ≠â‰Ω†Êúâ‰∫ÜÁ¥†ÊùêÂÜçÊç¢ "general/sun.png"
     if (!Sprite::init()) return false;
 
     this->setTexture("general/sun.png"); 
 
-    // ÃÌº”µ„ª˜º‡Ã˝
+    // Ê∑ªÂä†ÁÇπÂáªÁõëÂê¨
     auto listener = EventListenerTouchOneByOne::create();
     listener->setSwallowTouches(true);
     listener->onTouchBegan = [this](Touch* t, Event* e) {
@@ -35,7 +35,7 @@ bool Sun::init() {
         };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
 
-    // ◊‘∂Ø–˝◊™∂Øª≠ (»√—Ùπ‚ø¥∆¿¥‘⁄◊™)
+    // Ëá™Âä®ÊóãËΩ¨Âä®Áîª (ËÆ©Èò≥ÂÖâÁúãËµ∑Êù•Âú®ËΩ¨)
     this->runAction(RepeatForever::create(RotateBy::create(3.0f, 360)));
 
     return true;
@@ -46,12 +46,12 @@ void Sun::setOnCollectedCallback(const std::function<void(int)>& callback) {
 }
 
 void Sun::fallFromSky(float startX, float targetY) {
-    this->setPosition(startX, Director::getInstance()->getVisibleSize().height + 50); // ∆¡ƒª…œ∑Ω
+    this->setPosition(startX, Director::getInstance()->getVisibleSize().height + 50); // Â±èÂπï‰∏äÊñπ
     this->setVisible(true);
 
-    // ∂Ø◊˜£∫µÙ¬‰ -> Õ£¡Ù“ª∂Œ ±º‰ -> œ˚ ß
-    auto move = MoveTo::create(5.0f, Vec2(startX, targetY)); // 3√Î¬˝ÀŸµÙ¬‰
-    auto delay = DelayTime::create(3.0f); // µÿ…œ¥Ù5√Î
+    // Âä®‰ΩúÔºöÊéâËêΩ -> ÂÅúÁïô‰∏ÄÊÆµÊó∂Èó¥ -> Ê∂àÂ§±
+    auto move = MoveTo::create(5.0f, Vec2(startX, targetY)); // 3ÁßíÊÖ¢ÈÄüÊéâËêΩ
+    auto delay = DelayTime::create(3.0f); // Âú∞‰∏äÂëÜ5Áßí
     auto fadeOut = FadeOut::create(1.0f);
     auto remove = RemoveSelf::create();
 
@@ -60,13 +60,13 @@ void Sun::fallFromSky(float startX, float targetY) {
 
 void Sun::jumpFromPlant(Vec2 startPos, Vec2 targetPos) {
     this->setPosition(startPos);
-    this->setScale(0.5f); // ∏’≥ˆ¿¥–°“ªµ„
+    this->setScale(0.5f); // ÂàöÂá∫Êù•Â∞è‰∏ÄÁÇπ
 
-    // ±¥»˚∂˚«˙œﬂ≈◊ŒÔœﬂ
+    // Ë¥ùÂ°ûÂ∞îÊõ≤Á∫øÊäõÁâ©Á∫ø
     ccBezierConfig bezier;
-    bezier.controlPoint_1 = startPos + Vec2(0, 50); // ∆Ã¯µ„
-    bezier.controlPoint_2 = targetPos + Vec2(0, 80); // ◊Ó∏ﬂµ„
-    bezier.endPosition = targetPos; // ¬‰µÿ
+    bezier.controlPoint_1 = startPos + Vec2(0, 50); // Ëµ∑Ë∑≥ÁÇπ
+    bezier.controlPoint_2 = targetPos + Vec2(0, 80); // ÊúÄÈ´òÁÇπ
+    bezier.endPosition = targetPos; // ËêΩÂú∞
 
     auto jump = BezierTo::create(0.8f, bezier);
     auto scale = ScaleTo::create(0.5f, 1.0f);
@@ -81,14 +81,14 @@ void Sun::jumpFromPlant(Vec2 startPos, Vec2 targetPos) {
 
 void Sun::collect() {
     _isCollected = true;
-    this->stopAllActions(); // Õ£÷πµÙ¬‰ªÚœ˚ ß∂Ø◊˜
+    this->stopAllActions(); // ÂÅúÊ≠¢ÊéâËêΩÊàñÊ∂àÂ§±Âä®‰Ωú
 
-    // ∂Ø◊˜£∫∑…œÚ◊Û…œΩ« (UI —Ùπ‚¿∏Œª÷√ 20, 680)
-    // ◊¢“‚£∫’‚¿Ôµƒ◊¯±Í◊Ó∫√¥” GameScene ¥´Ω¯¿¥£¨‘› ±–¥À¿
+    // Âä®‰ΩúÔºöÈ£ûÂêëÂ∑¶‰∏äËßí (UI Èò≥ÂÖâÊ†è‰ΩçÁΩÆ 20, 680)
+    // Ê≥®ÊÑèÔºöËøôÈáåÁöÑÂùêÊ†áÊúÄÂ•Ω‰ªé GameScene ‰º†ËøõÊù•ÔºåÊöÇÊó∂ÂÜôÊ≠ª
     Vec2 targetUI = Vec2(40, Director::getInstance()->getVisibleSize().height - 40);
 
     auto move = MoveTo::create(0.5f, targetUI);
-    auto scale = ScaleTo::create(0.5f, 0.3f); // ±‰–°
+    auto scale = ScaleTo::create(0.5f, 0.3f); // ÂèòÂ∞è
     auto spawn = Spawn::create(move, scale, nullptr);
 
     auto callback = CallFunc::create([this]() {

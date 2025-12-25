@@ -1,4 +1,4 @@
-// ÒôÆµ¹ÜÀíÆ÷ÊµÏÖ
+// éŸ³é¢‘ç®¡ç†å™¨å®žçŽ°
 // 2025.12.15 by BillyDu
 #include "AudioManager.h"
 #include "../Consts.h"
@@ -76,11 +76,11 @@ void AudioManager::setEffectEnabled(bool enabled) {
 }
 
 void AudioManager::preloadAudio() {
-    // Ô¤¼ÓÔØ±³¾°ÒôÀÖ
+    // é¢„åŠ è½½èƒŒæ™¯éŸ³ä¹
     _audioEngine->preloadBackgroundMusic(AudioPath::MAIN_MENU_BGM);
     _audioEngine->preloadBackgroundMusic(AudioPath::GAME_BGM);
     
-    // Ô¤¼ÓÔØÒôÐ§
+    // é¢„åŠ è½½éŸ³æ•ˆ
     _audioEngine->preloadEffect(AudioPath::PLANT_SOUND);
     _audioEngine->preloadEffect(AudioPath::SHOOT_SOUND);
     _audioEngine->preloadEffect(AudioPath::ZOMBIE_DIE_SOUND);

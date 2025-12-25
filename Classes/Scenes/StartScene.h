@@ -1,4 +1,4 @@
-// ¿ªÊ¼²Ëµ¥³¡¾°
+// å¼€å§‹èœå•åœºæ™¯
 // 2025.12.15 by BillyDu
 #ifndef __START_SCENE_H__
 #define __START_SCENE_H__
@@ -13,17 +13,17 @@ public:
     CREATE_FUNC(StartScene);
     
 private:
-    // °´Å¥»Øµ÷º¯Êı
+    // æŒ‰é’®å›è°ƒå‡½æ•°
     void onStartButtonClicked(cocos2d::Ref* sender);
     void onSettingsButtonClicked(cocos2d::Ref* sender);
     void onExitButtonClicked(cocos2d::Ref* sender);
     
-    // UI ×é¼ş
+    // UI ç»„ä»¶
     void createBackground();
     void createTitle();
     void createButtons();
     
-    // ³ÉÔ±±äÁ¿
+    // æˆå‘˜å˜é‡
     cocos2d::Size _visibleSize;
     cocos2d::Vec2 _origin;
 };
