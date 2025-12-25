@@ -75,7 +75,7 @@ bool GameScene::init() {
     }
 
     // [网格草坪] 启用调试网格以验证对齐
-    drawDebugGrid();
+    // drawDebugGrid();
     
     // --- UI: 阳光栏与卡槽 (容器化) ---
 
