@@ -18,18 +18,18 @@ public:
     void gotoVictoryScene();
     void gotoGameOverScene();
     
-    // 植物选择数据传递
+    // ֲ��ѡ�����ݴ���
     void setSelectedPlants(const std::vector<int>& plantIds) { _selectedPlantIds = plantIds; }
     const std::vector<int>& getSelectedPlants() const { return _selectedPlantIds; }
     
-    // 游戏状态管理
+    // ��Ϸ״̬����
     void setGameState(GameState state) { _currentState = state; }
     GameState getGameState() const { return _currentState; }
     
-    // 重新开始游戏
+    // ���¿�ʼ��Ϸ
     void restartGame();
-
-    // 当前地图（章节）ID：1~4
+    
+    // ��ǰ��ͼ���½ڣ�ID��1~4
     void setCurrentMapId(int mapId) { _currentMapId = mapId; }
     int getCurrentMapId() const { return _currentMapId; }
     
@@ -41,7 +41,7 @@ private:
     SceneManager& operator=(const SceneManager&) = delete;
     
     GameState _currentState = GameState::MENU;
-
+    
     // 当前地图（章节）ID：1=白天1，2=白天2，3=夜晚1，4=夜晚2
     int _currentMapId = 1;
     

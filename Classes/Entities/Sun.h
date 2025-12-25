@@ -1,4 +1,4 @@
-// 阳光类定义
+// ����ඨ��
 //  2025.12.12 by BillyDu
 #ifndef __SUN_H__
 #define __SUN_H__
@@ -11,23 +11,23 @@ public:
     static Sun* create();
     virtual bool init() override;
 
-    // 设置收集回调（当阳光飞到左上角后调用）
+    // �����ռ��ص��������ɵ����ϽǺ���ã�
     void setOnCollectedCallback(const std::function<void(int)>& callback);
 
-    // 动作模式 1: 从天而降
-    // targetY: 掉落到的地面高度
+    // ����ģʽ 1: �������
+    // targetY: ���䵽�ĵ���߶�
     void fallFromSky(float startX, float targetY);
 
-    // 动作模式 2: 从植物产出 (抛物线跳跃)
+    // ����ģʽ 2: ��ֲ����� (��������Ծ)
     void jumpFromPlant(cocos2d::Vec2 startPos, cocos2d::Vec2 targetPos);
 
 private:
-    // 处理点击收集逻辑
+    // �������ռ��߼�
     void collect();
 
-    bool _isCollected = false; // 防止重复点击
+    bool _isCollected = false; // ��ֹ�ظ����
     std::function<void(int)> _onCollectedCallback;
-    int _value = 25; // 一个阳光 25 点
+    int _value = 25; // һ����� 25 ��
 };
 
 #endif // __SUN_H__

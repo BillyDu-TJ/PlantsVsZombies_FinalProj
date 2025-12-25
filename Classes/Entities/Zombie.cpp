@@ -32,6 +32,7 @@ bool Zombie::init() {
     return true;
 }
 
+// ����ע���߼�
 void Zombie::setZombieData(const ZombieData& data) {
     _data = data;
 
@@ -46,7 +47,7 @@ void Zombie::setZombieData(const ZombieData& data) {
     } else if (!_data.texturePath.empty()) {
         // No animation config, use static texture
         CCLOG("[Info] Zombie %s: Using static texture: %s", _data.name.c_str(), _data.texturePath.c_str());
-        this->setTexture(_data.texturePath);
+            this->setTexture(_data.texturePath);
     } else {
         // Fallback
         this->setTextureRect(Rect(0, 0, 60, 90));
@@ -164,8 +165,8 @@ void Zombie::checkPhaseTransition() {
         }
         else if (hpPercent <= 75.0f) {
             targetPhase = 2;
-        }
-        
+    }
+
         if (targetPhase != _currentPhase) {
             int oldPhase = _currentPhase;
             _currentPhase = targetPhase;
@@ -266,7 +267,7 @@ void Zombie::die() {
     
     // For boss1 and boss2, use "die" animation
     std::string deathAnim = ((_data.name == "Boss1") || (_data.name == "Boss2")) ? "die" : "dead";
-    
+
     // If has death animation, play it
     auto deadIt = _data.animations.find(deathAnim);
     if (deadIt != _data.animations.end()) {
@@ -276,6 +277,7 @@ void Zombie::die() {
         Unit::die();
     }
 }
+
 
 bool Zombie::canAttack() const {
     // If current attack timer exceeds the configured attack interval, can attack

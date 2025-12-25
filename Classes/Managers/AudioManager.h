@@ -1,4 +1,4 @@
-// 音频管理器 - 统一管理背景音乐和音效
+// ��Ƶ������ - ͳһ����������ֺ���Ч
 // 2025.12.15 by BillyDu
 #ifndef __AUDIO_MANAGER_H__
 #define __AUDIO_MANAGER_H__
@@ -10,28 +10,28 @@ class AudioManager {
 public:
     static AudioManager& getInstance();
     
-    // 背景音乐控制
+    // �������ֿ���
     void playBackgroundMusic(const std::string& filename, bool loop = true);
     void stopBackgroundMusic();
     void pauseBackgroundMusic();
     void resumeBackgroundMusic();
     
-    // 音效控制
+    // ��Ч����
     void playEffect(const std::string& filename);
     
-    // 音量控制
+    // ��������
     void setMusicVolume(float volume);      // 0.0f - 1.0f
     void setEffectVolume(float volume);     // 0.0f - 1.0f
     float getMusicVolume() const;
     float getEffectVolume() const;
     
-    // 开关控制
+    // ���ؿ���
     void setMusicEnabled(bool enabled);
     void setEffectEnabled(bool enabled);
     bool isMusicEnabled() const { return _musicEnabled; }
     bool isEffectEnabled() const { return _effectEnabled; }
     
-    // 预加载音频文件
+    // Ԥ������Ƶ�ļ�
     void preloadAudio();
     
 private:

@@ -1,4 +1,4 @@
-// 该头文件定义了游戏数据管理类 DataManager，负责加载和提供游戏中各种实体的数据。
+// ��ͷ�ļ���������Ϸ���ݹ����� DataManager��������غ��ṩ��Ϸ�и���ʵ������ݡ�
 // 2025.11.27 by BillyDu
 #ifndef __DATA_MANAGER_H__
 #define __DATA_MANAGER_H__
@@ -9,35 +9,35 @@
 
 class DataManager {
 public:
-    // C++11 风格的单例获取 (Meyers' Singleton)
+    // C++11 ���ĵ�����ȡ (Meyers' Singleton)
     static DataManager& getInstance();
 
-    // 删除拷贝构造和赋值操作符，确保单例唯一性
+    // ɾ����������͸�ֵ��������ȷ������Ψһ��
     DataManager(const DataManager&) = delete;
     void operator=(const DataManager&) = delete;
 
-    // 加载所有数据 (抛出异常)
+    // ������������ (�׳��쳣)
     void loadData();
 
-    // 获取特定植物的数据 (const 引用避免拷贝)
+    // ��ȡ�ض�ֲ������� (const ���ñ��⿽��)
     const PlantData& getPlantData(int id) const;
 
-    // 获取僵尸的数据
+    // ��ȡ��ʬ������
 	const ZombieData& getZombieData(int id) const;
 
 private:
-    DataManager() = default; // 私有构造
+    DataManager() = default; // ˽�й���
 
-    // 解析具体植物数据文件的辅助函数
+    // ��������ֲ�������ļ��ĸ�������
     void loadPlants(const std::string& filename);
 
-    // 缓存数据：ID -> Data
+    // �������ݣ�ID -> Data
     std::unordered_map<int, PlantData> _plantDataMap;
 
-	// 解析具体僵尸数据文件的辅助函数
+	// �������彩ʬ�����ļ��ĸ�������
     void loadZombies(const std::string& filename);
 
-    // 僵尸数据缓存
+    // ��ʬ���ݻ���
     std::unordered_map<int, ZombieData> _zombieDataMap;
 };
 

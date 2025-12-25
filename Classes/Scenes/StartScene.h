@@ -1,4 +1,4 @@
-// 开始菜单场景
+// ��ʼ�˵�����
 // 2025.12.15 by BillyDu
 #ifndef __START_SCENE_H__
 #define __START_SCENE_H__
@@ -13,17 +13,17 @@ public:
     CREATE_FUNC(StartScene);
     
 private:
-    // 按钮回调函数
+    // ��ť�ص�����
     void onStartButtonClicked(cocos2d::Ref* sender);
     void onSettingsButtonClicked(cocos2d::Ref* sender);
     void onExitButtonClicked(cocos2d::Ref* sender);
     
-    // UI 组件
+    // UI ���
     void createBackground();
     void createTitle();
     void createButtons();
     
-    // 成员变量
+    // ��Ա����
     cocos2d::Size _visibleSize;
     cocos2d::Vec2 _origin;
 };

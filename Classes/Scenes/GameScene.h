@@ -1,7 +1,7 @@
 ﻿// 游戏场景头文件，定义了游戏的核心架构和功能
 // 2025.11.27 by BillyDu
 //edited on 2025.12.21 by Zhao
-// 更新：添加按阳光值计算冷却时间功能（最少5秒，最多10秒），种植后启动冷却
+// ���£���Ӱ����ֵ������ȴʱ�书�ܣ�����5�룬���10�룩����ֲ�������ȴ
 // by Zhao.12.23
 #ifndef __GAME_SCENE_H__
 #define __GAME_SCENE_H__
@@ -22,7 +22,7 @@ public:
     static cocos2d::Scene* createScene();
     virtual bool init() override;
 
-    // 每一帧更新逻辑
+    // ÿһ֡�����߼�
     virtual void update(float dt) override;
 
     // --- 网格架构功能 ---
@@ -41,15 +41,15 @@ public:
     CREATE_FUNC(GameScene);
 
 private:
-    cocos2d::Vector<Plant*> _plants;   // 场上的植物列表
-    cocos2d::Vector<Zombie*> _zombies; // 场上的僵尸列表
-
-    // 生成僵尸
-    void spawnZombie(int id, int row);
-    // 种植植物
+	cocos2d::Vector<Plant*> _plants;   // ���ϵ�ֲ���б�
+    cocos2d::Vector<Zombie*> _zombies; // ���ϵĽ�ʬ�б�
+   
+	// ���ɽ�ʬ
+	void spawnZombie(int id, int row);
+    // ��ֲֲ��
     void tryPlantAt(int row, int col);
     void selectPlant(int plantId);
-    // 挖取植物
+    // ��ȡֲ��
     void tryDigAt(int row, int col);
 
     Plant* _plantMap[6][GRID_COLS]; // 逻辑网格上的植物指针（最大6行，Map2/Map4使用6行，Map1/Map3使用5行）
@@ -57,11 +57,11 @@ private:
     // 动态网格行数（根据地图类型：Map1/Map3=5行，Map2/Map4=6行）
     int _actualGridRows = GRID_ROWS;
 
-    // 游戏状态
+    // ��Ϸ״̬
     int _currentSun = 500; // 初始阳光值
     int _selectedPlantId = -1; // 当前选中的植物ID，-1表示未选中
-    GameState _gameState = GameState::PLAYING; // 游戏状态
-    
+    GameState _gameState = GameState::PLAYING; // ��Ϸ״̬
+
     // 冷却时间计算相关
     int _minCost = 0;  // 最小阳光值
     int _maxCost = 0;  // 最大阳光值
@@ -70,7 +70,7 @@ private:
     float calculateCooldownByCost(int cost) const;
 
     // UI Label：用于显示阳光
-    cocos2d::Label* _sunLabel = nullptr;
+	cocos2d::Label* _sunLabel = nullptr;
 
     // 子弹管理
     cocos2d::Vector<Bullet*> _bullets;
@@ -103,14 +103,14 @@ private:
     // [Input] 鼠标移动处理
     void onMouseMove(cocos2d::Event* event);
 
-    // [Helper] 更新幽灵位置
+    // [Helper] ��������λ��
     void updateGhostPosition(cocos2d::Vec2 mousePos);
-
+    
     // [Game Flow] 胜利条件检查
     void checkVictoryCondition();
     void checkGameOverCondition();
     void endGame(bool isVictory);
-
+    
     // [UI] 暂停按钮 / 暂停菜单
     void createPauseButton();
     void onPauseButtonClicked(cocos2d::Ref* sender);
@@ -119,7 +119,7 @@ private:
     void showPauseMenu();
     void hidePauseMenu();
 
-    // [Shovel] 铲子相关函数
+    // [Shovel] ������غ���
     void createShovelUI(cocos2d::Node* uiLayer, float x, float y);
     void resetShovel();
 
@@ -128,14 +128,14 @@ private:
     float _actualGridStartY = GRID_START_Y;
     float _actualCellWidth = CELL_WIDTH;
     float _actualCellHeight = CELL_HEIGHT;
-
+    
     // 计算网格实际参数的方法
     void calculateGridParameters(cocos2d::Sprite* background);
     
     // Boss2 ice tracking (grid positions where ice has been placed)
     std::set<std::pair<int, int>> _icePositions;  // (row, col) pairs
 
-    // 暂停菜单层（ESC 或暂停按钮弹出）
+    // ��ͣ�˵��㣨ESC ����ͣ��ť������
     cocos2d::LayerColor* _pauseLayer = nullptr;
 };
 

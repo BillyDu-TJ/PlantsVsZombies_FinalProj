@@ -26,11 +26,11 @@ struct PlantData {
     int attack = 0;
     float attackSpeed = 0.0f; // 攻击速度
     std::string texturePath;
-    std::string cardImage;    // 卡片图片路径（可选，如果没有则使用默认命名规则）
+    std::string cardImage;    // ��ƬͼƬ·������ѡ�����û����ʹ��Ĭ����������
     
-    // 动画配置：动画名称 -> 动画配置
+    // �������ã��������� -> ��������
     std::unordered_map<std::string, AnimationConfig> animations;
-    std::string defaultAnimation; // 默认动画名称，如 "idle"
+    std::string defaultAnimation; // Ĭ�϶������ƣ��� "idle"
 };
 
 // 僵尸的基本数据结构
@@ -38,22 +38,22 @@ struct ZombieData {
     std::string name;
     int hp = 0;
     int damage = 0;
-    float speed = 0.0f;          // 移动速度
-    float attackInterval = 1.0f; // 攻击间隔
+    float speed = 0.0f;          // �ƶ��ٶ�
+    float attackInterval = 1.0f; // �������
     std::string texturePath;
     
-    // 动画配置：动画名称 -> 动画配置
+    // �������ã��������� -> ��������
     std::unordered_map<std::string, AnimationConfig> animations;
-    std::string defaultAnimation; // 默认动画名称，如 "walk"
+    std::string defaultAnimation; // Ĭ�϶������ƣ��� "walk"
 };
 
-// 子弹类型枚举
+// �ӵ�����ö��
 enum class BulletType {
-    NORMAL,  // 普通子弹
-    ICE      // 冰弹（减速效果）
+    NORMAL,  // ��ͨ�ӵ�
+    ICE      // ����������Ч����
 };
 
-// 子弹数据
+// �ӵ�����
 struct BulletData {
     std::string name;
     int damage = 20;

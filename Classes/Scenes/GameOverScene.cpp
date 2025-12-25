@@ -1,4 +1,4 @@
-// 游戏失败场景实现
+// ��Ϸʧ�ܳ���ʵ��
 // 2025.12.15 by BillyDu
 #include "GameOverScene.h"
 #include "../Managers/SceneManager.h"
@@ -26,7 +26,7 @@ bool GameOverScene::init() {
 }
 
 void GameOverScene::createBackground() {
-    // 暗红色背景表示失败
+    // ����ɫ������ʾʧ��
     auto bg = LayerColor::create(Color4B(80, 0, 0, 200));
     this->addChild(bg, -1);
 }
@@ -35,19 +35,19 @@ void GameOverScene::createUI() {
     float centerX = _visibleSize.width/2 + _origin.x;
     float centerY = _visibleSize.height/2 + _origin.y;
     
-    // "Game Over" 标题
+    // "Game Over" ����
     auto gameOverLabel = Label::createWithTTF("GAME OVER", "fonts/Marker Felt.ttf", 72);
     gameOverLabel->setPosition(centerX, centerY + 100);
     gameOverLabel->setColor(Color3B::RED);
     this->addChild(gameOverLabel, 1);
     
-    // 失败信息
+    // ʧ����Ϣ
     auto infoLabel = Label::createWithTTF("The zombies ate your brains!", "fonts/Marker Felt.ttf", 32);
     infoLabel->setPosition(centerX, centerY + 20);
     infoLabel->setColor(Color3B::WHITE);
     this->addChild(infoLabel, 1);
     
-    // 重新开始按钮
+    // ���¿�ʼ��ť
     auto restartButton = ui::Button::create();
     restartButton->setTitleText("Try Again");
     restartButton->setTitleFontName("fonts/Marker Felt.ttf");
@@ -62,7 +62,7 @@ void GameOverScene::createUI() {
     });
     this->addChild(restartButton, 1);
     
-    // 返回主菜单按钮
+    // �������˵���ť
     auto mainMenuButton = ui::Button::create();
     mainMenuButton->setTitleText("Main Menu");
     mainMenuButton->setTitleFontName("fonts/Marker Felt.ttf");

@@ -1,4 +1,4 @@
-// 场景管理器实现
+// ����������ʵ��
 // 2025.12.15 by BillyDu
 #include "SceneManager.h"
 #include "../Scenes/StartScene.h"
@@ -21,7 +21,7 @@ void SceneManager::gotoStartScene() {
     auto scene = StartScene::createScene();
     replaceSceneWithTransition(scene);
     
-    // 播放主菜单音乐
+    // �������˵�����
     AudioManager::getInstance().playBackgroundMusic(AudioPath::MAIN_MENU_BGM);
 }
 
@@ -30,7 +30,7 @@ void SceneManager::gotoMapSelectScene() {
     auto scene = MapSelectScene::createScene();
     replaceSceneWithTransition(scene);
     
-    // 保持菜单背景音乐
+    // ���ֲ˵���������
     AudioManager::getInstance().playBackgroundMusic(AudioPath::MAIN_MENU_BGM);
 }
 
@@ -39,7 +39,7 @@ void SceneManager::gotoPlantSelectScene() {
     auto scene = PlantSelectScene::createScene();
     replaceSceneWithTransition(scene);
     
-    // 保持菜单背景音乐
+    // ���ֲ˵���������
     AudioManager::getInstance().playBackgroundMusic(AudioPath::MAIN_MENU_BGM);
 }
 
@@ -48,7 +48,7 @@ void SceneManager::gotoGameScene() {
     auto scene = GameScene::createScene();
     replaceSceneWithTransition(scene);
     
-    // 播放游戏音乐
+    // ������Ϸ����
     AudioManager::getInstance().playBackgroundMusic(AudioPath::GAME_BGM);
 }
 
@@ -57,7 +57,7 @@ void SceneManager::gotoVictoryScene() {
     auto scene = VictoryScene::createScene();
     replaceSceneWithTransition(scene);
     
-    // 播放胜利音效
+    // ����ʤ����Ч
     AudioManager::getInstance().playEffect(AudioPath::VICTORY_SOUND);
 }
 
@@ -66,7 +66,7 @@ void SceneManager::gotoGameOverScene() {
     auto scene = GameOverScene::createScene();
     replaceSceneWithTransition(scene);
     
-    // 播放失败音效
+    // ����ʧ����Ч
     AudioManager::getInstance().playEffect(AudioPath::LOSE_SOUND);
 }
 
@@ -78,7 +78,7 @@ void SceneManager::restartGame() {
 void SceneManager::replaceSceneWithTransition(cocos2d::Scene* scene) {
     auto director = Director::getInstance();
     
-    // 使用淡入淡出过渡效果
+    // ʹ�õ��뵭������Ч��
     auto transition = TransitionFade::create(0.5f, scene);
     director->replaceScene(transition);
     

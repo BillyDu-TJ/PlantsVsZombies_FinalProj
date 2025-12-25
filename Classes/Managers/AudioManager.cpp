@@ -1,4 +1,4 @@
-// 音频管理器实现
+// ��Ƶ������ʵ��
 // 2025.12.15 by BillyDu
 #include "AudioManager.h"
 #include "../Consts.h"
@@ -76,11 +76,11 @@ void AudioManager::setEffectEnabled(bool enabled) {
 }
 
 void AudioManager::preloadAudio() {
-    // 预加载背景音乐
+    // Ԥ���ر�������
     _audioEngine->preloadBackgroundMusic(AudioPath::MAIN_MENU_BGM);
     _audioEngine->preloadBackgroundMusic(AudioPath::GAME_BGM);
     
-    // 预加载音效
+    // Ԥ������Ч
     _audioEngine->preloadEffect(AudioPath::PLANT_SOUND);
     _audioEngine->preloadEffect(AudioPath::SHOOT_SOUND);
     _audioEngine->preloadEffect(AudioPath::ZOMBIE_DIE_SOUND);

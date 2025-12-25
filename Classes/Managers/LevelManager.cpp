@@ -1,4 +1,4 @@
-// 实现 LevelManager 类
+// ʵ�� LevelManager ��
 // 2025.12.2 by BillyDu
 #include "LevelManager.h"
 #include "cocos2d.h"
@@ -35,8 +35,8 @@ void LevelManager::loadLevel(const std::string& filename) {
         _assets.seedSlotPath = a["seedSlot"].GetString();
     }
 
-    // 只有在背景路径没有被手动设置时才覆盖
-    // 这样可以保留地图选择时设置的背景路径
+    // ֻ���ڱ���·��û�б��ֶ�����ʱ�Ÿ���
+    // �������Ա����ͼѡ��ʱ���õı���·��
     if (doc.HasMember("levelInfo")) {
         std::string newBgPath = doc["levelInfo"]["background"].GetString();
         // 如果背景路径没有被手动设置，才从JSON加载
@@ -94,8 +94,8 @@ bool LevelManager::isAllWavesCompleted() const {
     // 检查是否所有刷新事件都已完成
     for (const auto& wave : _waves) {
         if (!wave.spawned) {
-            return false; // 还有未完成的波次
+            return false; // ����δ��ɵĲ���
         }
     }
-    return true; // 所有波次都已完成
+    return true; // ���в��ζ������
 }

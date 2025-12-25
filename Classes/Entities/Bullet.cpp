@@ -48,26 +48,26 @@ void Bullet::setBulletData(const BulletData& data) {
             CCLOG("[Info] Bullet animation started: %s", _data.animationConfig.frameFormat.c_str());
         } else {
             // Fallback to static texture if animation creation failed
-            if (FileUtils::getInstance()->isFileExist(_data.texturePath)) {
-                this->setTexture(_data.texturePath);
+    if (FileUtils::getInstance()->isFileExist(_data.texturePath)) {
+        this->setTexture(_data.texturePath);
             } else {
                 // Fallback: draw a small circle
                 auto drawNode = DrawNode::create();
                 drawNode->drawDot(Vec2::ZERO, 10, Color4F::RED);
                 this->addChild(drawNode);
             }
-        }
+    }
     } else {
         // Use static texture
         if (FileUtils::getInstance()->isFileExist(_data.texturePath)) {
             this->setTexture(_data.texturePath);
         } else {
             // Fallback: draw a small circle
-            auto drawNode = DrawNode::create();
-            drawNode->drawDot(Vec2::ZERO, 10, Color4F::RED);
-            this->addChild(drawNode);
-        }
+        auto drawNode = DrawNode::create();
+        drawNode->drawDot(Vec2::ZERO, 10, Color4F::RED);
+        this->addChild(drawNode);
     }
+}
 }
 
 void Bullet::updateLogic(float dt) {

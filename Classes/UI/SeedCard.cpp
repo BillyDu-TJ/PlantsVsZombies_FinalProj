@@ -1,6 +1,6 @@
 // 种子卡片类 - 使用PNG资源
 // 2025.12.15 by BillyDu
-// 更新：实现冷却倒计时显示功能，种植后显示倒计时数字，冷却期间禁用种植
+// ���£�ʵ����ȴ����ʱ��ʾ���ܣ���ֲ����ʾ����ʱ���֣���ȴ�ڼ������ֲ
 // by Zhao.12.23
 #include "SeedCard.h"
 #include "../Managers/DataManager.h"
@@ -116,7 +116,7 @@ bool SeedCard::init(int plantId) {
         // 5. 创建价格标签 (如果背景不存在或卡片背景路径不存在，则显示价格标签)
         if (!_bg || !FileUtils::getInstance()->isFileExist(cardBgPath)) {
             _costLabel = Label::createWithSystemFont(std::to_string(_cost), "Arial", 14);
-            _costLabel->setPosition(36, 10); // 底部居中
+            _costLabel->setPosition(36, 10); // �ײ�����
             _costLabel->setColor(Color3B::WHITE);
             _costLabel->enableOutline(Color4B::BLACK, 1); // 添加黑色描边以提高可读性
             this->addChild(_costLabel, 2);
@@ -173,13 +173,13 @@ void SeedCard::updateSunCheck(int currentSun) {
             _bg->setColor(Color3B(128, 128, 128)); // 灰色
         }
         if (_icon) {
-            _icon->setColor(Color3B(128, 128, 128)); // 图标也变灰
+            _icon->setColor(Color3B(128, 128, 128)); // ͼ��Ҳ���
         }
     }
     else {
         this->setOpacity(255);  // 阳光充足时恢复正常
         
-        // 恢复正常颜色
+        // �ָ�������ɫ
         if (_bg) {
             _bg->setColor(Color3B::WHITE);
         }
@@ -197,7 +197,7 @@ void SeedCard::startCooldown(float cooldownTime) {
     _cooldownTotal = cooldownTime;
     _cooldownRemaining = cooldownTime;
     _cooldownLabel->setVisible(true);
-    updateCooldown(0.0f); // 立即更新一次显示
+    updateCooldown(0.0f); // ��������һ����ʾ
 }
 
 void SeedCard::updateCooldown(float dt) {
@@ -208,7 +208,7 @@ void SeedCard::updateCooldown(float dt) {
             _cooldownRemaining = 0.0f;
             _cooldownLabel->setVisible(false);
         } else {
-            // 显示倒计时（向上取整）
+            // ��ʾ����ʱ������ȡ����
             int seconds = static_cast<int>(std::ceil(_cooldownRemaining));
             _cooldownLabel->setString(std::to_string(seconds));
             _cooldownLabel->setVisible(true);

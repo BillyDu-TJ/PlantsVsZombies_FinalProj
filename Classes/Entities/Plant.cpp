@@ -74,11 +74,11 @@ void Plant::playAnimation(const std::string& animName) {
             char defaultPath[256];
             snprintf(defaultPath, sizeof(defaultPath), animConfig.frameFormat.c_str(), 1);
             firstFramePath = defaultPath;
-        }
+    }
         if (!firstFramePath.empty()) {
             this->setTexture(firstFramePath);
-        }
-        
+}
+
         // Handle completion behavior based on animation type
         if (animConfig.loopCount == 1 && !animConfig.onComplete.empty()) {
             // One-time animation, need to handle completion behavior
@@ -153,13 +153,14 @@ void Plant::updateLogic(float dt) {
             _timer = 0;
             triggerSkill();
         }
-    } else {
+        } else {
         // Debug check: if attackSpeed is 0 or negative, report error
         // Limit print frequency to prevent spam
-        static bool hasWarned = false;
-        if (!hasWarned) {
-            CCLOG("[Err] Plant %s has 0 or negative attackSpeed: %f", _data.name.c_str(), _data.attackSpeed);
-            hasWarned = true;
+            static bool hasWarned = false;
+            if (!hasWarned) {
+                CCLOG("[Err] Plant %s has 0 or negative attackSpeed: %f", _data.name.c_str(), _data.attackSpeed);
+                hasWarned = true;
+            }
         }
     }
 }
@@ -170,7 +171,7 @@ void Plant::triggerSkill() {
     // Can determine behavior based on _data.type here
     if (_data.type == "shooter") {
         CCLOG("[Info] Plant %s shoots!", _data.name.c_str());
-        
+
         // If has shoot animation, play it (will return to idle automatically via onComplete)
         auto shootIt = _data.animations.find("shoot");
         if (shootIt != _data.animations.end()) {
@@ -221,7 +222,7 @@ void Plant::triggerSkill() {
         } else {
             CCLOG("[Debug] Defensive plant %s has no callback set.", _data.name.c_str());
         }
-    }
+    } 
     else {
         CCLOG("[Err] Plant type mismatch! Unsupported type '%s' for plant %s", _data.type.c_str(), _data.name.c_str());
     }
@@ -236,8 +237,8 @@ void Plant::die() {
         playAnimation("dead");
     } else {
         // No death animation, directly call parent's die
-        Unit::die();
-    }
+    Unit::die();
+}
 }
 
 void Plant::setOnShootCallback(const std::function<void(cocos2d::Vec2, int)>& callback) {

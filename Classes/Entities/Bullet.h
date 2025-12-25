@@ -1,4 +1,4 @@
-// 子弹类定义文件
+// �ӵ��ඨ���ļ�
 // 2025.12.12 by BillyDu 12.21 by Zhao
 #ifndef __BULLET_H__
 #define __BULLET_H__
@@ -14,16 +14,16 @@ public:
 
     void setBulletData(const BulletData& data);
 
-    // 获取伤害值
+    // ��ȡ�˺�ֵ
     int getDamage() const { return _data.damage; }
-    
-    // 获取子弹类型
+
+    // ��ȡ�ӵ�����
     BulletType getType() const { return _data.type; }
     
-    // 获取减速效果倍数
+    // ��ȡ����Ч������
     float getSlowEffect() const { return _data.slowEffect; }
 
-    // 标记子弹是否已经击中（防止一次穿透多个敌人）
+    // ����ӵ��Ƿ��Ѿ����У���ֹһ�δ�͸������ˣ�
     bool isActive() const { return _active; }
     void deactivate() { _active = false; }
 

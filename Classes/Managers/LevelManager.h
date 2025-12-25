@@ -26,7 +26,7 @@ class LevelManager {
 public:
     static LevelManager& getInstance();
 
-    // 加载关卡配置
+    // ���عؿ�����
     void loadLevel(const std::string& filename);
 
     // 每帧更新，检查是否需要刷新
@@ -35,14 +35,14 @@ public:
 
     // 获取当前关卡资源
     const LevelAssets& getAssets() const { return _assets; }
-    
-    // 设置背景路径（用于地图选择）
+
+    // ���ñ���·�������ڵ�ͼѡ��
     void setBackgroundPath(const std::string& bgPath) { 
         _assets.bgPath = bgPath; 
-        _isBgPathManuallySet = true; // 标记为手动设置
+        _isBgPathManuallySet = true; // ���Ϊ�ֶ�����
     }
 
-    // 检查是否所有波次都已完成
+    // ����Ƿ����в��ζ������
     bool isAllWavesCompleted() const;
 
 private:
@@ -51,7 +51,7 @@ private:
     std::vector<SpawnEvent> _waves;
     float _gameTime = 0.0f;
     bool _isLevelFinished = false;
-    bool _isBgPathManuallySet = false; // 标记背景路径是否被手动设置
+    bool _isBgPathManuallySet = false; // ��Ǳ���·���Ƿ��ֶ�����
 	LevelAssets _assets;
 };
 

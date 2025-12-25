@@ -15,7 +15,7 @@
         "frameCount": 13,
         "frameDelay": 0.1,
         "loopCount": -1
-      },
+  },
       "shoot": {
         "frameFormat": "plants/peashooter_shoot/%d.png",
         "frameCount": 8,

@@ -1,4 +1,4 @@
-// ��Ϸʤ������ʵ��
+// 游戏胜利场景实现
 // 2025.12.15 by BillyDu
 #include "VictoryScene.h"
 #include "../Managers/SceneManager.h"
@@ -27,7 +27,7 @@ bool VictoryScene::init() {
 }
 
 void VictoryScene::createBackground() {
-    // ���ɫ������ʾʤ��
+    // 金黄色背景表示胜利
     auto bg = LayerGradient::create(Color4B(255, 215, 0, 255), Color4B(255, 140, 0, 255));
     this->addChild(bg, -1);
 }
@@ -36,13 +36,13 @@ void VictoryScene::createUI() {
     float centerX = _visibleSize.width/2 + _origin.x;
     float centerY = _visibleSize.height/2 + _origin.y;
     
-    // "Victory!" ����
+    // "Victory!" 标题
     auto victoryLabel = Label::createWithTTF("VICTORY!", "fonts/Marker Felt.ttf", 72);
     victoryLabel->setPosition(centerX, centerY + 100);
     victoryLabel->setColor(Color3B::YELLOW);
     this->addChild(victoryLabel, 1);
     
-    // ����ʤ������
+    // 添加胜利动画
     auto scaleUp = ScaleTo::create(0.5f, 1.2f);
     auto scaleDown = ScaleTo::create(0.5f, 1.0f);
     auto sequence = Sequence::create(scaleUp, scaleDown, nullptr);
@@ -53,7 +53,7 @@ void VictoryScene::createUI() {
     int currentMapId = SceneManager::getInstance().getCurrentMapId();
     bool isFinalLevel = (currentMapId == 4);
     
-    // ʤ����Ϣ（根据是否是最后一关显示不同内容）
+    //（根据是否是最后一关显示不同内容）
     std::string infoText = isFinalLevel ? 
         "Congratulations! You completed all levels!" : 
         "You successfully defended your house!";
@@ -64,22 +64,22 @@ void VictoryScene::createUI() {
     
     // 如果不是最后一关，显示"下一关"按钮
     if (!isFinalLevel) {
-        auto nextLevelButton = ui::Button::create();
-        nextLevelButton->setTitleText("Next Level");
-        nextLevelButton->setTitleFontName("fonts/Marker Felt.ttf");
-        nextLevelButton->setTitleFontSize(32);
-        nextLevelButton->setTitleColor(Color3B::WHITE);
-        nextLevelButton->setColor(Color3B(0, 150, 0));
-        nextLevelButton->setPosition(Vec2(centerX - 100, centerY - 80));
-        nextLevelButton->addTouchEventListener([this](Ref* sender, ui::Widget::TouchEventType type) {
-            if (type == ui::Widget::TouchEventType::ENDED) {
-                this->onNextLevelButtonClicked(sender);
-            }
-        });
-        this->addChild(nextLevelButton, 1);
+    auto nextLevelButton = ui::Button::create();
+    nextLevelButton->setTitleText("Next Level");
+    nextLevelButton->setTitleFontName("fonts/Marker Felt.ttf");
+    nextLevelButton->setTitleFontSize(32);
+    nextLevelButton->setTitleColor(Color3B::WHITE);
+    nextLevelButton->setColor(Color3B(0, 150, 0));
+    nextLevelButton->setPosition(Vec2(centerX - 100, centerY - 80));
+    nextLevelButton->addTouchEventListener([this](Ref* sender, ui::Widget::TouchEventType type) {
+        if (type == ui::Widget::TouchEventType::ENDED) {
+            this->onNextLevelButtonClicked(sender);
+        }
+    });
+    this->addChild(nextLevelButton, 1);
     }
     
-    // �������˵���ť（最后一关显示"Exit"，其他显示"Main Menu"）
+    // 返回主菜单按钮
     auto mainMenuButton = ui::Button::create();
     mainMenuButton->setTitleText(isFinalLevel ? "Exit" : "Main Menu");
     mainMenuButton->setTitleFontName("fonts/Marker Felt.ttf");
@@ -90,11 +90,11 @@ void VictoryScene::createUI() {
     mainMenuButton->addTouchEventListener([this, isFinalLevel](Ref* sender, ui::Widget::TouchEventType type) {
         if (type == ui::Widget::TouchEventType::ENDED) {
             if (isFinalLevel) {
-                // 最后一关：退出游戏
+                // ���һ�أ��˳���Ϸ
                 Director::getInstance()->end();
             } else {
-                this->onMainMenuButtonClicked(sender);
-            }
+            this->onMainMenuButtonClicked(sender);
+        }
         }
     });
     this->addChild(mainMenuButton, 1);

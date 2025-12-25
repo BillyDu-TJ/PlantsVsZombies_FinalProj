@@ -1,4 +1,4 @@
-// 实现 Unit 类
+// ʵ�� Unit ��
 // 2025.12.2 by BillyDu
 #include "Unit.h"
 
@@ -17,9 +17,9 @@ bool Unit::init() {
     if (!Sprite::init()) {
         return false;
     }
-    // 开启 update 调度，这样 update(dt) 会被引擎自动调用
-    // 但我们可以定义自己的 updateLogic 供 GameManager 统一调用，或者直接用引擎的
-    // 这里为了演示，我们先不 scheduleUpdate，由上层管理器统一控制逻辑可能更优
+    // ���� update ���ȣ����� update(dt) �ᱻ�����Զ�����
+    // �����ǿ��Զ����Լ��� updateLogic �� GameManager ͳһ���ã�����ֱ���������
+    // ����Ϊ����ʾ�������Ȳ� scheduleUpdate�����ϲ������ͳһ�����߼����ܸ���
     return true;
 }
 
@@ -27,9 +27,9 @@ void Unit::takeDamage(int damage) {
     if (isDead()) return;
 
     _hp -= damage;
-    // 简单的受击反馈：变红一下
+    // �򵥵��ܻ����������һ��
     this->setColor(Color3B::RED);
-    // 使用 Lambda 延迟恢复颜色 (C++11)
+    // ʹ�� Lambda �ӳٻָ���ɫ (C++11)
     auto delay = DelayTime::create(0.1f);
     auto restore = CallFunc::create([this]() {
         this->setColor(Color3B::WHITE);
@@ -42,14 +42,14 @@ void Unit::takeDamage(int damage) {
 }
 
 void Unit::die() {
-    if (_state == UnitState::DIE) return; // 防止重复死亡
+    if (_state == UnitState::DIE) return; // ��ֹ�ظ�����
     _state = UnitState::DIE;
 
     CCLOG("[Info] Unit died.");
-    this->removeAllChildren(); // 移除子节点（如挂载的红点）
-    this->removeFromParent();  // 从场景移除
+    this->removeAllChildren(); // �Ƴ��ӽڵ㣨����صĺ�㣩
+    this->removeFromParent();  // �ӳ����Ƴ�
 }
 
 void Unit::updateLogic(float dt) {
-    // 基类暂时没有通用逻辑
+    // ������ʱû��ͨ���߼�
 }

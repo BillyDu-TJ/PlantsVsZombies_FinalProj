@@ -1,4 +1,4 @@
-// ��ʼ�˵�����ʵ��
+// 开始菜单场景实现
 // 2025.12.15 by BillyDu
 #include "StartScene.h"
 #include "../Managers/SceneManager.h"
@@ -33,13 +33,13 @@ void StartScene::createBackground() {
 }
 
 void StartScene::createTitle() {
-    // ��Ϸ����
+    // 游戏标题
     auto title = Label::createWithTTF("Plants vs Zombies", "fonts/Marker Felt.ttf", 64);
     title->setPosition(_visibleSize.width/2 + _origin.x, _visibleSize.height * 0.75f + _origin.y);
     title->setColor(Color3B::YELLOW);
     this->addChild(title, 1);
     
-    // ���ӱ��⶯��Ч��
+    // 添加标题动画效果
     auto scaleUp = ScaleTo::create(1.0f, 1.1f);
     auto scaleDown = ScaleTo::create(1.0f, 1.0f);
     auto sequence = Sequence::create(scaleUp, scaleDown, nullptr);
@@ -52,7 +52,7 @@ void StartScene::createButtons() {
     float startY = _visibleSize.height * 0.5f + _origin.y;
     float buttonSpacing = 80.0f;
     
-    // ��ʼ��Ϸ��ť
+    // 开始游戏按钮
     auto startButton = ui::Button::create();
     startButton->setTitleText("Start Game");
     startButton->setTitleFontName("fonts/Marker Felt.ttf");
@@ -67,7 +67,7 @@ void StartScene::createButtons() {
     });
     this->addChild(startButton, 1);
     
-    // ���ð�ť
+    // 设置按钮
     auto settingsButton = ui::Button::create();
     settingsButton->setTitleText("Settings");
     settingsButton->setTitleFontName("fonts/Marker Felt.ttf");
@@ -82,7 +82,7 @@ void StartScene::createButtons() {
     });
     this->addChild(settingsButton, 1);
     
-    // �˳���ť
+    // 退出按钮
     auto exitButton = ui::Button::create();
     exitButton->setTitleText("Exit");
     exitButton->setTitleFontName("fonts/Marker Felt.ttf");
@@ -100,17 +100,17 @@ void StartScene::createButtons() {
 
 void StartScene::onStartButtonClicked(cocos2d::Ref* sender) {
     CCLOG("[Info] Start button clicked");
-    AudioManager::getInstance().playEffect(AudioPath::PLANT_SOUND); // ��ʱ����ֲ��Ч
-    SceneManager::getInstance().gotoMapSelectScene(); // 跳转到地图选择场景
+    AudioManager::getInstance().playEffect(AudioPath::PLANT_SOUND); // 临时用种植音效
+    SceneManager::getInstance().gotoGameScene();
 }
 
 void StartScene::onSettingsButtonClicked(cocos2d::Ref* sender) {
     CCLOG("[Info] Settings button clicked");
-    // TODO: ʵ�����ý���
-    // ������Դ���һ����������ת�����ó���
+    // TODO: 实现设置界面
+    // 这里可以创建一个弹窗或跳转到设置场景
     AudioManager::getInstance().playEffect(AudioPath::PLANT_SOUND);
     
-    // �򵥵���������ʾ��
+    // 简单的音量控制示例
     auto& audioMgr = AudioManager::getInstance();
     float currentVolume = audioMgr.getMusicVolume();
     audioMgr.setMusicVolume(currentVolume > 0.5f ? 0.3f : 1.0f);

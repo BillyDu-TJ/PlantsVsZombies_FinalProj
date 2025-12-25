@@ -1,4 +1,4 @@
-// 实现 DataManager 类，负责加载和管理游戏数据
+// ʵ�� DataManager �࣬������غ͹�����Ϸ����
 #include "DataManager.h"
 #include "cocos2d.h"
 #include "json/document.h" // RapidJSON
@@ -64,9 +64,9 @@ void DataManager::loadPlants(const std::string& filename) {
         data.attack = val.HasMember("attack") ? val["attack"].GetInt() : 0;
         data.texturePath = val["texture"].GetString();
 
-        // 攻击/生产间隔：
-        // - 射击类植物：使用 attackSpeed
-        // - 生产类植物（向日葵、阳光菇）：优先使用 produceInterval，如果没有则退回 attackSpeed
+        // ����/��������
+        // - �����ֲ�ʹ�� attackSpeed
+        // - ������ֲ����տ�����⹽��������ʹ�� produceInterval�����û�����˻� attackSpeed
         if (val.HasMember("attackSpeed")) {
             data.attackSpeed = val["attackSpeed"].GetFloat();
         }
@@ -130,7 +130,7 @@ void DataManager::loadPlants(const std::string& filename) {
             data.cardImage = val["cardImage"].GetString();
         }
 
-        // 插入到 Map 中
+        // ���뵽 Map ��
         _plantDataMap[id] = data;
     }
 }
@@ -178,7 +178,7 @@ void DataManager::loadZombies(const std::string& filename) {
         data.attackInterval = val.HasMember("attackInterval") ? val["attackInterval"].GetFloat() : 1.0f;
         data.texturePath = val.HasMember("texture") ? val["texture"].GetString() : "";
 
-        // 加载动画配置
+        // ���ض�������
         if (val.HasMember("animations") && val["animations"].IsObject()) {
             const auto& animsObj = val["animations"];
             for (auto animIt = animsObj.MemberBegin(); animIt != animsObj.MemberEnd(); ++animIt) {
@@ -196,7 +196,7 @@ void DataManager::loadZombies(const std::string& filename) {
                 if (animVal.HasMember("defaultTexture")) {
                     animConfig.defaultTexture = animVal["defaultTexture"].GetString();
                 } else {
-                    // 如果没有指定，使用第一帧
+                    // ���û��ָ����ʹ�õ�һ֡
                     char defaultPath[256];
                     snprintf(defaultPath, sizeof(defaultPath), animConfig.frameFormat.c_str(), 1);
                     animConfig.defaultTexture = defaultPath;
@@ -210,7 +210,7 @@ void DataManager::loadZombies(const std::string& filename) {
             }
         }
         
-        // 加载默认动画名称
+        // ����Ĭ�϶�������
         if (val.HasMember("defaultAnimation")) {
             data.defaultAnimation = val["defaultAnimation"].GetString();
         }

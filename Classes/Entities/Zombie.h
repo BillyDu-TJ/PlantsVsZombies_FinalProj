@@ -25,7 +25,7 @@ public:
 
     // Get damage
     int getDamage() const { return _data.damage; }
-    
+
     // Apply slow effect (speed multiplier, e.g., 0.5 for 50% speed)
     void applySlowEffect(float speedMultiplier);
     

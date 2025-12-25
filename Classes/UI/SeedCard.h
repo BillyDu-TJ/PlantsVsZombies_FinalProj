@@ -1,6 +1,6 @@
 // 种子卡片类头文件
 // 2025.12.15 by BillyDu
-// 更新：添加植物种植冷却功能，包括冷却倒计时显示和状态管理
+// ���£����ֲ����ֲ��ȴ���ܣ�������ȴ����ʱ��ʾ��״̬����
 // by Zhao.12.23
 #ifndef __SEED_CARD_H__
 #define __SEED_CARD_H__
@@ -13,19 +13,19 @@ class SeedCard : public cocos2d::Node {
 public:
     static SeedCard* create(int plantId);
     
-    // 设置选择回调
+    // ����ѡ��ص�
     void setOnSelectCallback(const std::function<void(int)>& callback);
     
     // 更新阳光是否足够 (用于改变卡片颜色/禁用状态)
     void updateSunCheck(int currentSun);
     
-    // 更新冷却状态
+    // ������ȴ״̬
     void updateCooldown(float dt);
     
-    // 启动冷却
+    // �����ȴ
     void startCooldown(float cooldownTime);
     
-    // 检查是否在冷却中
+    // ����Ƿ�����ȴ��
     bool isInCooldown() const { return _cooldownRemaining > 0.0f; }
     
     int getPlantId() const { return _plantId; }
@@ -36,13 +36,13 @@ private:
     int _plantId;
     int _cost;
     
-    // 冷却相关
-    float _cooldownRemaining = 0.0f;  // 剩余冷却时间
-    float _cooldownTotal = 0.0f;      // 总冷却时间
+    // ��ȴ���
+    float _cooldownRemaining = 0.0f;  // ʣ����ȴʱ��
+    float _cooldownTotal = 0.0f;      // ����ȴʱ��
     
-    // UI 组件
+    // UI ���
     cocos2d::Sprite* _bg = nullptr;        // 卡片背景PNG素材，
-    cocos2d::Sprite* _icon = nullptr;      // 植物图标（如果需要）
+    cocos2d::Sprite* _icon = nullptr;      // ֲ��ͼ�꣨�����Ҫ��
     cocos2d::Label* _costLabel = nullptr;  // 价格标签（备用）
     cocos2d::Label* _cooldownLabel = nullptr;  // 冷却倒计时标签
     
