@@ -1,0 +1,55 @@
+{
+  "example": "这是一个动画配置的简化示例，展示如何为实体添加动画",
+  
+  "entity": {
+    "id": "2001",
+    "name": "NormalZombie",
+    
+    "animations": {
+      "walk": {
+        "frameFormat": "zombies/normalzombie/normalzombie_walk/%d.png",
+        "frameCount": 22,
+        "frameDelay": 0.1,
+        "loopCount": -1,
+        "description": "行走动画：从zombies/normalzombie/normalzombie_walk/1.png到zombies/normalzombie/normalzombie_walk/22.png，每帧0.1秒，无限循环"
+      },
+      
+      "eat": {
+        "frameFormat": "zombies/normalzombie/normalzombie_eat/%d.png",
+        "frameCount": 21,
+        "frameDelay": 0.1,
+        "loopCount": -1,
+        "description": "吃植物动画：从zombies/normalzombie/normalzombie_eat/1.png到zombies/normalzombie/normalzombie_eat/21.png，每帧0.1秒，无限循环"
+      },
+      
+      "dead": {
+        "frameFormat": "zombies/normalzombie/normalzombie_dead/%d.png",
+        "frameCount": 20,
+        "frameDelay": 0.12,
+        "loopCount": 1,
+        "description": "死亡动画：从zombies/normalzombie/normalzombie_dead/1.png到zombies/normalzombie/normalzombie_dead/20.png，每帧0.12秒，播放一次"
+      }
+    },
+    
+    "defaultAnimation": "walk"
+  },
+  
+  "usage_notes": {
+    "frameFormat": "必须包含%d占位符，会被替换为帧序号",
+    "frameCount": "必须与实际PNG文件数量一致",
+    "frameDelay": "单位是秒，0.1表示每帧0.1秒（10fps）",
+    "loopCount": "-1表示无限循环，1表示播放一次，2表示播放2次"
+  },
+  
+  "file_structure_example": {
+    "zombies": {
+      "normalzombie": {
+        "normalzombie_walk": ["1.png", "2.png", "...", "22.png"],
+        "normalzombie_eat": ["1.png", "2.png", "...", "21.png"],
+        "normalzombie_dead": ["1.png", "2.png", "...", "20.png"],
+        "normalzombie_stand": ["1.png", "2.png", "...", "11.png"]
+      }
+    }
+  }
+}
+

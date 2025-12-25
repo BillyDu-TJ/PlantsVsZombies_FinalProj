@@ -1,8 +1,9 @@
-// 僵尸的类定义，继承自Unit类，包含僵尸特有的属性和方法
-// 2025.12.2 by BillyDu
+// Zombie class definition, inherits from Unit class
+// 2025.12.2 by BillyDu 12.21 modify by Zhao
 #ifndef __ZOMBIE_H__
 #define __ZOMBIE_H__
 
+#include <string>
 #include "Unit.h"
 #include "GameDataStructures.h"
 
@@ -12,21 +13,44 @@ public:
     virtual bool init() override;
 
     virtual void updateLogic(float dt) override;
+    virtual void die() override;
 
     void setZombieData(const ZombieData& data);
 
-    // 检查是否攻击冷却完毕
+    // Check if can attack (cooldown ready)
     bool canAttack() const;
 
-    // 重置攻击计时器
+    // Reset attack timer
     void resetAttackTimer();
 
-    // 获取攻击力
+    // Get damage
     int getDamage() const { return _data.damage; }
+
+    // Apply slow effect (speed multiplier, e.g., 0.5 for 50% speed)
+    void applySlowEffect(float speedMultiplier);
+    
+    // Animation related methods
+    void playAnimation(const std::string& animName);  // Play specified animation
+    void playDefaultAnimation();  // Play default animation
+
+    // Check if this zombie is a crushing type (like Boss2 snow sled)
+    bool isCrushingType() const { return _data.name == "Boss2"; }
+    
+    // Get current phase for multi-phase bosses
+    int getCurrentPhase() const { return _currentPhase; }
 
 private:
     ZombieData _data;
 	float _attackTimer = 0.0f;
+    float _lifeTimer = 0.0f;  // Timer to track zombie lifetime (for walk1->walk2 transition)
+    std::string _currentAnimation;  // Current playing animation name
+    float _speedMultiplier = 1.0f;  // Current speed multiplier (1.0 = normal, 0.5 = slowed)
+    bool _isPhase2 = false;  // Track if boss has entered phase 2 (30% HP threshold for Boss1)
+    int _currentPhase = 1;   // Current phase for multi-phase bosses (Boss2: 1-4)
+    float _lastIceX = -1.0f; // Last X position where ice was placed (for Boss2)
+    
+    // Check and update phase based on HP threshold
+    void checkPhaseTransition();
 };
 
 #endif // __ZOMBIE_H__

@@ -1,20 +1,29 @@
-// ¸ÃÎÄ¼şÊµÏÖÁËÍ·ÎÄ¼şÖĞÉùÃ÷µÄ GameScene ÀàµÄ·½·¨¡£Ö÷Òª¹¦ÄÜ°üÀ¨³¡¾°³õÊ¼»¯¡¢×ø±ê×ª»»ºÍµ÷ÊÔÍø¸ñ»æÖÆ¡£
+// è¿™ä¸ªæ–‡ä»¶å®é™…ä¸Šæ˜¯å¤´æ–‡ä»¶ï¼ŒåŒ…å«äº† GameScene ç±»çš„æ–¹æ³•ï¼Œä¸»è¦åŠŸèƒ½åŒ…æ‹¬æ¸¸æˆçš„å¼€å§‹ã€æš‚åœã€è½¬æ¢å’Œç»“æŸç­‰è®¾è®¡ã€‚
 // 2025.11.27 by BillyDu
+// edited on 2025.12.21 by Zhao//the problems before are a lots...
+// æ›´æ–°ï¼šå®ç°æ¤ç‰©ç§æ¤å†·å´ç³»ç»Ÿï¼Œæ ¹æ®é˜³å…‰å€¼åŠ¨æ€è®¡ç®—å†·å´æ—¶é—´ï¼Œç§æ¤åå¯åŠ¨å†·å´å¹¶æ›´æ–°å¡ç‰‡çŠ¶æ€
+// by Zhao.12.23
 #include <string> // C++11 string
+#include <unordered_map>
+#include <set>
+#include <climits>  // for INT_MAX
 
 #include "GameScene.h"
-#include "../Consts.h" // ÒıÓÃ³£Á¿
+#include "../Consts.h" // æ¸¸æˆå¸¸é‡
 #include "../Managers/DataManager.h"
 #include "../Managers/LevelManager.h"
 #include "../Managers/AudioManager.h"
-#include "../Managers/SceneManager.h"  // Ìí¼Ó³¡¾°¹ÜÀíÆ÷Í·ÎÄ¼ş
+#include "../Managers/SceneManager.h"  // æ·»åŠ åœºæ™¯ç®¡ç†å¤´æ–‡ä»¶
 #include "../Utils/GameException.h"
 #include "../Entities/Plant.h"
 #include "../Entities/Zombie.h"
 #include "../Entities/Sun.h"
-#include "ui/CocosGUI.h"  // Ìí¼ÓUI×é¼şÍ·ÎÄ¼ş
+#include "ui/CocosGUI.h"  // æ·»åŠ UIæ§ä»¶å¤´æ–‡ä»¶
 
 USING_NS_CC;
+
+// å…¨å±€ï¼šå¤§å˜´èŠ±ï¼ˆChomper / Bigmouthï¼‰å†·å´è®¡æ—¶è¡¨ï¼ˆç§’ï¼‰
+static std::unordered_map<Plant*, float> g_bigmouthCooldowns;
 
 Scene* GameScene::createScene() {
     return GameScene::create();
@@ -28,40 +37,67 @@ bool GameScene::init() {
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-    // --- ³õÊ¼»¯Íø¸ñ ---
-    for (int r = 0; r < GRID_ROWS; ++r) {
+    // --- æ ¹æ®åœ°å›¾IDç¡®å®šå®é™…ç½‘æ ¼è¡Œæ•°å’Œå‚æ•° ---
+    int mapId = SceneManager::getInstance().getCurrentMapId();
+    _actualGridRows = (mapId == 2 || mapId == 4) ? 6 : 5; // Map2/Map4æœ‰6è¡Œï¼ˆå«æ°´æ± ï¼‰ï¼ŒMap1/Map3æœ‰5è¡Œ
+    
+    // Map2/Map4éœ€è¦è°ƒæ•´ç½‘æ ¼å‚æ•°ï¼šæ ¼å­é«˜åº¦å‹ç¼©åˆ°0.9å€ï¼Œèµ·å§‹Yè®¾ä¸ºå±å¹•åº•éƒ¨ï¼Œè®©ç½‘æ ¼åº•éƒ¨å¯¹é½å±å¹•åº•éƒ¨
+    if (mapId == 2 || mapId == 4) {
+        _actualCellHeight = CELL_HEIGHT * 0.88f;  // æ ¼å­é«˜åº¦å‹ç¼©åˆ°åŸæ¥çš„0.88ï¼Ÿè¿™é‡Œä¸å¥½ç»™å°±è¿™ä¸ªvalueä¸è¦åŠ¨äº†ã€‚ã€‚ã€‚
+        // ç½‘æ ¼åº•éƒ¨å¯¹é½å±å¹•åº•éƒ¨ï¼šèµ·å§‹Y = origin.yï¼ˆå±å¹•åº•éƒ¨ï¼‰ï¼Œæœ€ä¸‹æ–¹ä½ç½®ä¸å˜
+        _actualGridStartY = origin.y;
+        CCLOG("[Info] Map %d: Using %d rows, cell height: %.1f (0.9x), start Y: %.1f (bottom aligned)",
+              mapId, _actualGridRows, _actualCellHeight, _actualGridStartY);
+    } else {
+        // Map1/Map3ä¿æŒåŸæ ·
+        _actualCellHeight = CELL_HEIGHT;
+        _actualGridStartY = GRID_START_Y;
+        CCLOG("[Info] Map %d: Using %d rows (default parameters)", mapId, _actualGridRows);
+    }
+
+    // --- åˆå§‹åŒ–ç½‘æ ¼æ•°ç»„ï¼ˆä½¿ç”¨æœ€å¤§6è¡Œï¼‰ ---
+    for (int r = 0; r < 6; ++r) {
         for (int c = 0; c < GRID_COLS; ++c) {
             _plantMap[r][c] = nullptr;
         }
     }
 
-    // --- ¼ÓÔØ¹Ø¿¨ ---
+    // --- åŠ è½½æ•°æ®ä¸å¯¹åº”åœ°å›¾çš„å…³å¡é…ç½® ---
     try {
-        DataManager::getInstance().loadData(); // È·±£Êı¾İÏÈ¼ÓÔØ
-        LevelManager::getInstance().loadLevel("data/level_test.json");
+        DataManager::getInstance().loadData(); // ç¡®ä¿æ•°æ®å…ˆåŠ è½½
+
+        std::string levelFile = "data/level_test.json";
+        if (mapId == 2) {
+            levelFile = "data/level_map2.json";
+        } else if (mapId == 4) {
+            levelFile = "data/level_map4.json";
+    }
+        LevelManager::getInstance().loadLevel(levelFile);
     }
     catch (const std::exception& e) {
         CCLOG("[Err] Init Error: %s", e.what());
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ¼ï¿½ï¿½ï¿½Ê§ï¿½Ü£ï¿½ï¿½ï¿½ï¿½ï¿½falseï¿½ï¿½ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
+        return false;
     }
 
-    // --- ¿ªÆô Update µ÷¶È ---
+    // --- ç»‘å®š Update å›è°ƒ ---
     this->scheduleUpdate();
 
     const auto& assets = LevelManager::getInstance().getAssets();
 
-    // [±³¾°] ĞŞ¸Ä±³¾°¼ÓÔØÂß¼­£¬±ÜÃâ´íÎ»ÎÊÌâ
+    // [åŠ¨æ€] ä¿®æ”¹èƒŒæ™¯åŠ è½½é€»è¾‘ï¼Œé€‚é…ç½‘æ ¼ä½ç½®
     if (FileUtils::getInstance()->isFileExist(assets.bgPath)) {
         auto bg = Sprite::create(assets.bgPath);
         
-        // ¼ÆËãºÏÊÊµÄËõ·Å±ÈÀı£¬±£³Ö¿í¸ß±ÈµÄÍ¬Ê±ÌîÂúÆÁÄ»
+        // ä¿æŒåŸå§‹èƒŒæ™¯å®½é«˜æ¯”çš„åŒæ—¶å¡«æ»¡å±å¹•
         Size bgSize = bg->getContentSize();
         float scaleX = visibleSize.width / bgSize.width;
         float scaleY = visibleSize.height / bgSize.height;
-        float scale = std::max(scaleX, scaleY); // Ê¹ÓÃ½Ï´óµÄËõ·Å±È£¬È·±£ÍêÈ«¸²¸ÇÆÁÄ»
+        float scale = std::max(scaleX, scaleY); // ä½¿ç”¨è¾ƒå¤§ç¼©æ”¾æ¯”ï¼Œç¡®ä¿å®Œå…¨è¦†ç›–å±å¹•
         
         bg->setScale(scale);
-        bg->setPosition(visibleSize.width / 2, visibleSize.height / 2); // ¾ÓÖĞÏÔÊ¾
-        bg->setAnchorPoint(Vec2(0.5f, 0.5f)); // ÖĞĞÄÃªµã
+        bg->setPosition(visibleSize.width / 2, visibleSize.height / 2); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾
+        bg->setAnchorPoint(Vec2(0.5f, 0.5f)); // è®¾ç½®é”šç‚¹
         
         this->addChild(bg, -1);
         
@@ -74,61 +110,91 @@ bool GameScene::init() {
         CCLOG("[Info] Using fallback green background");
     }
 
-    // [Íø¸ñ²İÆº] ÆôÓÃµ÷ÊÔÍø¸ñÒÔÑéÖ¤¶ÔÆë
-    drawDebugGrid();
+    // [è°ƒè¯•ç½‘æ ¼] ç»˜åˆ¶è°ƒè¯•ç½‘æ ¼ä»¥ç¡®ä¿æ­£ç¡®
+    // drawDebugGrid();
     
-    // --- UI: Ñô¹âÀ¸Óë¿¨²Û (ÈİÆ÷»¯) ---
+    // --- UI: é˜³å…‰æ˜¾ç¤ºä¸å¡ç‰‡ (å·¦ä¸Šæ–¹) ---
 
-    // [ÈİÆ÷] ´´½¨Ò»¸ö Node ×÷ÎªÕû¸ö¶¥²¿ UI µÄ¸¸½Úµã
-    // ÕâÑùÒÔºóÒªÒÆ¶¯ UI£¬Ö»¶¯Õâ¸ö Node ¾ÍĞĞ
+    // [åŠ¨æ€] åˆ›å»ºä¸€ä¸ª Node ä½œä¸ºå®¹å™¨ UI çš„æ ¹èŠ‚ç‚¹
+    // è¿™æ ·ä»¥åè¦ç§»åŠ¨ UIï¼Œåªéœ€ç§»åŠ¨è¿™ä¸ª Node å³å¯
     auto uiLayer = Node::create();
-    uiLayer->setPosition(Vec2(20, visibleSize.height - 10)); // ¶¨Î»µ½ÆÁÄ»×óÉÏ½Ç
+    uiLayer->setPosition(Vec2(20, visibleSize.height - 10)); // ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½Ä»ï¿½ï¿½ï¿½Ï½ï¿½
     uiLayer->setScale(0.8f);
     this->addChild(uiLayer, 1000);
 
-    _sunLabel = Label::createWithTTF(std::to_string(_currentSun), "fonts/Marker Felt.ttf", 32); // ×ÖÌåÉÔÎ¢¸ÄĞ¡Ò»µãÊÊÅäËõ·Å
+    _sunLabel = Label::createWithTTF(std::to_string(_currentSun), "fonts/Marker Felt.ttf", 32); // è°ƒå°ä¸€ç‚¹å­—ä½“é¿å…é®æŒ¡
 
     if (FileUtils::getInstance()->isFileExist(assets.sunBarPath)) {
         auto sunBar = Sprite::create(assets.sunBarPath);
-        sunBar->setAnchorPoint(Vec2(0, 1)); // ×óÉÏ½ÇÃªµã
-        sunBar->setPosition(0, 0);         // Ïà¶Ô uiLayer (0,0)
+        sunBar->setAnchorPoint(Vec2(0, 1)); // ï¿½ï¿½ï¿½Ï½ï¿½Ãªï¿½ï¿½
+        sunBar->setPosition(0, 0);         // æ”¾åœ¨ uiLayer (0,0)
         uiLayer->addChild(sunBar);
 
-        // [ĞŞ¸Ä 4: ÎÄ×Ö¶ÔÆë]
-        // ÄãµÄËØ²ÄÊÇÒ»¸öÑô¹âÍ¼±êÏÂÃæ´ø¸ö¾íÖá¡£
-        // ÎÒÃÇĞèÒª°ÑÎÄ×Ö·ÅÔÚ¾íÖáµÄÖĞĞÄ¡£
-        // ¼ÙÉèÑô¹âÍ¼±ê¿íÔ¼ 80px£¬¾íÖáÔÚÍ¼±êÕıÏÂ·½¡£
-        // ÄãĞèÒªÎ¢µ÷ÏÂÃæÕâÁ½¸öÊı×Ö£º
-        float labelX = 55.0f; // Ñô¹âÍ¼±êµÄË®Æ½ÖĞĞÄ
-        float labelY = 20.0f; // ¾íÖáµÄ´¹Ö±ÖĞĞÄ (Ïà¶ÔÓÚÍ¼Æ¬µ×²¿)
+        // [ä¿®æ”¹ 4: æ‰‹åŠ¨å®šä½]
+        // åŠ è½½èµ„æºåè·å¾—ä¸€ä¸ªé˜³å…‰æ¡èƒŒæ™¯å›¾ï¼Œä¸­å¿ƒå¤§çº¦é å·¦ã€‚
+        // æˆ‘ä»¬éœ€è¦å°†æ•°å­—æ”¾åœ¨é˜³å…‰æ¡å³ä¾§ä¸­å¿ƒã€‚
+        // å‡è®¾é˜³å…‰æ¡å®½çº¦200pxï¼Œé«˜çº¦80pxï¼Œæ•°å­—æ”¾åœ¨å³ä¾§ä¸­å¿ƒ
+        // éœ€è¦å¾®è°ƒæ•°å­—çš„å…·ä½“ä½ç½®ï¼š
+        float labelX = 55.0f; // è·ç¦»é˜³å…‰æ¡å·¦ä¾§çš„æ°´å¹³åç§»
+        float labelY = 20.0f; // è·ç¦»åº•éƒ¨çš„å‚ç›´åç§»ï¼ˆç›¸å¯¹å›¾ç‰‡åº•éƒ¨ï¼‰
 
         _sunLabel->setPosition(labelX, labelY);
-        _sunLabel->setAnchorPoint(Vec2(0.5f, 0.5f)); // ¾ÓÖĞ¶ÔÆë
+        _sunLabel->setAnchorPoint(Vec2(0.5f, 0.5f)); // ä¸­å¿ƒå¯¹é½
         _sunLabel->setColor(Color3B::BLACK);
 
-        // µ÷ÊÔ¼¼ÇÉ£ºÈç¹ûÎÄ×Ö±»Í¼µ²×¡ÁË£¬ÉèÖÃ ZOrder
+        // ç›´æ¥åŠ åœ¨é˜³å…‰æ¡ä¸Šï¼Œç¡®ä¿ä¸ä¼šè¢«å…¶ä»–ä¸œè¥¿é®æŒ¡
         sunBar->addChild(_sunLabel, 1);
     }
     else {
-        // ¶µµ×Âß¼­
+        // å›é€€é€»è¾‘
         uiLayer->addChild(_sunLabel);
     }
 
-    std::vector<int> plantIds = { 1001, 1002 };
+    // ä»SceneManagerè·å–é€‰ä¸­çš„æ¤ç‰©åˆ—è¡¨ï¼Œå¦‚æœæ²¡æœ‰åˆ™ä½¿ç”¨é»˜è®¤åˆ—è¡¨
+    std::vector<int> plantIds = SceneManager::getInstance().getSelectedPlants();
+    if (plantIds.empty()) {
+        // å¦‚æœæ²¡æœ‰é€‰ä¸­çš„æ¤ç‰©ï¼Œä½¿ç”¨é»˜è®¤åˆ—è¡¨
+        plantIds = { 1001, 1002, 1008 };
+        CCLOG("[Info] No plants selected, using default plant list");
+    }
+    else {
+        CCLOG("[Info] Using %zu selected plants", plantIds.size());
+    }
 
-    // [ĞŞ¸Ä 5: ¿¨²ÛÎ»ÖÃ]
-    // ÒòÎª UI ÕûÌåËõĞ¡ÁË£¬ÕâÀïµÄ×ø±êÊÇÏà¶ÔÓÚ uiLayer µÄÄÚ²¿×ø±ê
-    // ¼ÙÉèÑô¹âÀ¸¿í¶È´óÔ¼ÊÇ 85px£¬ÎÒÃÇÔÚËüÓÒ±ßÒ»µã¿ªÊ¼
+    // [ä¿®æ”¹ 5: å¡ç‰‡ä½ç½®]
+    // å› ä¸º UI æ•´ä½“ç¼©å°äº†ï¼Œæ‰€ä»¥æˆ‘ä»¬éœ€è¦è°ƒæ•´å¡ç‰‡åœ¨ uiLayer å†…éƒ¨çš„ä½ç½®
+    // ç°åœ¨é˜³å…‰æ¡å®½åº¦å¤§çº¦85pxï¼Œå¡ç‰‡ä»é˜³å…‰æ¡å³è¾¹ä¸€ç‚¹å¼€å§‹
     float startX = 120.0f;
-    float startY = -110.0f; // Ïà¶ÔÓÚ uiLayer ¶¥²¿ÏòÏÂ 40px (´¹Ö±¾ÓÖĞ)
-    float gapX = 80.0f;    // ¿¨Æ¬¼ä¾à
+    float startY = -110.0f; // ç›¸å¯¹äº uiLayer å¾€ä¸‹ 40pxï¼ˆå‚ç›´å¾€ä¸‹ï¼‰
+    float gapX = 80.0f;    // ï¿½ï¿½Æ¬ï¿½ï¿½ï¿½
+
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½Î§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È´Ê±ï¿½ï¿½ï¿½ï¿½ã£©
+    _minCost = INT_MAX;
+    _maxCost = 0;
+    for (int id : plantIds) {
+        try {
+            auto data = DataManager::getInstance().getPlantData(id);
+            if (data.cost < _minCost) _minCost = data.cost;
+            if (data.cost > _maxCost) _maxCost = data.cost;
+        } catch (const std::exception& e) {
+            CCLOG("[Warn] Failed to get plant data for id %d: %s", id, e.what());
+        }
+    }
+    
+    // ï¿½ï¿½ï¿½Ö»ï¿½ï¿½Ò»ï¿½ï¿½Ö²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö²ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¬ï¿½Ï·ï¿½Î§
+    if (_minCost == INT_MAX || _minCost == _maxCost) {
+        _minCost = 0;
+        _maxCost = 200; // Ä¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ
+    }
+    
+    CCLOG("[Info] Cost range: min=%d, max=%d", _minCost, _maxCost);
 
     for (int id : plantIds) {
         auto card = SeedCard::create(id);
 
-        // °Ñ¿¨Æ¬¼Óµ½ uiLayer£¬¶ø²»ÊÇ¼Óµ½ sunBar (²ã¼¶¸üÇåÎú)
+        // æŠŠå¡ç‰‡åŠ åˆ° uiLayerï¼Œè€Œä¸æ˜¯åŠ åˆ° sunBarï¼ˆå±‚çº§é—®é¢˜ï¼‰
         card->setPosition(startX, startY);
-        // card->setScale(1.2f); // ¿¨Æ¬ÔÙÎ¢µ÷´óÒ»µãµã
+        // card->setScale(1.2f); // å¡ç‰‡ç¨å¾®æ”¾å¤§ä¸€ç‚¹
 
         card->setOnSelectCallback([this](int plantId) {
             this->selectPlant(plantId);
@@ -140,106 +206,213 @@ bool GameScene::init() {
         startX += gapX;
     }
 
-    // --- ´´½¨ Ghost Sprite (³õÊ¼Òş²Ø) ---
-    _ghostSprite = Sprite::create();
-    _ghostSprite->setOpacity(128); // °ëÍ¸Ã÷
-    _ghostSprite->setVisible(false);
-    this->addChild(_ghostSprite, 150); // ÔÚÖ²ÎïÖ®ÉÏ£¬UIÖ®ÏÂ
+    // --- åˆ›å»ºé“²å­UI ---
+    // è®¡ç®—æœ€åä¸€ä¸ªå¡ç‰‡çš„ä½ç½®ï¼Œå°†é“²å­æ”¾åœ¨å…¶å³ä¾§
+    float lastCardX = startX - gapX; // æœ€åä¸€ä¸ªå¡ç‰‡çš„Xä½ç½®
+    float cardWidth = 72.0f; // å¡ç‰‡å®½åº¦ï¼ˆä»SeedCardçš„setContentSizeå¾—çŸ¥ï¼‰
+    float shovelOffsetX = cardWidth / 2.0f + 20.0f; // å¡ç‰‡å³ä¾§çš„åç§»ï¼ˆå¡ç‰‡å®½åº¦çš„ä¸€åŠ + é—´è·ï¼‰
+    // å‘å³ç§»åŠ¨å¤§çº¦åŠä¸ªç”»é¢ï¼ˆæ³¨æ„uiLayerçš„ç¼©æ”¾æ˜¯0.8ï¼Œæ‰€ä»¥éœ€è¦é™¤ä»¥0.8æ¥è¡¥å¿ï¼‰
+    float screenHalfWidth = visibleSize.width / 2.0f / 0.8f; // è½¬æ¢ä¸ºuiLayerçš„æœ¬åœ°åæ ‡
+    createShovelUI(uiLayer, lastCardX + shovelOffsetX + screenHalfWidth, startY);
 
-    // --- Êó±êÒÆ¶¯¼àÌı (Desktop Æ½Ì¨) ---
+    // --- åˆ›å»º Ghost Sprite (ç§æ¤é¢„è§ˆ) ---
+    _ghostSprite = Sprite::create();
+    _ghostSprite->setOpacity(128); // ï¿½ï¿½Í¸ï¿½ï¿½
+    _ghostSprite->setVisible(false);
+    this->addChild(_ghostSprite, 150); // ï¿½ï¿½Ö²ï¿½ï¿½Ö®ï¿½Ï£ï¿½UIÖ®ï¿½ï¿½
+
+    // --- é¼ æ ‡ç§»åŠ¨äº‹ä»¶ (Desktop å¹³å°) ---
     auto mouseListener = EventListenerMouse::create();
     mouseListener->onMouseMove = CC_CALLBACK_1(GameScene::onMouseMove, this);
     _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
 
 
-    // --- Êó±ê¼àÌı (ÊµÏÖÖÖÖ²) ---
+    // --- è§¦æ‘¸äº‹ä»¶ (å®ç°ç§æ¤å’ŒæŒ–å–) ---
     auto touchListener = EventListenerTouchOneByOne::create();
     touchListener->onTouchBegan = [this](Touch* touch, Event* event) {
         auto loc = touch->getLocation();
-        auto gridPos = this->pixelToGrid(loc);
         
-        // Èç¹ûµã»÷ÓĞĞ§ÇÒÔÚÍø¸ñÄÚ
+        // ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½Ë²ï¿½ï¿½ï¿½
+        if (_shovel && _shovelSlot) {
+            Vec2 shovelWorldPos = _shovel->getParent()->convertToWorldSpace(_shovel->getPosition());
+            Size shovelSize = _shovel->getContentSize();
+            float shovelScale = _shovel->getScale();
+            Rect shovelRect(
+                shovelWorldPos.x - shovelSize.width * shovelScale * 0.5f,
+                shovelWorldPos.y - shovelSize.height * shovelScale * 0.5f,
+                shovelSize.width * shovelScale,
+                shovelSize.height * shovelScale
+            );
+            
+            if (shovelRect.containsPoint(loc)) {
+                // ï¿½ï¿½ï¿½ï¿½Ë²ï¿½ï¿½Ó£ï¿½ï¿½ï¿½Ê¼ï¿½Ï¶ï¿½
+                _isShovelSelected = true;
+                _isShovelDragging = true;
+                _selectedPlantId = -1; // È¡ï¿½ï¿½Ö²ï¿½ï¿½Ñ¡ï¿½ï¿½
+                // ï¿½ï¿½ï¿½ï¿½ghost sprite
+                if (_ghostSprite) {
+                    _ghostSprite->setVisible(false);
+                }
+                CCLOG("[Info] Shovel selected");
+                return true;
+            }
+        }
+        
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¶ï¿½ï¿½ï¿½ï¿½Ó£ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        if (_isShovelDragging) {
+        auto gridPos = this->pixelToGrid(loc);
+            if (gridPos.first != -1) {
+                CCLOG("[Info] Shovel clicked Grid: [%d, %d]", gridPos.first, gridPos.second);
+                this->tryDigAt(gridPos.first, gridPos.second);
+                // ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½Ã²ï¿½ï¿½ï¿½×´Ì¬
+                resetShovel();
+            }
+            return true;
+        }
+        
+        // æ™®é€šç§æ¤é€»è¾‘
+        auto gridPos = this->pixelToGrid(loc);
         if (gridPos.first != -1) {
             CCLOG("[Info] Clicked Grid: [%d, %d]", gridPos.first, gridPos.second);
-            // ³¢ÊÔÖÖÖ²
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö²
             this->tryPlantAt(gridPos.first, gridPos.second);
         }
         return true;
     };
+    
+    touchListener->onTouchMoved = [this](Touch* touch, Event* event) {
+        if (_isShovelDragging && _shovel && _shovel->getParent()) {
+            // ï¿½Ï¶ï¿½ï¿½ï¿½ï¿½Ó¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+            auto loc = touch->getLocation();
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ÎªuiLayerï¿½Ä±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+            Vec2 localPos = _shovel->getParent()->convertToNodeSpace(loc);
+            _shovel->setPosition(localPos);
+        }
+        return true;
+        };
+    
+    touchListener->onTouchEnded = [this](Touch* touch, Event* event) {
+        if (_isShovelDragging) {
+            auto loc = touch->getLocation();
+            auto gridPos = this->pixelToGrid(loc);
+            
+            // ï¿½ï¿½ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡
+            if (gridPos.first != -1) {
+                CCLOG("[Info] Shovel released on Grid: [%d, %d]", gridPos.first, gridPos.second);
+                this->tryDigAt(gridPos.first, gridPos.second);
+            }
+            
+            // ï¿½ï¿½ï¿½Ã²ï¿½ï¿½ï¿½Î»ï¿½ï¿½
+            resetShovel();
+        }
+        return true;
+        };
+    
     _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
 
-    // ×ÔÈ»²ú³öÑô¹âµ÷¶ÈÆ÷ (±ÈÈçÃ¿ 10 ÃëµôÒ»¸ö)
+    // --- é”®ç›˜äº‹ä»¶ï¼šESC æš‚åœ/ç»§ç»­ ---
+    auto keyboardListener = EventListenerKeyboard::create();
+    keyboardListener->onKeyReleased = [this](EventKeyboard::KeyCode keyCode, Event* event) {
+        if (keyCode == EventKeyboard::KeyCode::KEY_ESCAPE) {
+            if (_gameState == GameState::PLAYING) {
+                pauseGame();
+            }
+            else if (_gameState == GameState::PAUSED) {
+                resumeGame();
+            }
+        }
+    };
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(keyboardListener, this);
+
+    // å®šæ—¶ç”Ÿæˆé˜³å…‰ï¼ˆæ¯éš” 10 ç§’ä¸€ä¸ªï¼‰
     this->schedule([this](float dt) {
         auto visibleSize = Director::getInstance()->getVisibleSize();
 
-        // Ëæ»ú X ×ø±ê (ÔÚÍø¸ñ·¶Î§ÄÚ)
+        // éšæœº X åæ ‡ï¼ˆç½‘æ ¼èŒƒå›´å†…ï¼‰
         float randomX = GRID_START_X + (rand() % (int)(GRID_COLS * CELL_WIDTH));
-        // Ëæ»ú Y Ä¿±ê (Ç°°ë³¡)
-        float randomY = GRID_START_Y + (rand() % (int)(GRID_ROWS * CELL_HEIGHT));
+        // éšæœº Y åæ ‡ï¼ˆå‰ä¸­åœºï¼Œä½¿ç”¨åŠ¨æ€è¡Œæ•°ï¼‰
+        float randomY = GRID_START_Y + (rand() % (int)(_actualGridRows * CELL_HEIGHT));
 
         auto sun = Sun::create();
         sun->fallFromSky(randomX, randomY);
 
-        // ÉèÖÃÊÕ¼¯»Øµ÷
+        // ç»‘å®šæ”¶é›†å›è°ƒ
         sun->setOnCollectedCallback([this](int value) {
             this->_currentSun += value;
-            // ¼ÇµÃË¢ĞÂ UI (update ÀïÒÑ¾­Ğ´ÁË£¬ÕâÀïÆäÊµ²»ĞèÒªÊÖ¶¯Ë¢£¬µ«ÎªÁË±£ÏÕ)
+            // è®°å¾—åˆ·æ–° UIï¼ˆupdate é‡Œå·²ç»å†™äº†ï¼Œæ‰€ä»¥è¿™é‡Œä¸éœ€è¦æ‰‹åŠ¨åˆ·æ–°ï¼Œä½†ä¸ºäº†å®‰å…¨ï¼‰
             });
 
-        this->addChild(sun, 500); // ²ã¼¶·Ç³£¸ß£¬ÔÚ UI ÏÂÃæ£¬Ö²ÎïÉÏÃæ
+        this->addChild(sun, 500); // å±‚çº§éå¸¸é«˜ï¼Œåœ¨ UI ä¸Šé¢ï¼Œæ¤ç‰©ä¸‹é¢
         CCLOG("[Info] Sun falling from sky.");
 
         }, 10.0f, "sun_sky_scheduler");
 
-    // ´´½¨ÔİÍ£°´Å¥
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í£ï¿½ï¿½Å¥
     createPauseButton();
 
     return true;
 }
 
 void GameScene::update(float dt) {
-    // Èç¹ûÓÎÏ·²»ÔÚ½øĞĞ×´Ì¬£¬²»¸üĞÂÂß¼­
+    // å¦‚æœæ¸¸æˆä¸åœ¨è¿›è¡ŒçŠ¶æ€ï¼Œä¸æ‰§è¡Œé€»è¾‘
     if (_gameState != GameState::PLAYING) return;
 
-    // 1. ÈÃ LevelManager ¼ì²éÊÇ·ñË¢¹Ö
-    // Ê¹ÓÃ Lambda ±í´ïÊ½×÷Îª»Øµ÷
+    // 1. å‘ LevelManager æŸ¥è¯¢æ˜¯å¦åˆ·æ–°åƒµå°¸
+    // Ê¹ï¿½ï¿½ Lambda ï¿½ï¿½ï¿½Ê½ï¿½ï¿½Îªï¿½Øµï¿½
     LevelManager::getInstance().update(dt, [this](int id, int row) {
         this->spawnZombie(id, row);
         });
 
-    // 2. ¸üĞÂËùÓĞ½©Ê¬µÄÂß¼­
+    // 2. æ›´æ–°æ‰€æœ‰åƒµå°¸é€»è¾‘
     for (auto zombie : _zombies) {
         zombie->updateLogic(dt);
     }
 
-    // 3. ¸üĞÂËùÓĞÖ²ÎïÂß¼­
+    // 3. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö²ï¿½ï¿½ï¿½ß¼ï¿½
     for (auto plant : _plants) {
         plant->updateLogic(dt);
     }
 
-    // 4.×Óµ¯¸üĞÂ
+    // 3.1 æ›´æ–°å¤§å˜´èŠ±å†·å´è®¡æ—¶ï¼ˆç§’ï¼‰ï¼Œå¹¶æ¸…ç†å·²æ­»äº¡/ç§»é™¤çš„æ¤ç‰©
+    for (auto it = g_bigmouthCooldowns.begin(); it != g_bigmouthCooldowns.end(); ) {
+        Plant* plant = it->first;
+        // å¦‚æœæ¤ç‰©å·²ç»æ­»äº¡æˆ–ç¦»åœºï¼Œç›´æ¥ç§»é™¤å†·å´è®°å½•
+        if (!plant || plant->isDead() || plant->getParent() == nullptr) {
+            it = g_bigmouthCooldowns.erase(it);
+            continue;
+        }
+
+        float& cd = it->second;
+        if (cd > 0.0f) {
+            cd -= dt;
+            if (cd < 0.0f) cd = 0.0f;
+        }
+        ++it;
+    }
+
+    // 4. å­å¼¹é€»è¾‘
     for (auto b : _bullets) {
         b->updateLogic(dt);
     }
 
-    // 5.Ö´ĞĞÕ½¶·ÅĞ¶¨
+    // 5. æ‰§è¡Œæˆ˜æ–—åˆ¤æ–­
     updateCombatLogic();
 
-    // 6.ÇåÀíÊ§Ğ§¶ÔÏó (À¬»ø»ØÊÕ)
-    // ÒÆ³ıËÀµôµÄ½©Ê¬
+    // 6. æ¸…ç†å¤±æ•ˆå¯¹è±¡ï¼ˆæ­»äº¡ç§»é™¤ï¼‰
+    // ç§»é™¤æ­»äº¡çš„åƒµå°¸
     for (auto it = _zombies.begin(); it != _zombies.end(); ) {
         if ((*it)->isDead()) {
-            // ´Ó Scene ÒÆ³ıÒÑ¾­ÔÚ die() Àï×öÁË£¬ÕâÀïÖ»Ğè´Ó Vector ÒÆ³ı
+            // ä» Scene ç§»é™¤å·²ç»åœ¨ die() é‡Œåšäº†ï¼Œè¿™é‡Œåªä» Vector ç§»é™¤
             it = _zombies.erase(it);
         }
         else {
             ++it;
         }
     }
-    // ÒÆ³ıÊ§Ğ§×Óµ¯
+    // ï¿½Æ³ï¿½Ê§Ğ§ï¿½Óµï¿½
     for (auto it = _bullets.begin(); it != _bullets.end(); ) {
         if (!(*it)->isActive() || (*it)->getParent() == nullptr) {
-            (*it)->removeFromParent(); // È·±£´Ó³¡¾°ÒÆ³ı
+            (*it)->removeFromParent(); // È·ï¿½ï¿½ï¿½Ó³ï¿½ï¿½ï¿½ï¿½Æ³ï¿½
             it = _bullets.erase(it);
         }
         else {
@@ -248,52 +421,128 @@ void GameScene::update(float dt) {
 
     }
 
-    // 7.UI ÊµÊ±Ë¢ĞÂ
-    // ¸üĞÂÑô¹âÎÄ×Ö
+    // 7. UI å®æ—¶åˆ·æ–°
+    // åˆ·æ–°é˜³å…‰æ˜¾ç¤º
     if (_sunLabel) {
         _sunLabel->setString(std::to_string(_currentSun));
     }
 
-    // ¸üĞÂ¿¨Æ¬×´Ì¬ (±äÁÁ/±ä»Ò)
+    // åˆ·æ–°å¡ç‰‡çŠ¶æ€ï¼ˆå¯ç”¨/ç¦ç”¨ï¼‰
     for (auto card : _seedCards) {
-        // ÈÃ¿¨Æ¬×Ô¼ºÅĞ¶Ï£ºÈç¹ûÓµÓĞÑô¹â < ¿¨Æ¬»¨·Ñ£¬¾Í±ä°ëÍ¸Ã÷
+        // è®©å¡ç‰‡è‡ªå·±åˆ¤æ–­ï¼šå½“å‰é˜³å…‰ < å¡ç‰‡èŠ±è´¹ï¼Œå°±å˜ç°
         card->updateSunCheck(_currentSun);
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È´×´Ì¬
+        card->updateCooldown(dt);
     }
     
-    // 8. Ê¤¸ºÅĞ¶¨
+    // 8. èƒœè´Ÿåˆ¤æ–­
     checkVictoryCondition();
     checkGameOverCondition();
 }
 
 void GameScene::spawnZombie(int id, int row) {
     try {
-        // 1. [¹Ø¼ü] ´Ó DataManager »ñÈ¡½©Ê¬ÅäÖÃ
-        const auto& zombieData = DataManager::getInstance().getZombieData(id);
+        // 0. æ ¹æ®åœ°å›¾ä¸è¡Œå·ï¼Œå†³å®šæ˜¯å¦éœ€è¦æ›¿æ¢ä¸ºæ¸¸æ³³åƒµå°¸ï¼ˆduck1 / duck2ï¼‰
+        int currentMapId = SceneManager::getInstance().getCurrentMapId();
+        bool isWaterRow = (row == 2 || row == 3); // ç¬¬3ã€4è¡Œä¸ºæ°´æ± 
+        int spawnId = id;
 
-        // 2. [¹Ø¼ü] Ê¹ÓÃ´ø²ÎÊıµÄ create ·½·¨
-        auto zombie = Zombie::createWithData(zombieData);
+        // åœ¨ Map2 å’Œ Map4 çš„æ°´æ± è¡Œï¼Œåªç”Ÿæˆæ¸¸æ³³åƒµå°¸
+        if (isWaterRow && (currentMapId == 2 || currentMapId == 4)) {
+            // æ™®é€š -> æ¸¸æ³³æ™®é€šï¼›é”¥æ¡¶ -> æ¸¸æ³³é”¥æ¡¶ï¼›å…¶ä»–å…¨éƒ¨æŒ‰æ™®é€šæ¸¸æ³³å¤„ç†
+            if (id == 2002) {
+                spawnId = 2007; // Conehead -> DuckConeheadZombie
+            } else {
+                spawnId = 2006; // é»˜è®¤ä½¿ç”¨ DuckZombie
+            }
+        }
 
-        // ... ºóĞøÎ»ÖÃÉèÖÃ´úÂë±£³Ö²»±ä ...
+        // 1. [å…³é”®] ä» DataManager è·å–åƒµå°¸æ•°æ®
+        const auto& baseData = DataManager::getInstance().getZombieData(spawnId);
+
+        // 2. æ ¹æ®å½“å‰åœ°å›¾ï¼ˆç« èŠ‚ï¼‰åº”ç”¨éš¾åº¦ç³»æ•°ï¼ˆä¾æ¬¡é€’å¢ï¼‰
+        ZombieData scaledData = baseData; // æ‹·è´ä¸€ä»½å¯ä¿®æ”¹æ•°æ®
+
+        float hpMultiplier = 1.0f;
+        float speedMultiplier = 1.0f;
+        float damageMultiplier = 1.0f;
+
+        // ç®€å•éš¾åº¦æ›²çº¿ï¼šç¬¬1ç« åŸºç¡€ï¼›ä¹‹åæ¯ç« æå‡
+        switch (currentMapId) {
+        case 1: // Day 1
+            hpMultiplier = 1.0f;
+            speedMultiplier = 1.0f;
+            damageMultiplier = 1.0f;
+            break;
+        case 2: // Day 2
+            hpMultiplier = 1.3f;
+            speedMultiplier = 1.05f;
+            damageMultiplier = 1.1f;
+            break;
+        case 3: // Night 1
+            hpMultiplier = 1.6f;
+            speedMultiplier = 1.1f;
+            damageMultiplier = 1.2f;
+            break;
+        case 4: // Night 2
+        default:
+            hpMultiplier = 2.0f;
+            speedMultiplier = 1.2f;
+            damageMultiplier = 1.3f;
+            break;
+        }
+
+        scaledData.hp = static_cast<int>(scaledData.hp * hpMultiplier);
+        scaledData.speed = scaledData.speed * speedMultiplier;
+        scaledData.damage = static_cast<int>(scaledData.damage * damageMultiplier);
+
+        // 3. éªŒè¯è¡Œå·æ˜¯å¦åœ¨æœ‰æ•ˆèŒƒå›´å†…ï¼ˆä½¿ç”¨åŠ¨æ€è¡Œæ•°ï¼‰
+        if (row < 0 || row >= _actualGridRows) {
+            CCLOG("[Warn] Invalid row %d for map %d (max rows: %d), skipping spawn", row, currentMapId, _actualGridRows);
+            return;
+        }
+
+        // 4. [å…³é”®] ä½¿ç”¨å·¥å‚æ–¹æ³• create åˆ›å»ºï¼ˆä½¿ç”¨ç¼©æ”¾åçš„æ•°æ®ï¼‰
+        auto zombie = Zombie::createWithData(scaledData);
+
+        // ... è®¾ç½®ä½ç½®ç­‰ä»£ç ä¿æŒä¸å˜ ...
         auto pixelPos = gridToPixel(row, GRID_COLS);
         pixelPos.x += 50.0f;
 
         zombie->setPosition(pixelPos);
         zombie->setRow(row);
-        this->addChild(zombie, row * 10);
+        // ä¿®å¤ Z-Orderï¼šè¶Šé è¿‘å±å¹•åº•éƒ¨çš„åƒµå°¸åº”è¯¥æœ‰æ›´é«˜çš„ Z-Order
+        // ä½¿ç”¨è¾ƒå¤§çš„åŸºæ•°å‡å»è¡Œå·ï¼Œç¡®ä¿ä¸‹æ–¹çš„åƒµå°¸åœ¨ä¸Šå±‚æ˜¾ç¤º
+        int zOrder = 1000 + row * 10;  // è¡Œå·è¶Šå¤§ï¼ŒZ-Order è¶Šé«˜
+        this->addChild(zombie, zOrder);
 
         _zombies.pushBack(zombie);
 
-        CCLOG("[Info] Spawned Zombie [ID:%d] at Row:%d", id, row);
+        CCLOG("[Info] Spawned Zombie [origID:%d -> finalID:%d] at Row:%d, MapId:%d (TotalRows:%d)",
+              id, spawnId, row, currentMapId, _actualGridRows);
     }
     catch (const std::exception& e) {
         CCLOG("[Err] Failed to spawn zombie: %s", e.what());
     }
 }
 
-// ÇĞ»»Ö²Îï
+// é€‰æ‹©æ¤ç‰©
 void GameScene::selectPlant(int plantId) {
     try {
-        // ÑéÖ¤IDÊÇ·ñ´æÔÚ£¬²»´æÔÚ»áÅ×³öÒì³£
+        // ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½È´ï¿½ï¿½
+        for (auto card : _seedCards) {
+            if (card->getPlantId() == plantId && card->isInCooldown()) {
+                CCLOG("[Info] Plant %d is in cooldown, cannot select", plantId);
+                return; // ï¿½ï¿½È´ï¿½Ğ£ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½
+            }
+        }
+        
+        // È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½
+        if (_isShovelSelected || _isShovelDragging) {
+            resetShovel();
+        }
+        
+        // ï¿½ï¿½Ö¤IDï¿½Ç·ï¿½ï¿½ï¿½Ú£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú»ï¿½ï¿½×³ï¿½ï¿½ì³£
         auto data = DataManager::getInstance().getPlantData(plantId);
         _selectedPlantId = plantId;
 
@@ -301,7 +550,7 @@ void GameScene::selectPlant(int plantId) {
             _ghostSprite->setTexture(data.texturePath);
         }
         else {
-            _ghostSprite->setTextureRect(Rect(0, 0, 60, 60)); // ¶µµ×
+            _ghostSprite->setTextureRect(Rect(0, 0, 60, 60)); // å ä½
         }
         _ghostSprite->setVisible(true);
         CCLOG("[Info] Selected Plant: %s (Cost: %d)", data.name.c_str(), data.cost);
@@ -311,34 +560,80 @@ void GameScene::selectPlant(int plantId) {
     }
 }
 
-// ºËĞÄÖÖÖ²Âß¼­
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö²ï¿½ß¼ï¿½
 void GameScene::tryPlantAt(int row, int col) {
-	// 1. ¼ì²é¸ñ×ÓÊÇ·ñÒÑ±»Õ¼ÓÃ£¬ ÈôºóĞøÓĞ¿ÉÒÔÖÖÔÚÖ²ÎïÉÏµÄÖ²Îï£¬¿ÉÔÚ´Ë´¦À©Õ¹Âß¼­
+    try {
+        // 0. æ£€æŸ¥æ˜¯å¦åœ¨å†·å´ä¸­
+        for (auto card : _seedCards) {
+            if (card->getPlantId() == _selectedPlantId && card->isInCooldown()) {
+                CCLOG("[Info] Plant %d is in cooldown, cannot plant", _selectedPlantId);
+                return; // å†·å´ä¸­ï¼Œä¸èƒ½ç§æ¤
+            }
+        }
+        
+        // 1. è·å–å½“å‰é€‰ä¸­æ¤ç‰©çš„æ•°æ®
+        const auto& plantData = DataManager::getInstance().getPlantData(_selectedPlantId);
+        
+        // 2. æ£€æŸ¥æ˜¯å¦æ˜¯æ°´æ± è¡Œï¼ˆMap2/Map4çš„ç¬¬3ã€4è¡Œï¼Œå³row 2å’Œ3ï¼‰
+        int currentMapId = SceneManager::getInstance().getCurrentMapId();
+        bool isWaterRow = (currentMapId == 2 || currentMapId == 4) && (row == 2 || row == 3);
+        bool isLilyPad = (plantData.name == "LilyPad");
+        
+        // 3. æ°´æ± ç§æ¤é€»è¾‘æ£€æŸ¥
+        if (isWaterRow) {
+            Plant* existingPlant = _plantMap[row][col];
+            
+            if (isLilyPad) {
+                // åœ¨æ°´æ± è¡Œç§æ¤ç¡è²ï¼šæ£€æŸ¥ä½ç½®æ˜¯å¦å·²è¢«å ç”¨
+                if (existingPlant != nullptr) {
+                    CCLOG("[Info] Cannot plant LilyPad at [%d, %d]: position already occupied!", row, col);
+                    return; // ç§æ¤å¤±è´¥
+                }
+            } else {
+                // åœ¨æ°´æ± è¡Œç§æ¤éç¡è²æ¤ç‰©ï¼šå¿…é¡»å…ˆæœ‰ç¡è²
+                if (existingPlant == nullptr) {
+                    CCLOG("[Info] Cannot plant %s at water row [%d, %d]: need LilyPad first!", 
+                          plantData.name.c_str(), row, col);
+                    return; // ç§æ¤å¤±è´¥ï¼šæ²¡æœ‰ç¡è²
+                }
+                
+                // æ£€æŸ¥ç°æœ‰æ¤ç‰©æ˜¯å¦æ˜¯ç¡è²
+                if (existingPlant->getName() != "LilyPad") {
+                    CCLOG("[Info] Cannot plant %s at water row [%d, %d]: position already has %s (not LilyPad)!", 
+                          plantData.name.c_str(), row, col, existingPlant->getName().c_str());
+                    return; // ç§æ¤å¤±è´¥ï¼šä½ç½®å·²æœ‰å…¶ä»–éç¡è²æ¤ç‰©
+                }
+                
+                // å…è®¸åœ¨ç¡è²ä¸Šç§æ¤ï¼šç¡è²ä¿ç•™ï¼Œæ–°æ¤ç‰©å åŠ åœ¨ä¸Šé¢
+                // æ³¨æ„ï¼šè¿™é‡Œä¸åˆ é™¤ç¡è²ï¼Œè€Œæ˜¯è®©æ–°æ¤ç‰©å’Œç¡è²å…±å­˜
+                CCLOG("[Info] Planting %s on LilyPad at [%d, %d]", plantData.name.c_str(), row, col);
+            }
+        } else {
+            // éæ°´æ± è¡Œï¼šæ£€æŸ¥ä½ç½®æ˜¯å¦å·²è¢«å ç”¨
     if (_plantMap[row][col] != nullptr) {
         CCLOG("[Info] Grid [%d, %d] is already occupied!", row, col);
-        return; // ÖÖÖ²Ê§°Ü
+        return; // ï¿½ï¿½Ö²Ê§ï¿½ï¿½
     }
+        }
 
-    try {
-        // 2. »ñÈ¡µ±Ç°Ñ¡ÖĞÖ²ÎïµÄÊı¾İ
-        const auto& plantData = DataManager::getInstance().getPlantData(_selectedPlantId);
-
-        // 3. ¼ì²éÑô¹âÊÇ·ñ×ã¹»
+        // 4. æ£€æŸ¥é˜³å…‰æ˜¯å¦è¶³å¤Ÿ
         if (_currentSun < plantData.cost) {
             CCLOG("[Info] Not enough sun! Have: %d, Need: %d", _currentSun, plantData.cost);
             return;
         }
 
-        // 4. Éú³ÉÖ²Îï¶ÔÏó
+        // 5. åˆ›å»ºæ¤ç‰©å¯¹è±¡
         auto plant = Plant::createWithData(plantData);
 
-        // 5. Ö²ÎïÂß¼­·ÖÁ÷£º
+        // 6. æ¤ç‰©å›è°ƒè®¾ç½®
 
         if (plantData.type == "shooter") {
-            // °ó¶¨Éä»÷»Øµ÷
-            plant->setOnShootCallback([this, row](Vec2 pos, int damage) {
-                // Ö»ÓĞµ±¸ÃĞĞÓĞ½©Ê¬Ê±²ÅÕæµÄ·¢Éä (¼òµ¥µÄ AI ÓÅ»¯)
-                // ÎÒÃÇ¿ÉÒÔ±éÀúÒ»ÏÂ _zombies£¬¿´¿´ÓĞÃ»ÓĞ½©Ê¬ÔÚµ±Ç°ĞĞÇÒÔÚÓÒ±ß
+            // å°„å‡»ç±»æ¤ç‰©
+            // Capture plantId to determine if it's Repeater
+            int currentPlantId = _selectedPlantId;
+            plant->setOnShootCallback([this, row, currentPlantId](Vec2 pos, int damage) {
+                // åªæœ‰å½“å½“å‰è¡Œæœ‰åƒµå°¸æ—¶æ‰å‘å°„ï¼ˆç®€å•çš„ AI ä¼˜åŒ–ï¼‰
+                // æˆ‘ä»¬å¯ä»¥éå† _zombiesï¼Œæ£€æŸ¥æœ‰æ²¡æœ‰åƒµå°¸åœ¨å½“å‰è¡Œä¸”å³ä¾§
                 bool enemyInSight = false;
                 for (auto z : this->_zombies) {
                     CCLOG("[Info] Check: ZombieRow %d vs PlantRow %d", z->getRow(), row);
@@ -351,7 +646,40 @@ void GameScene::tryPlantAt(int row, int col) {
 
                 if (enemyInSight) {
                     CCLOG("[Info] Enemy in sight! PEW PEW!");
+
+                    // Repeater (1008) Ò»ï¿½Î·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ã¶¹
+                    if (currentPlantId == 1008) {
+                        // ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ã¶¹
+                        this->createBullet(pos, damage);
+                        // ï¿½ï¿½Î¢ï¿½Ó³Ù·ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½ï¿½ï¿½ã¶¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¢ï¿½ï¿½ï¿½
+                        this->runAction(Sequence::create(
+                            DelayTime::create(0.05f),
+                            CallFunc::create([this, pos, damage]() {
+                                this->createBullet(pos, damage);
+                                }),
+                            nullptr
+                        ));
+                        CCLOG("[Info] Repeater shoots two peas!");
+                    }
+                    else if (currentPlantId == 1006) {
+                        // SnowPea (1006) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                        this->createBullet(pos, damage, BulletType::ICE);
+                        CCLOG("[Info] SnowPea shoots ice bullet!");
+                    }
+                    else if (currentPlantId == 1009) {
+                        // PuffShroom (1009) ï¿½ï¿½ï¿½ï¿½Ä¢ï¿½ï¿½ï¿½Óµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                        this->createMushroomBullet(pos, damage);
+                        CCLOG("[Info] PuffShroom shoots mushroom bullet!");
+                    }
+                    else if (currentPlantId == 1011) {
+                        // FumeShroom (1011) ï¿½ï¿½ï¿½ï¿½Ä¢ï¿½ï¿½ï¿½Óµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                        this->createMushroomBullet(pos, damage);
+                        CCLOG("[Info] FumeShroom shoots mushroom bullet!");
+                    }
+                    else {
+                        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö²ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½Í¨ï¿½Óµï¿½
                     this->createBullet(pos, damage);
+                }
                 }
                 else {
                     CCLOG("[Info] No enemy, holding fire.");
@@ -359,45 +687,89 @@ void GameScene::tryPlantAt(int row, int col) {
                 });
         }
         else if (plantData.type == "producer") {
-            // --- Éú²úÕßÂß¼­ (²ú³öÑô¹â) ---
+            // --- ç”Ÿäº§ç±»é€»è¾‘ï¼ˆç”Ÿäº§é˜³å…‰ï¼‰ ---
             plant->setOnShootCallback([this](Vec2 pos, int amount) {
-                // ÕâÀïµÄ amount ²ÎÊıÃ»ÓÃ£¬»òÕß¿ÉÒÔ´ú±í²ú³öµÄÑô¹âÖµ
+                // è¿™é‡Œçš„ amount æš‚æ—¶æ²¡ç”¨ï¼Œæˆ–è€…å¯ä»¥ç”¨æ¥ç”Ÿæˆä¸åŒä»·å€¼çš„é˜³å…‰
 
-                // ´´½¨Ñô¹âÊµÌå (ĞèÒª #include "../Entities/Sun.h")
+                // åˆ›å»ºé˜³å…‰å®ä½“ï¼ˆéœ€è¦ #include "../Entities/Sun.h")
                 auto sun = Sun::create();
 
-                // Éè¶¨ÌøÔ¾Ä¿±ê£º´ÓÖ²ÎïÎ»ÖÃÌøµ½ÉÔÎ¢ÅÔ±ßÒ»µãµÄÎ»ÖÃ
+                // è®¾å®šè·³è·ƒç›®æ ‡ï¼šæ¤ç‰©ä½ç½®å³ä¸‹æ–¹ä¸€ç‚¹
                 Vec2 targetPos = pos + Vec2(30, -30);
                 sun->jumpFromPlant(pos, targetPos);
 
-                // Éè¶¨ÊÕ¼¯»Øµ÷£ºµãÖĞÑô¹â¼ÓÇ®
+                // è®¾å®šæ”¶é›†å›è°ƒï¼šå¢åŠ é‡‘é’±
                 sun->setOnCollectedCallback([this](int value) {
                     this->_currentSun += value;
-                    // Èç¹ûĞèÒªÔÚÊÕ¼¯Ë²¼äË¢ĞÂUI£¬¿ÉÒÔÔÚÕâÀï×ö£¬»òÕßµÈÏÂÒ»Ö¡ update
+                    // å¦‚æœéœ€è¦ç«‹å³åˆ·æ–°UIï¼Œå¯ä»¥åœ¨è¿™é‡Œæ‰‹åŠ¨åˆ·æ–°ï¼Œä½†ä¸€èˆ¬ç­‰ä¸‹ä¸€å¸§ update
                     });
 
-                // Ñô¹â²ã¼¶Éè¸ßÒ»µã (500)£¬±£Ö¤¸Ç×¡Ö²Îï
+                // åŠ ä¸€ä¸ªé«˜å±‚çº§ï¼ˆ500ï¼‰ï¼Œç¡®ä¿ç›–ä½æ¤ç‰©
                 this->addChild(sun, 500);
 
                 CCLOG("[Info] Sunflower produced a sun!");
                 });
         }
+        else if (plantData.type == "defensive") {
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö²ï¿½ï¿½
+            if (plantData.name == "Spikeweed") {
+                // ï¿½Ø´Ì£ï¿½ï¿½Ô¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä½ï¿½Ê¬Ã¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ëºï¿½
+                plant->setOnShootCallback([this, row, col](Vec2 pos, int damage) {
+                    // ï¿½ï¿½ï¿½ï¿½Í¬Ò»ï¿½ĞµÄ½ï¿½Ê¬
+                    for (auto z : this->_zombies) {
+                        if (!z || z->isDead()) continue;
+                        if (z->getRow() != row) continue;
+
+                        // Boss2 ï¿½ï¿½×¨ï¿½Åµï¿½ï¿½ï¿½Ñ¹ï¿½ß¼ï¿½ï¿½Ğ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½ï¿½ï¿½
+                        if (z->isCrushingType()) continue;
+
+                        float zombieX = z->getPositionX();
+                        float cellLeft = _actualGridStartX + col * _actualCellWidth;
+                        float cellRight = cellLeft + _actualCellWidth;
+
+                        // ï¿½ï¿½Ê¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½Ç°ï¿½ï¿½ï¿½Ó·ï¿½Î§ï¿½Ú£ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø´Ì¡ï¿½
+                        if (zombieX > cellLeft && zombieX < cellRight) {
+                            z->takeDamage(damage);
+                            CCLOG("[Info] Spikeweed damages zombie for %d at row %d, col %d", damage, row, col);
+                        }
+                    }
+                });
+        }
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö²ï¿½ï¿½Ä¿Ç°ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½ï¿½ï¿½ TallNut ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½èµ²ï¿½ï¿½
+        }
         
 
-        // ÉèÖÃÎ»ÖÃ
+        // ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½
         auto pixelPos = gridToPixel(row, col);
         plant->setPosition(pixelPos);
         plant->setRow(row);
 
-        // Ìí¼Óµ½³¡¾° (¸ù¾İ Row ÉèÖÃ ZOrder£¬·ÀÖ¹ÕÚµ²¹ØÏµ´íÎó)
-        this->addChild(plant, row * 10 + 1);
+        int zOrder = 500 + row * 10;  // æ¤ç‰©åŸºç¡€ Z-Order æ¯”åƒµå°¸ä½
+        if (isWaterRow && !isLilyPad && _plantMap[row][col] != nullptr) {
+            // åœ¨ç¡è²ä¸Šç§æ¤ï¼šæ–°æ¤ç‰©åœ¨ç¡è²ä¹‹ä¸Š
+            zOrder = 500 + row * 10 + 2;
+        }
+        this->addChild(plant, zOrder);
 
-        // 5. ¸üĞÂÓÎÏ·×´Ì¬
-        _plants.pushBack(plant);         // ¼ÓÈëÈİÆ÷
-        _plantMap[row][col] = plant;     // ±ê¼ÇÍø¸ñÕ¼ÓÃ
-        _currentSun -= plantData.cost;   // ¿Û³ıÑô¹â
+        // 7. æ›´æ–°æ¸¸æˆçŠ¶æ€
+        _plants.pushBack(plant);         // åŠ å…¥åˆ—è¡¨
+        
+        // å¦‚æœæ˜¯åœ¨ç¡è²ä¸Šç§æ¤ï¼Œç¡è²ä¿ç•™åœ¨_plantMapä¸­ï¼Œæ–°æ¤ç‰©ä¸è¦†ç›–å®ƒ
+        // ä½†æˆ‘ä»¬éœ€è¦è®°å½•æ–°æ¤ç‰©ï¼Œä»¥ä¾¿åç»­é€»è¾‘èƒ½æ­£ç¡®å·¥ä½œ
+        // æ³¨æ„ï¼š_plantMap[row][col]ä»ç„¶æŒ‡å‘ç¡è²ï¼Œæ–°æ¤ç‰©é€šè¿‡_plantsåˆ—è¡¨ç®¡ç†
+        if (isWaterRow && !isLilyPad) {
+            // åœ¨ç¡è²ä¸Šç§æ¤ï¼šä¸è¦†ç›–_plantMapï¼Œç¡è²å’Œæ–°æ¤ç‰©å…±å­˜
+            // æˆ˜æ–—é€»è¾‘ä¼šéå†_plantsåˆ—è¡¨ï¼Œæ‰€ä»¥æ–°æ¤ç‰©ä¹Ÿèƒ½æ­£å¸¸å·¥ä½œ
+            CCLOG("[Info] Plant %s planted on LilyPad at [%d, %d] (LilyPad remains)", 
+                  plantData.name.c_str(), row, col);
+        } else {
+            // æ™®é€šç§æ¤æˆ–ç§æ¤ç¡è²ï¼šæ­£å¸¸æ›´æ–°_plantMap
+            _plantMap[row][col] = plant;
+        }
 
-        // 6. ¸üĞÂ UI
+        _currentSun -= plantData.cost;   // æ‰£é™¤è´¹ç”¨
+
+        // 6. ï¿½ï¿½ï¿½ï¿½ UI
         if (_sunLabel) {
             _sunLabel->setString("Sun: " + std::to_string(_currentSun));
         }
@@ -409,8 +781,42 @@ void GameScene::tryPlantAt(int row, int col) {
             card->updateSunCheck(_currentSun);
         }
 
-        // ÖÖÖ²³É¹¦ºó²¥·ÅÒôĞ§
+        // ï¿½ï¿½ï¿½ï¿½ï¿½È´
+        for (auto card : _seedCards) {
+            if (card->getPlantId() == _selectedPlantId) {
+                float cooldownTime = calculateCooldownByCost(plantData.cost);
+                card->startCooldown(cooldownTime);
+                CCLOG("[Info] Started cooldown for plant %d: %.2f seconds", _selectedPlantId, cooldownTime);
+                break;
+            }
+        }
+
+        // ï¿½ï¿½Ö²ï¿½É¹ï¿½ï¿½ó²¥·ï¿½ï¿½ï¿½Ğ§
         AudioManager::getInstance().playEffect(AudioPath::PLANT_SOUND);
+
+        // Ó£ï¿½ï¿½Õ¨ï¿½ï¿½ï¿½ï¿½CherryBombï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½ï¿½ï¿½Ö²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¨
+        if (plantData.name == "CherryBomb") {
+            CCLOG("[Info] CherryBomb planted at [%d, %d], triggering immediate explosion!", row, col);
+            
+            // ï¿½Ó³ï¿½Ò»Ö¡ï¿½ï¿½Õ¨ï¿½ï¿½È·ï¿½ï¿½Ö²ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½Óµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+            this->scheduleOnce([this, row, col, pixelPos](float dt) {
+                // ï¿½ï¿½È¡Ö²ï¿½ï¿½ï¿½Ëºï¿½Öµ
+                int damage = 5000; // CherryBombï¿½Ì¶ï¿½ï¿½Ëºï¿½5000
+                
+                // ï¿½ï¿½ï¿½Å±ï¿½Õ¨ï¿½ï¿½ï¿½ï¿½
+                this->createExplosionAnimation(pixelPos, "boom1", damage, row, col);
+                
+                // ï¿½Æ³ï¿½Ö²ï¿½ï¿½
+                Plant* plant = _plantMap[row][col];
+                if (plant) {
+                    _plantMap[row][col] = nullptr;
+                    _plants.eraseObject(plant);
+                    plant->removeFromParent();
+                    plant->release();
+                    CCLOG("[Info] CherryBomb removed after explosion");
+                }
+            }, 0.1f, "cherrybomb_explode");
+        }
 
     }
     catch (const std::exception& e) {
@@ -419,8 +825,8 @@ void GameScene::tryPlantAt(int row, int col) {
 }
 
 /**
-* @param row ĞĞºÅ (0 ¿ªÊ¼)£¬´ÓÏÂµ½ÉÏÔö´ó£¬×îÏÂÃæÎª 0
-* @param col ÁĞºÅ (0 ¿ªÊ¼)£¬´Ó×óµ½ÓÒÔö´ó£¬×î×ó±ßÎª 0
+* @param row è¡Œå·ï¼ˆ0 å¼€å§‹ï¼‰ï¼Œä»ä¸Šåˆ°ä¸‹ï¼Œæœ€ä¸Šè¡Œä¸º 0
+* @param col åˆ—å·ï¼ˆ0 å¼€å§‹ï¼‰ï¼Œä»å·¦åˆ°å³ï¼Œæœ€å·¦åˆ—ä¸º 0
 */
 cocos2d::Vec2 GameScene::gridToPixel(int row, int col) {
     float x = _actualGridStartX + col * _actualCellWidth + _actualCellWidth / 2;
@@ -432,7 +838,8 @@ std::pair<int, int> GameScene::pixelToGrid(cocos2d::Vec2 pos) {
     int col = (int)((pos.x - _actualGridStartX) / _actualCellWidth);
     int row = (int)((pos.y - _actualGridStartY) / _actualCellHeight);
 
-    if (col < 0 || col >= GRID_COLS || row < 0 || row >= GRID_ROWS) {
+    // ä½¿ç”¨åŠ¨æ€è¡Œæ•°è¿›è¡Œè¾¹ç•Œæ£€æŸ¥
+    if (col < 0 || col >= GRID_COLS || row < 0 || row >= _actualGridRows) {
         return { -1, -1 };
     }
 
@@ -441,109 +848,544 @@ std::pair<int, int> GameScene::pixelToGrid(cocos2d::Vec2 pos) {
 
 void GameScene::drawDebugGrid() {
     auto drawNode = DrawNode::create();
-    this->addChild(drawNode, 10); // Z-Order Éè¸ßÒ»µã£¬»­ÔÚ×îÉÏ²ã
+    this->addChild(drawNode, 10); // Z-Order è®¾é«˜ä¸€ç‚¹ï¼Œæ”¾åœ¨æœ€ä¸Šå±‚
 
-    // »­ºáÏß
-    for (int i = 0; i <= GRID_ROWS; i++) {
+    // ç”»æ¨ªçº¿ï¼ˆä½¿ç”¨åŠ¨æ€è¡Œæ•°ï¼‰
+    for (int i = 0; i <= _actualGridRows; i++) {
         float y = _actualGridStartY + i * _actualCellHeight;
         float xStart = _actualGridStartX;
         float xEnd = _actualGridStartX + GRID_COLS * _actualCellWidth;
         drawNode->drawLine(Vec2(xStart, y), Vec2(xEnd, y), Color4F::WHITE);
     }
 
-    // »­ÊúÏß
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     for (int i = 0; i <= GRID_COLS; i++) {
         float x = _actualGridStartX + i * _actualCellWidth;
         float yStart = _actualGridStartY;
-        float yEnd = _actualGridStartY + GRID_ROWS * _actualCellHeight;
+        float yEnd = _actualGridStartY + _actualGridRows * _actualCellHeight;
         drawNode->drawLine(Vec2(x, yStart), Vec2(x, yEnd), Color4F::WHITE);
     }
     
-    CCLOG("[Info] Debug grid drawn with dynamic parameters");
+    CCLOG("[Info] Debug grid drawn with %d rows (dynamic)", _actualGridRows);
 }
 
-// 2. ÊµÏÖ createBullet
-void GameScene::createBullet(Vec2 startPos, int damage) {
+// 2. Êµï¿½ï¿½ createBullet
+void GameScene::createBullet(Vec2 startPos, int damage, BulletType type, const std::string& texturePath) {
     BulletData bData;
     bData.damage = damage;
     bData.speed = 400.0f;
-    bData.texturePath = "bullets/pea.png"; // È·±£ÄãÓĞÕâ¸öÍ¼£¬»òÕß´úÂëÀï»á»­ÂÌµã
+    bData.type = type;
+
+    // Set texture path based on bullet type
+    if (!texturePath.empty()) {
+        bData.texturePath = texturePath;
+    }
+    else if (type == BulletType::ICE) {
+        bData.texturePath = "bullets/PeaIce/PeaIce_0.png";
+    }
+    else {
+        bData.texturePath = "bullets/pea.png";
+    }
+
+    // Set slow effect for ice bullets
+    if (type == BulletType::ICE) {
+        bData.slowEffect = 0.5f; // 50% speed
+    }
+    else {
+        bData.slowEffect = 1.0f; // No slow effect
+    } // ç¡®ä¿å†°å¼¹æœ‰æ­£ç¡®çš„è´´å›¾å’Œå‡é€Ÿæ•ˆæœ
 
     auto bullet = Bullet::create(bData);
     bullet->setPosition(startPos);
-    // ×Óµ¯µÄĞĞºÅĞèÒª·´ËãÒ»ÏÂ£¬»òÕßÖ±½Ó²»´æĞĞºÅµ¥´¿¿¿Åö×²
-    // ÕâÀï¼òµ¥Æğ¼û£¬ÎÒÃÇ¼ÙÉè×Óµ¯ÊÇ¾ØĞÎÅö×²£¬²»ĞèÒªÑÏ¸ñµÄ row ÊôĞÔ£¬
-    // µ«ÎªÁËÓÅ»¯£¬Èç¹û¸ø Bullet ¼Ó row ÊôĞÔ»á¸ü¿ì¡£
-    // ÔİÊ±ÏÈÖ»ÉèÖÃ ZOrder
+    // å­å¼¹çš„è¡Œå·æš‚æ—¶ä¸éœ€è¦è®¾ç½®ï¼Œå› ä¸ºæˆ‘ä»¬ä¸æ˜¯ç²¾ç¡®æŒ‰è¡Œç¢°æ’
+    // åé¢æˆ‘ä»¬å¯ä»¥ä¸ºå­å¼¹å¢åŠ  row å±æ€§æ¥åšæ›´ç²¾ç¡®çš„ç¢°æ’
+    // ä¸´æ—¶æ–¹æ¡ˆï¼šå­å¼¹æ˜¯æŒ‰å…¨å±€ç¢°æ’çš„ï¼Œä¸ä¸¥æ ¼ä¾èµ– row å±æ€§
+    // ä½†å› ä¸ºä¼˜åŒ–éœ€è¦ï¼Œæˆ‘ä»¬å¯ä»¥åœ¨ Bullet ç±»é‡Œå¢åŠ  row å±æ€§
     this->addChild(bullet, 100);
     _bullets.pushBack(bullet);
 
-    // ²¥·ÅÉä»÷ÒôĞ§
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ§
     AudioManager::getInstance().playEffect(AudioPath::SHOOT_SOUND);
 }
 
-// ÊµÏÖºËĞÄÕ½¶·Âß¼­
+// å®ç°æˆ˜æ–—é€»è¾‘
+// Create mushroom bullet with animation
+void GameScene::createMushroomBullet(Vec2 startPos, int damage) {
+    BulletData bData;
+    bData.damage = damage;
+    bData.speed = 400.0f;
+    bData.type = BulletType::NORMAL;
+    bData.slowEffect = 1.0f; // No slow effect
+
+    // Set up animation config for mushroom bullet
+    bData.hasAnimation = true;
+    bData.animationConfig.frameFormat = "bullets/BulletMushRoom/%d.png";
+    bData.animationConfig.frameCount = 5; // 1.png to 5.png
+    bData.animationConfig.frameDelay = 0.1f;
+    bData.animationConfig.loopCount = -1; // Infinite loop
+    bData.animationConfig.defaultTexture = "bullets/BulletMushRoom/1.png";
+
+    // Fallback texture path
+    bData.texturePath = "bullets/BulletMushRoom/1.png";
+
+    auto bullet = Bullet::create(bData);
+    bullet->setPosition(startPos);
+    this->addChild(bullet, 100);
+    _bullets.pushBack(bullet);
+
+    // Play shoot sound effect
+    AudioManager::getInstance().playEffect(AudioPath::SHOOT_SOUND);
+}
+
+// åˆ›å»ºçˆ†ç‚¸åŠ¨ç”»
+void GameScene::createExplosionAnimation(Vec2 pos, const std::string& boomType, int damage, int row, int col) {
+    // boomType: "boom1" ç”¨äºCherryBomb, "boom2" ç”¨äºPotatoMine
+    std::string frameFormat = "bullets/" + boomType + "/%d.png";
+    
+    CCLOG("[Info] Creating explosion animation: type=%s, pos=(%.1f, %.1f), damage=%d, row=%d, col=%d", 
+          boomType.c_str(), pos.x, pos.y, damage, row, col);
+    
+    // åˆ›å»ºçˆ†ç‚¸åŠ¨ç”»ç²¾çµ
+    auto explosionSprite = Sprite::create();
+    explosionSprite->setPosition(pos);
+    this->addChild(explosionSprite, 1000); // æœ€é«˜å±‚çº§ï¼Œç¡®ä¿æ˜¾ç¤ºåœ¨æœ€ä¸Šå±‚
+    
+    // åŠ è½½åŠ¨ç”»å¸§ï¼ˆè‡ªåŠ¨æ£€æµ‹å¸§æ•°ï¼‰
+    Vector<SpriteFrame*> frames;
+    float frameDelay = 0.08f;
+    
+    // å°è¯•åŠ è½½æœ€å¤š30å¸§ï¼ˆè¶³å¤Ÿè¦†ç›–å¤§å¤šæ•°çˆ†ç‚¸åŠ¨ç”»ï¼‰
+    bool hasFrames = false;
+    int frameCount = 0;
+    for (int i = 1; i <= 30; ++i) {
+        char framePath[256];
+        snprintf(framePath, sizeof(framePath), frameFormat.c_str(), i);
+        
+        if (FileUtils::getInstance()->isFileExist(framePath)) {
+            // å…ˆåŠ è½½çº¹ç†ï¼Œç„¶ååˆ›å»ºSpriteFrame
+            Texture2D* texture = Director::getInstance()->getTextureCache()->addImage(framePath);
+            if (texture) {
+                Size textureSize = texture->getContentSize();
+                Rect rect = Rect(0, 0, textureSize.width, textureSize.height);
+                SpriteFrame* frame = SpriteFrame::createWithTexture(texture, rect);
+                if (frame) {
+                    frames.pushBack(frame);
+                    hasFrames = true;
+                    frameCount++;
+                    CCLOG("[Debug] Loaded explosion frame %d: %s", i, framePath);
+                } else {
+                    CCLOG("[Warn] Failed to create SpriteFrame from texture: %s", framePath);
+                }
+            } else {
+                CCLOG("[Warn] Failed to load texture: %s", framePath);
+            }
+        } else {
+            // å¦‚æœå½“å‰å¸§ä¸å­˜åœ¨ï¼Œä¸”å·²ç»æœ‰å¸§äº†ï¼Œè¯´æ˜åŠ¨ç”»ç»“æŸ
+            if (hasFrames) {
+                CCLOG("[Info] Explosion animation ends at frame %d (total %d frames loaded)", i - 1, frameCount);
+                break;
+            }
+        }
+    }
+    
+    if (!hasFrames) {
+        CCLOG("[Err] No explosion frames found for %s (format: %s), using placeholder", boomType.c_str(), frameFormat.c_str());
+        // ä½¿ç”¨å ä½ç¬¦
+        explosionSprite->setTextureRect(Rect(0, 0, 100, 100));
+        explosionSprite->setColor(Color3B::RED);
+    } else {
+        CCLOG("[Info] Created explosion animation with %d frames for %s", frameCount, boomType.c_str());
+        // åˆ›å»ºåŠ¨ç”»
+        auto animation = Animation::createWithSpriteFrames(frames, frameDelay);
+        auto animate = Animate::create(animation);
+        
+        // è®¾ç½®åˆå§‹çº¹ç†ä¸ºç¬¬ä¸€å¸§
+        if (!frames.empty()) {
+            explosionSprite->setSpriteFrame(frames.at(0));
+        }
+        
+        // æ’­æ”¾åŠ¨ç”»åç§»é™¤
+        explosionSprite->runAction(Sequence::create(
+            animate,
+            CallFunc::create([explosionSprite]() {
+                explosionSprite->removeFromParent();
+            }),
+            nullptr
+        ));
+    }
+    
+    // å¯¹å‘¨å›´åƒµå°¸é€ æˆä¼¤å®³
+    if (boomType == "boom1") {
+        // CherryBomb: ç‚¸æ­»å‘¨å›´8ä¸ªæ ¼å­çš„åƒµå°¸ï¼ˆ3x3èŒƒå›´ï¼Œä¸­å¿ƒ+å‘¨å›´8ä¸ªï¼‰
+        for (int dr = -1; dr <= 1; ++dr) {
+            for (int dc = -1; dc <= 1; ++dc) {
+                int checkRow = row + dr;
+                int checkCol = col + dc;
+                
+                if (checkRow >= 0 && checkRow < _actualGridRows && 
+                    checkCol >= 0 && checkCol < GRID_COLS) {
+                    // æ£€æŸ¥è¯¥ä½ç½®çš„åƒµå°¸
+                    for (auto zombie : _zombies) {
+                        if (zombie->isDead()) continue;
+                        if (zombie->getRow() != checkRow) continue;
+                        
+                        // æ£€æŸ¥åƒµå°¸æ˜¯å¦åœ¨è¿™ä¸ªæ ¼å­å†…
+                        Vec2 zombiePos = zombie->getPosition();
+                        Vec2 cellPos = gridToPixel(checkRow, checkCol);
+                        float distX = std::abs(zombiePos.x - cellPos.x);
+                        float distY = std::abs(zombiePos.y - cellPos.y);
+                        
+                        if (distX < _actualCellWidth / 2 && distY < _actualCellHeight / 2) {
+                            zombie->takeDamage(damage);
+                            CCLOG("[Info] CherryBomb explosion damages zombie at [%d, %d] for %d", 
+                                  checkRow, checkCol, damage);
+                            if (zombie->isDead()) {
+                                AudioManager::getInstance().playEffect(AudioPath::ZOMBIE_DIE_SOUND);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        // PotatoMine: ç‚¸æ­»åŒä¸€è¡Œçš„æ‰€æœ‰åƒµå°¸ï¼ˆç¡®ä¿èƒ½ç‚¸åˆ°ï¼Œæ‰©å¤§èŒƒå›´ï¼‰
+        // æ£€æŸ¥å½“å‰æ ¼åŠå‰åä¸¤æ ¼ï¼ˆå…±5æ ¼èŒƒå›´ï¼‰ï¼Œç¡®ä¿èƒ½è¦†ç›–åˆ°æ‰€æœ‰å¯èƒ½çš„åƒµå°¸ä½ç½®
+        for (int offset = -2; offset <= 2; ++offset) {
+            int checkCol = col + offset;
+            if (checkCol < 0 || checkCol >= GRID_COLS) continue;
+            
+            Vec2 checkCellPos = gridToPixel(row, checkCol);
+            
+            for (auto zombie : _zombies) {
+                if (zombie->isDead()) continue;
+                if (zombie->getRow() != row) continue;
+                
+                // æ£€æŸ¥åƒµå°¸æ˜¯å¦åœ¨è¿™ä¸ªæ ¼å­èŒƒå›´å†…ï¼ˆä½¿ç”¨å¾ˆå¤§çš„æ£€æµ‹èŒƒå›´ï¼‰
+                Vec2 zombiePos = zombie->getPosition();
+                float distX = std::abs(zombiePos.x - checkCellPos.x);
+                float distY = std::abs(zombiePos.y - checkCellPos.y);
+                
+                // ä½¿ç”¨éå¸¸å¤§çš„æ£€æµ‹èŒƒå›´ï¼ˆ1.5å€æ ¼å­å¤§å°ï¼‰ï¼Œç¡®ä¿ä¸€å®šèƒ½ç‚¸åˆ°åƒµå°¸
+                if (distX < _actualCellWidth * 1.5f && distY < _actualCellHeight * 1.5f) {
+                    int zombieHpBefore = zombie->getHp();
+                    zombie->takeDamage(damage);
+                    int zombieHpAfter = zombie->getHp();
+                    CCLOG("[Info] PotatoMine explosion damages zombie at [%d, %d] (checkCol: %d, offset: %d) for %d (HP: %d -> %d)", 
+                          row, col, checkCol, offset, damage, zombieHpBefore, zombieHpAfter);
+                    if (zombie->isDead()) {
+                        CCLOG("[Info] Zombie killed by PotatoMine explosion!");
+                        AudioManager::getInstance().playEffect(AudioPath::ZOMBIE_DIE_SOUND);
+                    }
+                }
+            }
+        }
+    }
+}
+
 void GameScene::updateCombatLogic() {
-    // A. ×Óµ¯ vs ½©Ê¬
+    // A. ï¿½Óµï¿½ vs ï¿½ï¿½Ê¬
     for (auto bullet : _bullets) {
         if (!bullet->isActive()) continue;
 
-        // ÓÅ»¯£º´´½¨Ò»¸öÉÔĞ¡µÄÅö×²¿ò£¬±ÈÍ¼Æ¬Ô­Ê¼ rect Ğ¡Ò»µã£¬ÌåÑé¸üºÃ
+        // ä¼˜åŒ–ï¼šä½¿ç”¨ä¸€ä¸ªç¨å°çš„ç¢°æ’æ¡†ï¼Œæ¯”å›¾ç‰‡åŸå§‹ rect å°ä¸€ç‚¹ï¼Œé¿å…è¯¯åˆ¤
         Rect bRect = bullet->getBoundingBox();
 
         for (auto zombie : _zombies) {
             if (zombie->isDead()) continue;
 
-            // ¼òµ¥ÓÅ»¯£ºÈç¹û×Óµ¯ºÍ½©Ê¬YÖá²îÌ«¶à£¨¿çĞĞ£©£¬Ö±½ÓÌø¹ı
-            // ¼ÙÉèĞĞ¸ß 100£¬ÔÊĞíÎó²î 30
+            // ç®€å•ä¼˜åŒ–ï¼šå¦‚æœå­å¼¹å’Œåƒµå°¸Yè½´ç›¸å·®å¤ªå¤šï¼ˆè¡Œä¸åŒï¼‰ï¼Œç›´æ¥è·³è¿‡
+            // è¿™é‡Œçš„ 100 æ˜¯é¢„ä¼°è¡Œé«˜ï¼Œå®é™…å¯èƒ½æ˜¯ 30
             if (std::abs(bullet->getPositionY() - zombie->getPositionY()) > 30) continue;
 
             if (bRect.intersectsRect(zombie->getBoundingBox())) {
-                // »÷ÖĞ£¡
+                // ï¿½ï¿½ï¿½Ğ£ï¿½
                 zombie->takeDamage(bullet->getDamage());
-                bullet->deactivate(); // ×Óµ¯ÏûÊ§
+
+                // Apply slow effect if it's an ice bullet
+                if (bullet->getType() == BulletType::ICE) {
+                    CCLOG("[Info] Ice bullet hit zombie! Applying slow effect: %.1f%%", bullet->getSlowEffect() * 100.0f);
+                    zombie->applySlowEffect(bullet->getSlowEffect());
+                }
+                else {
+                    CCLOG("[Info] Normal bullet hit zombie (no slow effect)");
+                }
+
+                bullet->deactivate(); // ï¿½Óµï¿½ï¿½ï¿½Ê§
                 bullet->removeFromParent();
 
                 CCLOG("[Info] Bullet hit Zombie! Zombie HP: %d", zombie->getHp());
                 
-                // ÔÚ½©Ê¬ËÀÍöÊ±²¥·ÅÒôĞ§
+                // ï¿½Ú½ï¿½Ê¬ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ§
                 if (zombie->isDead()) {
                     AudioManager::getInstance().playEffect(AudioPath::ZOMBIE_DIE_SOUND);
                 }
                 
-                break; // Ò»¿Å×Óµ¯Ö»´òÒ»¸ö
+                break; // Ò»ï¿½ï¿½ï¿½Óµï¿½Ö»ï¿½ï¿½Ò»ï¿½ï¿½
             }
         }
     }
 
-    // B. ½©Ê¬³ÔÖ²Îï
+    // B. åƒµå°¸åƒæ¤ç‰© / Boss2ç¢¾å‹æ¤ç‰©
     for (auto zombie : _zombies) {
         if (zombie->isDead()) continue;
 
         int row = zombie->getRow();
+        
+        // Boss2 (snow sled) crushes plants directly without stopping
+        if (zombie->isCrushingType()) {
+            // Check all grid cells that Boss2 is passing through
+            float zombieX = zombie->getPositionX();
+            float zombieLeft = zombieX - 50;  // Approximate left edge
+            float zombieRight = zombieX + 50;  // Approximate right edge
+            
+            // Check each column that Boss2 covers
+            for (int col = 0; col < GRID_COLS; col++) {
+                float cellLeft = _actualGridStartX + col * _actualCellWidth;
+                float cellRight = cellLeft + _actualCellWidth;
+                
+                // If Boss2 overlaps with this cell
+                if (zombieRight > cellLeft && zombieLeft < cellRight) {
+                    Plant* plant = _plantMap[row][col];
+                    
+                    // ï¿½ï¿½ï¿½_plantMapï¿½ï¿½ï¿½ï¿½Ë¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö²ï¿½ï£¨ï¿½ï¿½Ë¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö²ï¿½Ä£ï¿½
+                    if (plant && plant->getName() == "LilyPad") {
+                        // ï¿½ï¿½ï¿½ï¿½_plantsï¿½Ğ±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¬Ò»Î»ï¿½ÃµÄ·ï¿½Ë¯ï¿½ï¿½Ö²ï¿½ï¿½
+                        for (auto p : _plants) {
+                            if (!p || p->isDead() || p == plant) continue;
+                            if (p->getRow() == row) {
+                                // ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Í¬Ò»ï¿½Ğ£ï¿½Í¨ï¿½ï¿½Î»ï¿½ï¿½ï¿½Ğ¶Ï£ï¿½
+                                auto pPos = p->getPosition();
+                                auto targetPos = gridToPixel(row, col);
+                                float distX = std::abs(pPos.x - targetPos.x);
+                                if (distX < _actualCellWidth / 2) {
+                                    // ï¿½Òµï¿½Ë¯ï¿½ï¿½ï¿½Ïµï¿½Ö²ï¿½ï£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½
+                                    plant = p;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (plant && !plant->isDead()) {
+                        // ï¿½Ø´Ì¶ï¿½ Boss2ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ 2000 ï¿½Ëºï¿½ï¿½ï¿½Í¬Ê±ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½ï¿½ï¿½
+                        if (plant->getName() == "Spikeweed") {
+                            CCLOG("[Info] Boss2 runs over Spikeweed at [%d, %d]! Spikeweed deals 2000 damage and is crushed.", row, col);
+                            zombie->takeDamage(2000);
+                            plant->takeDamage(9999); // ï¿½Ø´Ì±ï¿½ï¿½ï¿½Ñ¹
+                            if (plant->isDead()) {
+                                // ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Ë¯ï¿½ï¿½ï¿½ÏµÄµØ´ï¿½
+                                Plant* lilyPad = _plantMap[row][col];
+                                if (lilyPad && lilyPad->getName() == "LilyPad" && plant != lilyPad) {
+                                    CCLOG("[Info] Spikeweed on LilyPad crushed, LilyPad remains");
+                                } else {
+                                    _plantMap[row][col] = nullptr;
+                                }
+                            }
+                        } else if (plant->getName() == "PotatoMine") {
+                            // ï¿½ï¿½ï¿½ï¿½ï¿½×£ï¿½Boss2ï¿½ï¿½Ñ¹Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¨
+                            CCLOG("[Info] Boss2 triggers PotatoMine at [%d, %d]!", row, col);
+                            int damage = plant->getData().attack;
+                            if (damage <= 0) damage = 5000;
+                            Vec2 plantPos = plant->getPosition();
+                            
+                            // ï¿½ï¿½ï¿½Å±ï¿½Õ¨ï¿½ï¿½ï¿½ï¿½
+                            createExplosionAnimation(plantPos, "boom2", damage, row, col);
+                            
+                            // ï¿½ï¿½ï¿½Ö²ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó³ï¿½ï¿½Æ³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú±ï¿½ï¿½ï¿½Ê±ï¿½Ş¸Ä¼ï¿½ï¿½Ï£ï¿½
+                            plant->takeDamage(9999);
+                            _plantMap[row][col] = nullptr;
+                            
+                            // ï¿½Ó³ï¿½ï¿½Æ³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú±ï¿½ï¿½ï¿½Ê±ï¿½Ş¸Ä¼ï¿½ï¿½ï¿½
+                            Plant* plantToRemove = plant;
+                            this->scheduleOnce([this, plantToRemove](float dt) {
+                                if (plantToRemove && plantToRemove->getParent()) {
+                                    _plants.eraseObject(plantToRemove);
+                                    plantToRemove->removeFromParent();
+                                }
+                            }, 0.01f, "remove_potatomine_boss2");
+                        } else {
+                            // ï¿½ï¿½ï¿½ï¿½Ö²ï¿½ï£ºÖ±ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½ï¿½ï¿½
+                            CCLOG("[Info] Boss2 crushed plant at [%d, %d]!", row, col);
+                            plant->takeDamage(9999);
+                            if (plant->isDead()) {
+                                // ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Ë¯ï¿½ï¿½ï¿½Ïµï¿½Ö²ï¿½ï¿½
+                                Plant* lilyPad = _plantMap[row][col];
+                                if (lilyPad && lilyPad->getName() == "LilyPad" && plant != lilyPad) {
+                                    // Ë¯ï¿½ï¿½ï¿½Ïµï¿½Ö²ï¿½ï±»ï¿½ï¿½Ñ¹ï¿½ï¿½Ë¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                                    CCLOG("[Info] Plant on LilyPad crushed, LilyPad remains");
+                                } else {
+                                    // ï¿½ï¿½Í¨Ö²ï¿½ï¿½ï¿½Ë¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½ï¿½ï¿½ï¿½_plantMap
+                                    _plantMap[row][col] = nullptr;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Place ice effect behind Boss2 (one ice per grid cell)
+            // Calculate which grid cell Boss2 is currently in
+            float currentX = zombie->getPositionX();
+            int currentCol = (int)((currentX - _actualGridStartX) / _actualCellWidth);
+            
+            if (currentCol >= 0 && currentCol < GRID_COLS) {
+                // Check if ice already exists at this grid position
+                std::pair<int, int> iceKey = std::make_pair(row, currentCol);
+                if (_icePositions.find(iceKey) == _icePositions.end()) {
+                    // Place ice at the center of this grid cell
+                    Vec2 icePos = gridToPixel(row, currentCol);
+                    icePos.x += _actualCellWidth / 2;
+                    
+                    auto iceSprite = Sprite::create("zombies/boss2/ice.png");
+                    if (iceSprite) {
+                        iceSprite->setPosition(icePos);
+                        iceSprite->setTag(9999);  // Tag to identify ice sprites
+                        iceSprite->setLocalZOrder(-1);  // Behind everything
+                        this->addChild(iceSprite);
+                        _icePositions.insert(iceKey);  // Mark this position as having ice
+                        CCLOG("[Info] Boss2 placed ice at grid [%d, %d]", row, currentCol);
+                    }
+                }
+            }
+            
+            continue;  // Skip normal attack logic for Boss2
+        }
+
+        // Normal zombie attack logic
         float zombieMouthX = zombie->getPositionX() - 30;
-        int col = (int)((zombieMouthX - GRID_START_X) / CELL_WIDTH);
+        int col = (int)((zombieMouthX - _actualGridStartX) / _actualCellWidth);
 
         Plant* targetPlant = nullptr;
-        // ¼ì²éµ±Ç°¸ñÊÇ·ñÓĞĞ§ÇÒÓĞÖ²Îï
-        if (col >= 0 && col < GRID_COLS && row >= 0 && row < GRID_ROWS) {
+        // æ£€æŸ¥å½“å‰æ ¼æ˜¯å¦æœ‰æœ‰æ•ˆçš„æ¤ç‰©
+        // ä¼˜å…ˆæ£€æŸ¥_plantMapï¼ˆå¯èƒ½æ˜¯ç¡è²æˆ–å…¶ä»–æ¤ç‰©ï¼‰
+        if (col >= 0 && col < GRID_COLS && row >= 0 && row < _actualGridRows) {
             targetPlant = _plantMap[row][col];
+            
+            // ï¿½ï¿½ï¿½_plantMapï¿½ï¿½ï¿½ï¿½Ë¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö²ï¿½ï£¨ï¿½ï¿½Ë¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö²ï¿½Ä£ï¿½
+            if (targetPlant && targetPlant->getName() == "LilyPad") {
+                // ï¿½ï¿½ï¿½ï¿½_plantsï¿½Ğ±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¬Ò»Î»ï¿½ÃµÄ·ï¿½Ë¯ï¿½ï¿½Ö²ï¿½ï¿½
+                for (auto p : _plants) {
+                    if (!p || p->isDead() || p == targetPlant) continue;
+                    if (p->getRow() == row) {
+                        // ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Í¬Ò»ï¿½Ğ£ï¿½Í¨ï¿½ï¿½Î»ï¿½ï¿½ï¿½Ğ¶Ï£ï¿½
+                        auto pPos = p->getPosition();
+                        auto targetPos = gridToPixel(row, col);
+                        float distX = std::abs(pPos.x - targetPos.x);
+                        if (distX < _actualCellWidth / 2) {
+                            // ï¿½Òµï¿½Ë¯ï¿½ï¿½ï¿½Ïµï¿½Ö²ï¿½ï£¬ï¿½ï¿½ï¿½È¹ï¿½ï¿½ï¿½ï¿½ï¿½
+                            targetPlant = p;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // ï¿½Ø´Ì£ï¿½Spikeweedï¿½ï¿½ï¿½ï¿½ï¿½á±»ï¿½ï¿½Ê¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½ï¿½ï¿½ï¿½ï¿½èµ²ï¿½ï¿½Ê¬Ç°ï¿½ï¿½
+        if (targetPlant && targetPlant->getName() == "Spikeweed") {
+            targetPlant = nullptr;
+        }
+
+        // ï¿½ï¿½ï¿½ì»¨ï¿½ï¿½Chomper / Bigmouthï¿½ï¿½ï¿½ï¿½ï¿½â¹¥ï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½Ìµï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ê¬ï¿½ï¿½30 ï¿½ï¿½ï¿½ï¿½È´
+        if (targetPlant && targetPlant->getName() == "Chomper") {
+            // Boss2 ï¿½ï¿½Ğ§ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ isCrushingType ï¿½ï¿½Ö§ï¿½Ğ¹ï¿½ï¿½Ë£ï¿½ï¿½ï¿½ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ê¬
+            float currentCd = 0.0f;
+            auto cdIt = g_bigmouthCooldowns.find(targetPlant);
+            if (cdIt != g_bigmouthCooldowns.end()) {
+                currentCd = cdIt->second;
+        }
+
+            if (currentCd <= 0.0f) {
+                // ï¿½ï¿½ï¿½ì»¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å³Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½Ó¡ï¿½ï¿½Ôµï¿½ï¿½ï¿½ï¿½Ê¬
+                targetPlant->playAnimation("eat");
+                int zombieHp = zombie->getHp();
+                zombie->takeDamage(zombieHp > 0 ? zombieHp : 9999);
+                CCLOG("[Info] Chomper at [%d, %d] ate a zombie! Starting 30s cooldown.", row, col);
+
+                // ï¿½ï¿½ï¿½ï¿½ 30 ï¿½ï¿½ï¿½ï¿½È´
+                g_bigmouthCooldowns[targetPlant] = 30.0f;
+
+                // ï¿½ï¿½Ê¬ï¿½ï¿½ï¿½Ôµï¿½ó£¬µï¿½Ç°Ñ­ï¿½ï¿½ï¿½ï¿½ï¿½Ù¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½
+                continue;
+            }
+            // ï¿½ï¿½È´ï¿½Ğ£ï¿½ï¿½ï¿½ï¿½ì»¨ï¿½Ş·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¬ï¿½ï¿½ï¿½ï¿½Ò§ï¿½ï¿½
         }
 
         if (targetPlant && !targetPlant->isDead()) {
-            // ÓĞÖ²Îï -> ³Ô
+            // ï¿½ï¿½Ö²ï¿½ï¿½ -> ï¿½ï¿½
             if (zombie->getState() != UnitState::ATTACK) {
                 zombie->setState(UnitState::ATTACK);
                 CCLOG("[Info] Zombie starts eating plant at [%d, %d]", row, col);
             }
             
-            // Ñ¯ÎÊ½©Ê¬ÊÇ·ñ¿ÉÒÔ¹¥»÷
+            // Ñ¯ï¿½Ê½ï¿½Ê¬ï¿½Ç·ï¿½ï¿½ï¿½Ô¹ï¿½ï¿½ï¿½
             if (zombie->canAttack()) {
-                // Ôì³ÉÕæÊµµÄÊıÖµÉËº¦
+                // åœŸè±†é›·ï¼ˆPotatoMineï¼‰ç‰¹æ®Šé€»è¾‘ï¼šå½“åƒµå°¸å¼€å§‹eatæ—¶ç«‹å³çˆ†ç‚¸
+                if (targetPlant->getName() == "PotatoMine" && !targetPlant->isDead()) {
+                    CCLOG("[Info] PotatoMine at [%d, %d] triggered by zombie eating!", row, col);
+                    
+                    // è·å–æ¤ç‰©ä¼¤å®³å€¼
+                    int damage = targetPlant->getData().attack;
+                    if (damage <= 0) damage = 5000;
+                    
+                    Vec2 plantPos = targetPlant->getPosition();
+                    
+                    // æ’­æ”¾çˆ†ç‚¸åŠ¨ç”»
+                    createExplosionAnimation(plantPos, "boom2", damage, row, col);
+                    
+                    // æ‰¾åˆ°æ‰€æœ‰åŒä¸€è¡Œçš„åƒµå°¸å¹¶æ€æ­»å®ƒä»¬ï¼ˆæ‰©å¤§èŒƒå›´ï¼Œç¡®ä¿èƒ½ç‚¸åˆ°ï¼‰
+                    // æ£€æŸ¥å½“å‰æ ¼åŠå‰åä¸¤æ ¼ï¼ˆå…±5æ ¼èŒƒå›´ï¼‰ï¼Œç¡®ä¿èƒ½è¦†ç›–åˆ°æ‰€æœ‰å¯èƒ½çš„åƒµå°¸ä½ç½®
+                    for (int offset = -2; offset <= 2; ++offset) {
+                        int checkCol = col + offset;
+                        if (checkCol < 0 || checkCol >= GRID_COLS) continue;
+                        
+                        Vec2 checkCellPos = gridToPixel(row, checkCol);
+                        
+                        for (auto z : _zombies) {
+                            if (z->isDead()) continue;
+                            if (z->getRow() != row) continue;
+                            
+                            // æ£€æŸ¥åƒµå°¸æ˜¯å¦åœ¨è¿™ä¸ªæ ¼å­èŒƒå›´å†…ï¼ˆä½¿ç”¨å¾ˆå¤§çš„æ£€æµ‹èŒƒå›´ï¼‰
+                            Vec2 zombiePos = z->getPosition();
+                            float distX = std::abs(zombiePos.x - checkCellPos.x);
+                            float distY = std::abs(zombiePos.y - checkCellPos.y);
+                            
+                            // ä½¿ç”¨éå¸¸å¤§çš„æ£€æµ‹èŒƒå›´ï¼ˆ1.5å€æ ¼å­å¤§å°ï¼‰ï¼Œç¡®ä¿ä¸€å®šèƒ½ç‚¸åˆ°åƒµå°¸
+                            if (distX < _actualCellWidth * 1.5f && distY < _actualCellHeight * 1.5f) {
+                                // è¿™ä¸ªåƒµå°¸åœ¨çˆ†ç‚¸èŒƒå›´å†…ï¼Œæ€æ­»å®ƒ
+                                int zombieHp = z->getHp();
+                                z->takeDamage(damage);
+                                CCLOG("[Info] Zombie at [%d, %d] (checkCol: %d, offset: %d) killed by PotatoMine explosion! (HP: %d -> %d)", 
+                                      row, col, checkCol, offset, zombieHp, z->getHp());
+                                if (z->isDead()) {
+                                    AudioManager::getInstance().playEffect(AudioPath::ZOMBIE_DIE_SOUND);
+                                }
+                            }
+                        }
+                    }
+                    
+                    // æ ‡è®°æ¤ç‰©ä¸ºæ­»äº¡ï¼Œå»¶è¿Ÿç§»é™¤ï¼ˆé¿å…åœ¨éå†æ—¶ä¿®æ”¹é›†åˆï¼‰
+                    targetPlant->takeDamage(9999);
+                    _plantMap[row][col] = nullptr;
+                    
+                    // å»¶è¿Ÿç§»é™¤ï¼Œé¿å…åœ¨éå†æ—¶ä¿®æ”¹é›†åˆ
+                    Plant* plantToRemove = targetPlant;
+                    this->scheduleOnce([this, plantToRemove](float dt) {
+                        if (plantToRemove && plantToRemove->getParent()) {
+                            _plants.eraseObject(plantToRemove);
+                            plantToRemove->removeFromParent();
+                        }
+                    }, 0.01f, "remove_potatomine_eat");
+                    
+                    // è·³è¿‡åç»­æ”»å‡»é€»è¾‘
+                    continue;
+                }
+                
+                // è¿™é‡Œåº”è¯¥ä½¿ç”¨åƒµå°¸çš„å®é™…ä¼¤å®³å€¼
                 int dmg = zombie->getDamage();
                 targetPlant->takeDamage(dmg);
 
-                // ÖØÖÃ½©Ê¬µÄ¹¥»÷ CD
+                // ï¿½ï¿½ï¿½Ã½ï¿½Ê¬ï¿½Ä¹ï¿½ï¿½ï¿½ CD
                 zombie->resetAttackTimer();
 
                 CCLOG("[Info] Chomp! Plant HP: %d (Damage: %d)", targetPlant->getHp(), dmg);
@@ -551,12 +1393,22 @@ void GameScene::updateCombatLogic() {
 
             if (targetPlant->isDead()) {
                 CCLOG("[Info] Plant eaten by zombie!");
-                _plantMap[row][col] = nullptr; // Ö²ÎïËÀÁË£¬Çå¿Õ¸ñ×Ó
-                zombie->setState(UnitState::WALK); // »Ö¸´ĞĞ×ß
+                
+                // æ£€æŸ¥æ˜¯å¦æ˜¯ç¡è²ä¸Šçš„æ¤ç‰©
+                Plant* lilyPad = _plantMap[row][col];
+                if (lilyPad && lilyPad->getName() == "LilyPad" && targetPlant != lilyPad) {
+                    // ç¡è²ä¸Šçš„æ¤ç‰©æ­»äº¡ï¼Œåªç§»é™¤è¯¥æ¤ç‰©ï¼Œç¡è²ä¿ç•™
+                    CCLOG("[Info] Plant on LilyPad died, LilyPad remains at [%d, %d]", row, col);
+                } else {
+                    // æ™®é€šæ¤ç‰©æˆ–ç¡è²æ­»äº¡ï¼Œæ¸…ç©º_plantMap
+                    _plantMap[row][col] = nullptr;
+                }
+                
+                zombie->setState(UnitState::WALK); // ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½
             }
         }
         else {
-            // Ã»Ö²Îï -> ×ß
+            // Ã»Ö²ï¿½ï¿½ -> ï¿½ï¿½
             if (zombie->getState() == UnitState::ATTACK) {
                 zombie->setState(UnitState::WALK);
             }
@@ -564,11 +1416,11 @@ void GameScene::updateCombatLogic() {
     }
 }
 
-// Êó±êÒÆ¶¯»Øµ÷
+// ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½Øµï¿½
 void GameScene::onMouseMove(Event* event) {
     EventMouse* e = (EventMouse*)event;
-    // Cocos µÄÊó±ê×ø±êÔ­µãÔÚ×óÏÂ½Ç£¬µ« Y ÖáÓĞÊ±ĞèÒª×ª»»£¬ÊÓ°æ±¾¶ø¶¨
-    // v4.0 Í¨³£ÊÇ±ê×¼µÄ GL ×ø±ê
+    // Cocos åæ ‡åŸç‚¹åœ¨å·¦ä¸‹è§’ï¼Œä½† Y è½´å¯èƒ½éœ€è¦è½¬æ¢ï¼Œæ ¹æ®ç‰ˆæœ¬
+    // v4.0 é€šå¸¸æ˜¯æ ‡å‡†çš„ GL åæ ‡ç³»
     Vec2 mousePos = Vec2(e->getCursorX(), e->getCursorY());
 
     if (_selectedPlantId != -1) {
@@ -576,26 +1428,26 @@ void GameScene::onMouseMove(Event* event) {
     }
 }
 
-// ¸üĞÂÓÄÁéÎ»ÖÃ (Îü¸½Íø¸ñ)
+// æ›´æ–°å¹½çµä½ç½®ï¼ˆè·Ÿéšé¼ æ ‡ï¼‰
 void GameScene::updateGhostPosition(Vec2 mousePos) {
     auto grid = pixelToGrid(mousePos);
     int row = grid.first;
     int col = grid.second;
 
     if (row != -1) {
-        // ÔÚÍø¸ñÄÚ£¬Îü¸½µ½¸ñ×ÓÖĞĞÄ
+        // ç½‘æ ¼å†…ï¼Œå°±å¸é™„åˆ°ç½‘æ ¼ä¸­å¿ƒ
         Vec2 snapPos = gridToPixel(row, col);
         _ghostSprite->setPosition(snapPos);
         _ghostSprite->setVisible(true);
 
-        // ÑÕÉ«ÌáÊ¾£ºÈç¹û¸ñ×Ó±»Õ¼ÓÃ»òÑô¹â²»×ã£¬±äºì
+        // é¢œè‰²æç¤ºï¼šå¯ä»¥ç§æ¤å°±ç™½è‰²ï¼Œè¢«å ç”¨å°±çº¢è‰²
         bool canPlant = (_plantMap[row][col] == nullptr);
         _ghostSprite->setColor(canPlant ? Color3B::WHITE : Color3B::RED);
     }
     else {
-        // ÔÚÍø¸ñÍâ£¬¸úËæÊó±ê (»òÕßÒş²Ø)
+        // ç½‘æ ¼å¤–ï¼Œå°±è·Ÿéšé¼ æ ‡ï¼ˆæˆ–éšè—ï¼‰
         _ghostSprite->setPosition(mousePos);
-        // _ghostSprite->setVisible(false); // ¿ÉÑ¡£º³ö½çÒş²Ø
+        // _ghostSprite->setVisible(false); // å¯é€‰ï¼šéšè—
     }
 }
 
@@ -619,45 +1471,102 @@ void GameScene::createPauseButton() {
 void GameScene::onPauseButtonClicked(cocos2d::Ref* sender) {
     if (_gameState == GameState::PLAYING) {
         pauseGame();
-    } else if (_gameState == GameState::PAUSED) {
+    }
+    else if (_gameState == GameState::PAUSED) {
         resumeGame();
     }
 }
 
 void GameScene::pauseGame() {
+    if (_gameState == GameState::PAUSED) return;
+
     _gameState = GameState::PAUSED;
-    Director::getInstance()->pause();
+    // ä¸ä½¿ç”¨ Director::pause()ï¼Œé¿å…è¿ UI ä¸€èµ·åœæ‰ï¼Œç›´æ¥é  _gameState æ‹¦æˆª update
     AudioManager::getInstance().pauseBackgroundMusic();
     
-    // ÏÔÊ¾ÔİÍ£ÌáÊ¾
-    auto pauseLabel = Label::createWithTTF("PAUSED", "fonts/Marker Felt.ttf", 64);
-    pauseLabel->setPosition(Director::getInstance()->getVisibleSize().width/2, 
-                          Director::getInstance()->getVisibleSize().height/2);
-    pauseLabel->setColor(Color3B::YELLOW);
-    pauseLabel->setTag(999); // ÓÃÓÚ²éÕÒºÍÉ¾³ı
-    this->addChild(pauseLabel, 3000);
+    showPauseMenu();
 }
 
 void GameScene::resumeGame() {
+    if (_gameState != GameState::PAUSED) return;
+
     _gameState = GameState::PLAYING;
-    Director::getInstance()->resume();
     AudioManager::getInstance().resumeBackgroundMusic();
+
+    hidePauseMenu();
+}
+
+void GameScene::showPauseMenu() {
+    if (_pauseLayer) return;
+
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    auto origin = Director::getInstance()->getVisibleOrigin();
+
+    // åŠé€æ˜é®ç½©å±‚
+    _pauseLayer = LayerColor::create(Color4B(0, 0, 0, 150));
+    _pauseLayer->setContentSize(visibleSize);
+    _pauseLayer->setPosition(origin);
+    this->addChild(_pauseLayer, 3000);
+
+    // æ ‡é¢˜ï¼šæš‚åœï¼ˆä¸ºé¿å…ç¼–ç é—®é¢˜ï¼Œè¿™é‡Œä½¿ç”¨è‹±æ–‡ï¼‰
+    auto title = Label::createWithTTF("Game Paused", "fonts/Marker Felt.ttf", 48);
+    title->setPosition(origin.x + visibleSize.width / 2,
+                       origin.y + visibleSize.height * 0.65f);
+    title->setColor(Color3B::YELLOW);
+    _pauseLayer->addChild(title);
+
+    float marginX = 120.0f;
+    float marginY = 60.0f;
+
+    // å·¦ä¸‹è§’ï¼šé€€å‡ºï¼ˆè¿”å›ä¸»èœå•ï¼‰
+    auto exitBtn = ui::Button::create();
+    exitBtn->setTitleText("Exit");
+    exitBtn->setTitleFontSize(56);
+    exitBtn->setTitleFontName("fonts/Marker Felt.ttf");
+    exitBtn->setPosition(Vec2(origin.x + marginX,
+                              origin.y + marginY));
+    exitBtn->addTouchEventListener([this](Ref* sender, ui::Widget::TouchEventType type) {
+        if (type == ui::Widget::TouchEventType::ENDED) {
+            // æ¢å¤èƒŒæ™¯éŸ³ä¹ï¼Œç„¶åå›ä¸»èœå•
+    AudioManager::getInstance().resumeBackgroundMusic();
+            SceneManager::getInstance().gotoStartScene();
+        }
+    });
+    _pauseLayer->addChild(exitBtn);
+
+    // ï¿½ï¿½ï¿½Â½Ç£ï¿½ï¿½ï¿½ï¿½ï¿½
+    auto resumeBtn = ui::Button::create();
+    resumeBtn->setTitleText("Resume");
+    resumeBtn->setTitleFontSize(56);
+    resumeBtn->setTitleFontName("fonts/Marker Felt.ttf");
+    resumeBtn->setPosition(Vec2(origin.x + visibleSize.width - marginX,
+                                origin.y + marginY));
+    resumeBtn->addTouchEventListener([this](Ref* sender, ui::Widget::TouchEventType type) {
+        if (type == ui::Widget::TouchEventType::ENDED) {
+            this->resumeGame();
+        }
+    });
+    _pauseLayer->addChild(resumeBtn);
+}
     
-    // ÒÆ³ıÔİÍ£ÌáÊ¾
-    this->removeChildByTag(999);
+void GameScene::hidePauseMenu() {
+    if (!_pauseLayer) return;
+
+    _pauseLayer->removeFromParent();
+    _pauseLayer = nullptr;
 }
 
 void GameScene::checkVictoryCondition() {
-    // ¼ì²éÊÇ·ñËùÓĞ²¨´ÎÍê³ÉÇÒ³¡ÉÏÎŞ½©Ê¬
+    // æ£€æŸ¥æ˜¯å¦æ‰€æœ‰æ³¢æ¬¡å·²å®Œæˆä¸”åœºä¸Šæ— åƒµå°¸
     if (LevelManager::getInstance().isAllWavesCompleted() && _zombies.empty()) {
         endGame(true);
     }
 }
 
 void GameScene::checkGameOverCondition() {
-    // ¼ì²éÊÇ·ñÓĞ½©Ê¬µ½´ï·¿Îİ£¨×î×ó±ß£©
+    // æ£€æŸ¥æ˜¯å¦æœ‰åƒµå°¸åˆ°è¾¾æˆ¿å­ï¼ˆæœ€å·¦ç«¯ï¼‰
     for (auto zombie : _zombies) {
-        if (zombie->getPositionX() < GRID_START_X - 100) { // µ½´ï·¿Îİ
+        if (zombie->getPositionX() < GRID_START_X - 100) { // åˆ°è¾¾æˆ¿å­
             endGame(false);
             return;
         }
@@ -665,15 +1574,16 @@ void GameScene::checkGameOverCondition() {
 }
 
 void GameScene::endGame(bool isVictory) {
-    if (_gameState != GameState::PLAYING) return; // ·ÀÖ¹ÖØ¸´µ÷ÓÃ
+    if (_gameState != GameState::PLAYING) return; // é˜²æ­¢é‡å¤è§¦å‘
     
     _gameState = isVictory ? GameState::VICTORY : GameState::GAME_OVER;
     
-    // ÑÓ³ÙÌø×ª£¬ÈÃÍæ¼Ò¿´µ½×îÖÕ½á¹û
+    // å»¶è¿Ÿåœºæ™¯è½¬æ¢ï¼Œè®©ç©å®¶çœ‹åˆ°æœ€ç»ˆç»“æœ
     this->scheduleOnce([this, isVictory](float dt) {
         if (isVictory) {
             SceneManager::getInstance().gotoVictoryScene();
-        } else {
+        }
+        else {
             SceneManager::getInstance().gotoGameOverScene();
         }
     }, 2.0f, "end_game_delay");
@@ -688,13 +1598,13 @@ void GameScene::calculateGridParameters(cocos2d::Sprite* background) {
     Size bgOriginalSize = background->getContentSize();
     float bgScale = background->getScale();
     
-    // ¼ÆËã±³¾°µÄÊµ¼ÊÏÔÊ¾³ß´ç
+    // è®¡ç®—èƒŒæ™¯å®é™…æ˜¾ç¤ºå°ºå¯¸
     Size bgActualSize = Size(bgOriginalSize.width * bgScale, bgOriginalSize.height * bgScale);
     
-    // ¸ù¾İ±³¾°Êµ¼Ê³ß´çµ÷ÕûÍø¸ñ²ÎÊı
-    // ¼ÙÉèÔ­Ê¼±³¾°Éè¼Æ·Ö±æÂÊÎª 1024x768£¬Íø¸ñÇøÓòÕ¼±³¾°µÄÌØ¶¨±ÈÀı
-    float bgWidthRatio = bgActualSize.width / 1024.0f;   // ¸ù¾İÄãµÄ±³¾°Í¼µ÷Õû
-    float bgHeightRatio = bgActualSize.height / 768.0f;  // ¸ù¾İÄãµÄ±³¾°Í¼µ÷Õû
+    // æ ¹æ®èƒŒæ™¯å®é™…å°ºå¯¸è°ƒæ•´ç½‘æ ¼
+    // å‡è®¾åŸå§‹è®¾è®¡åˆ†è¾¨ç‡ä¸º 1024x768ï¼Œç½‘æ ¼å æ®ç‰¹å®šåŒºåŸŸ
+    float bgWidthRatio = bgActualSize.width / 1024.0f;   // å®½åº¦ç¼©æ”¾æ¯”ä¾‹
+    float bgHeightRatio = bgActualSize.height / 768.0f;  // é«˜åº¦ç¼©æ”¾æ¯”ä¾‹
     
     _actualGridStartX = GRID_START_X * bgWidthRatio + (visibleSize.width - bgActualSize.width) / 2;
     _actualGridStartY = GRID_START_Y * bgHeightRatio + (visibleSize.height - bgActualSize.height) / 2;
@@ -703,4 +1613,138 @@ void GameScene::calculateGridParameters(cocos2d::Sprite* background) {
     
     CCLOG("[Info] Grid adjusted - Start: (%.1f, %.1f), Cell: (%.1f, %.1f)", 
           _actualGridStartX, _actualGridStartY, _actualCellWidth, _actualCellHeight);
+}
+
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½UI
+void GameScene::createShovelUI(cocos2d::Node* uiLayer, float x, float y) {
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó²ï¿½
+    if (FileUtils::getInstance()->isFileExist("ui/shovelSlot.png")) {
+        _shovelSlot = Sprite::create("ui/shovelSlot.png");
+        if (_shovelSlot) {
+            // ï¿½ï¿½È¡shovelSlotï¿½Ä¸ß¶È£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½ï¿½ï¿½ß¶ï¿½
+            float slotHeight = _shovelSlot->getContentSize().height;
+            float adjustedY = y + slotHeight / 2.0f;
+            // ï¿½ï¿½ï¿½ï¿½ï¿½Ó²Û·ï¿½ï¿½Ú¿ï¿½Æ¬ï¿½Ò²à£¬ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½ï¿½ï¿½ß¶ï¿½
+            _shovelSlot->setPosition(x, adjustedY);
+            uiLayer->addChild(_shovelSlot);
+            CCLOG("[Info] Shovel slot created at (%.1f, %.1f) (adjusted from %.1f by +%.1f)", 
+                  x, adjustedY, y, slotHeight / 2.0f);
+        }
+    } else {
+        CCLOG("[Warn] Shovel slot image not found: ui/shovelSlot.png");
+    }
+    
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    if (FileUtils::getInstance()->isFileExist("ui/shovel.png")) {
+        _shovel = Sprite::create("ui/shovel.png");
+        if (_shovel && _shovelSlot) {
+            // ï¿½ï¿½ï¿½Ó³ï¿½Ê¼Î»ï¿½ï¿½ï¿½Ú²ï¿½ï¿½ï¿½
+            _shovelOriginalPos = _shovelSlot->getPosition();
+            _shovel->setPosition(_shovelOriginalPos);
+            uiLayer->addChild(_shovel, 10); // ï¿½Ï¸ß²ã¼¶ï¿½ï¿½È·ï¿½ï¿½ï¿½Ú²ï¿½Ö®ï¿½ï¿½
+            CCLOG("[Info] Shovel created at (%.1f, %.1f)", _shovelOriginalPos.x, _shovelOriginalPos.y);
+        }
+    } else {
+        CCLOG("[Warn] Shovel image not found: ui/shovel.png");
+    }
+}
+
+// ï¿½ï¿½ï¿½Ã²ï¿½ï¿½ï¿½Î»ï¿½ï¿½
+void GameScene::resetShovel() {
+    if (_shovel) {
+        _shovel->setPosition(_shovelOriginalPos);
+        _isShovelSelected = false;
+        _isShovelDragging = false;
+        CCLOG("[Info] Shovel reset to original position");
+    }
+}
+
+// ï¿½ï¿½È¡Ö²ï¿½ï¿½
+void GameScene::tryDigAt(int row, int col) {
+    try {
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î§
+        if (row < 0 || row >= _actualGridRows || col < 0 || col >= GRID_COLS) {
+            CCLOG("[Warn] Invalid grid position [%d, %d]", row, col);
+            return;
+        }
+        
+        // ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Ö²ï¿½ï¿½
+        Plant* plant = _plantMap[row][col];
+        
+        // ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Ë¯ï¿½ï¿½ï¿½Ïµï¿½Ö²ï¿½ï¿½
+        int currentMapId = SceneManager::getInstance().getCurrentMapId();
+        bool isWaterRow = (currentMapId == 2 || currentMapId == 4) && (row == 2 || row == 3);
+        
+        // ï¿½ï¿½ï¿½ï¿½ï¿½Ë®ï¿½ï¿½ï¿½Ğ£ï¿½ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½Ë¯ï¿½ï¿½ï¿½Ïµï¿½Ö²ï¿½ï¿½
+        if (isWaterRow && plant && plant->getName() == "LilyPad") {
+            // ï¿½ï¿½ï¿½Ë¯ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö²ï¿½ï¿½
+            Plant* plantOnLilyPad = nullptr;
+            for (auto p : _plants) {
+                if (p && !p->isDead() && p != plant) {
+                    auto pGridPos = pixelToGrid(p->getPosition());
+                    if (pGridPos.first == row && pGridPos.second == col) {
+                        plantOnLilyPad = p;
+                        break;
+                    }
+                }
+            }
+            
+            if (plantOnLilyPad) {
+                // ï¿½ï¿½È¡Ë¯ï¿½ï¿½ï¿½Ïµï¿½Ö²ï¿½ï¿½
+                CCLOG("[Info] Digging plant %s on LilyPad at [%d, %d]", 
+                      plantOnLilyPad->getName().c_str(), row, col);
+                _plants.eraseObject(plantOnLilyPad);
+                plantOnLilyPad->removeFromParent();
+                plantOnLilyPad->release();
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ§
+                AudioManager::getInstance().playEffect(AudioPath::PLANT_SOUND);
+                CCLOG("[Info] Successfully dug plant on LilyPad at [%d, %d]", row, col);
+                return;
+            }
+        }
+        
+        // ï¿½ï¿½ï¿½Ã»ï¿½ï¿½Ë¯ï¿½ï¿½ï¿½Ïµï¿½Ö²ï¿½ï£¬ï¿½ï¿½È¡_plantMapï¿½Ğµï¿½Ö²ï¿½ï¿½
+        if (plant == nullptr) {
+            CCLOG("[Info] No plant at [%d, %d] to dig", row, col);
+            return;
+        }
+        
+        // ï¿½ï¿½È¡Ö²ï¿½ï¿½
+        CCLOG("[Info] Digging plant %s at [%d, %d]", plant->getName().c_str(), row, col);
+        
+        // ï¿½ï¿½_plantMapï¿½ï¿½ï¿½Æ³ï¿½
+        _plantMap[row][col] = nullptr;
+        
+        // ï¿½ï¿½_plantsï¿½Ğ±ï¿½ï¿½ï¿½ï¿½Æ³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        _plants.eraseObject(plant);
+        plant->removeFromParent();
+        plant->release();
+        
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ§
+        AudioManager::getInstance().playEffect(AudioPath::PLANT_SOUND);
+        
+        CCLOG("[Info] Successfully dug plant at [%d, %d]", row, col);
+        
+    } catch (const std::exception& e) {
+        CCLOG("[Err] Digging failed: %s", e.what());
+    }
+}
+
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È´Ê±ï¿½ä£¨ï¿½ï¿½ï¿½ï¿½5ï¿½ë£¬ï¿½ï¿½ï¿½10ï¿½ë£©
+float GameScene::calculateCooldownByCost(int cost) const {
+    // ï¿½ï¿½ï¿½ï¿½ï¿½Î§ï¿½ï¿½Ğ§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¬ï¿½ï¿½Öµ
+    if (_minCost >= _maxCost) {
+        return 7.5f; // Ä¬ï¿½ï¿½7.5ï¿½ï¿½
+    }
+    
+    // ï¿½ï¿½ï¿½Ô²ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½Ó¦5ï¿½ë£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½Ó¦10ï¿½ï¿½
+    // cooldown = 5 + (cost - minCost) / (maxCost - minCost) * (10 - 5)
+    float ratio = static_cast<float>(cost - _minCost) / static_cast<float>(_maxCost - _minCost);
+    float cooldown = 5.0f + ratio * 5.0f; // 5ï¿½ëµ½10ï¿½ï¿½Ö®ï¿½ï¿½
+    
+    // È·ï¿½ï¿½ï¿½Ú·ï¿½Î§ï¿½ï¿½
+    if (cooldown < 5.0f) cooldown = 5.0f;
+    if (cooldown > 10.0f) cooldown = 10.0f;
+    
+    return cooldown;
 }

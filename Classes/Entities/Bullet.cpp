@@ -1,6 +1,7 @@
-// 实现子弹类的逻辑
-// 2025.12.12 by BillyDu
+// Bullet class implementation
+// 2025.12.12 by BillyDu 12.21 by Zhao (add animation support)
 #include "Bullet.h"
+#include "../Utils/AnimationHelper.h"
 
 USING_NS_CC;
 
@@ -25,26 +26,58 @@ bool Bullet::init() {
 void Bullet::setBulletData(const BulletData& data) {
     _data = data;
 
-    // 加载贴图 (如果没有可以用绿点代替)
+    // If has animation config, play animation
+    if (_data.hasAnimation && !_data.animationConfig.frameFormat.empty()) {
+        // Create and play animation
+        Action* animate = AnimationHelper::createAnimateFromConfig(_data.animationConfig);
+        if (animate) {
+            // Set initial texture (first frame)
+            std::string firstFramePath = _data.animationConfig.defaultTexture;
+            if (firstFramePath.empty()) {
+                // Auto-generate first frame path
+                char defaultPath[256];
+                snprintf(defaultPath, sizeof(defaultPath), _data.animationConfig.frameFormat.c_str(), 1);
+                firstFramePath = defaultPath;
+            }
+            if (!firstFramePath.empty() && FileUtils::getInstance()->isFileExist(firstFramePath)) {
+                this->setTexture(firstFramePath);
+            }
+            
+            // Run animation
+            this->runAction(animate);
+            CCLOG("[Info] Bullet animation started: %s", _data.animationConfig.frameFormat.c_str());
+        } else {
+            // Fallback to static texture if animation creation failed
     if (FileUtils::getInstance()->isFileExist(_data.texturePath)) {
         this->setTexture(_data.texturePath);
+            } else {
+                // Fallback: draw a small circle
+                auto drawNode = DrawNode::create();
+                drawNode->drawDot(Vec2::ZERO, 10, Color4F::RED);
+                this->addChild(drawNode);
+            }
     }
-    else {
-        // 兜底：画一个小圆点
+    } else {
+        // Use static texture
+        if (FileUtils::getInstance()->isFileExist(_data.texturePath)) {
+            this->setTexture(_data.texturePath);
+        } else {
+            // Fallback: draw a small circle
         auto drawNode = DrawNode::create();
         drawNode->drawDot(Vec2::ZERO, 10, Color4F::RED);
         this->addChild(drawNode);
     }
 }
+}
 
 void Bullet::updateLogic(float dt) {
     if (!_active) return;
 
-    // 子弹简单地向右飞
+    // Bullet moves to the right
     float moveDist = _data.speed * dt;
     this->setPositionX(this->getPositionX() + moveDist);
 
-    // 越界销毁 (假设屏幕宽 1280)
+    // Out of bounds check (screen width is 1280)
     if (this->getPositionX() > 1300) {
         this->removeFromParent();
         _active = false;

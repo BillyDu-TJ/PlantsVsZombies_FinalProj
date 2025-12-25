@@ -1,4 +1,4 @@
-// Ñô¹âÀà¶¨Òå
+// ï¿½ï¿½ï¿½ï¿½à¶¨ï¿½ï¿½
 //  2025.12.12 by BillyDu
 #ifndef __SUN_H__
 #define __SUN_H__
@@ -11,23 +11,23 @@ public:
     static Sun* create();
     virtual bool init() override;
 
-    // ÉèÖÃÊÕ¼¯»Øµ÷£¨µ±Ñô¹â·Éµ½×óÉÏ½Çºóµ÷ÓÃ£©
+    // ï¿½ï¿½ï¿½ï¿½ï¿½Õ¼ï¿½ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éµï¿½ï¿½ï¿½ï¿½Ï½Çºï¿½ï¿½ï¿½Ã£ï¿½
     void setOnCollectedCallback(const std::function<void(int)>& callback);
 
-    // ¶¯×÷Ä£Ê½ 1: ´ÓÌì¶ø½µ
-    // targetY: µôÂäµ½µÄµØÃæ¸ß¶È
+    // ï¿½ï¿½ï¿½ï¿½Ä£Ê½ 1: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // targetY: ï¿½ï¿½ï¿½äµ½ï¿½Äµï¿½ï¿½ï¿½ß¶ï¿½
     void fallFromSky(float startX, float targetY);
 
-    // ¶¯×÷Ä£Ê½ 2: ´ÓÖ²Îï²ú³ö (Å×ÎïÏßÌøÔ¾)
+    // ï¿½ï¿½ï¿½ï¿½Ä£Ê½ 2: ï¿½ï¿½Ö²ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¾)
     void jumpFromPlant(cocos2d::Vec2 startPos, cocos2d::Vec2 targetPos);
 
 private:
-    // ´¦Àíµã»÷ÊÕ¼¯Âß¼­
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¼ï¿½ï¿½ß¼ï¿½
     void collect();
 
-    bool _isCollected = false; // ·ÀÖ¹ÖØ¸´µã»÷
+    bool _isCollected = false; // ï¿½ï¿½Ö¹ï¿½Ø¸ï¿½ï¿½ï¿½ï¿½
     std::function<void(int)> _onCollectedCallback;
-    int _value = 25; // Ò»¸öÑô¹â 25 µã
+    int _value = 25; // Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ 25 ï¿½ï¿½
 };
 
 #endif // __SUN_H__

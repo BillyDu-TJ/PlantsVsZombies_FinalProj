@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Cocos2d-x Animation Configuration Schema",
+  "description": "动画资源配置架构定义",
+  "type": "object",
+  
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "配置文件版本号"
+    },
+    "description": {
+      "type": "string",
+      "description": "配置文件描述"
+    },
+    "animations": {
+      "type": "object",
+      "description": "所有动画资源",
+      "patternProperties": {
+        "^[a-zA-Z]+$": {
+          "type": "object",
+          "description": "按类型分组的动画（如zombies、plants等）",
+          "patternProperties": {
+            "^[0-9]+$": {
+              "type": "object",
+              "description": "单个实体（如僵尸、植物）的所有动画",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "实体ID"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "实体名称"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "实体描述"
+                },
+                "animations": {
+                  "type": "object",
+                  "description": "该实体的所有动画状态",
+                  "patternProperties": {
+                    "^[a-zA-Z_]+$": {
+                      "type": "object",
+                      "description": "单个动画配置",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "动画名称（内部标识）"
+                        },
+                        "displayName": {
+                          "type": "string",
+                          "description": "动画显示名称"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": ["loop", "once", "pingpong"],
+                          "description": "动画类型：loop循环、once播放一次、pingpong往返"
+                        },
+                        "frameFormat": {
+                          "type": "string",
+                          "pattern": ".*%d.*",
+                          "description": "帧文件路径格式，必须包含%d占位符，例如：zombies/normalzombie/normalzombie_walk/%d.png"
+                        },
+                        "frameCount": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "description": "总帧数"
+                        },
+                        "startFrame": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "description": "起始帧序号（通常为1）"
+                        },
+                        "endFrame": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "description": "结束帧序号"
+                        },
+                        "frameDelay": {
+                          "type": "number",
+                          "minimum": 0.01,
+                          "description": "每帧延迟时间（秒）"
+                        },
+                        "loopCount": {
+                          "type": "integer",
+                          "description": "循环次数，-1表示无限循环，1表示播放一次"
+                        },
+                        "defaultTexture": {
+                          "type": "string",
+                          "description": "默认显示的静态图片路径（通常是第一帧）"
+                        },
+                        "onComplete": {
+                          "type": "string",
+                          "enum": ["remove", "idle", "none"],
+                          "description": "动画完成后的行为：remove移除、idle切换到待机、none无操作"
+                        }
+                      },
+                      "required": ["name", "type", "frameFormat", "frameCount", "frameDelay"]
+                    }
+                  }
+                },
+                "defaultAnimation": {
+                  "type": "string",
+                  "description": "默认播放的动画名称"
+                },
+                "defaultTexture": {
+                  "type": "string",
+                  "description": "默认显示的静态图片路径"
+                }
+              },
+              "required": ["id", "name", "animations"]
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["version", "animations"]
+}
+

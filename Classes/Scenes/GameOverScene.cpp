@@ -1,4 +1,4 @@
-// ÓÎÏ·Ê§°Ü³¡¾°ÊµÏÖ
+// ï¿½ï¿½Ï·Ê§ï¿½Ü³ï¿½ï¿½ï¿½Êµï¿½ï¿½
 // 2025.12.15 by BillyDu
 #include "GameOverScene.h"
 #include "../Managers/SceneManager.h"
@@ -26,7 +26,7 @@ bool GameOverScene::init() {
 }
 
 void GameOverScene::createBackground() {
-    // °µºìÉ«±³¾°±íÊ¾Ê§°Ü
+    // ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾Ê§ï¿½ï¿½
     auto bg = LayerColor::create(Color4B(80, 0, 0, 200));
     this->addChild(bg, -1);
 }
@@ -35,19 +35,19 @@ void GameOverScene::createUI() {
     float centerX = _visibleSize.width/2 + _origin.x;
     float centerY = _visibleSize.height/2 + _origin.y;
     
-    // "Game Over" ±êÌâ
+    // "Game Over" ï¿½ï¿½ï¿½ï¿½
     auto gameOverLabel = Label::createWithTTF("GAME OVER", "fonts/Marker Felt.ttf", 72);
     gameOverLabel->setPosition(centerX, centerY + 100);
     gameOverLabel->setColor(Color3B::RED);
     this->addChild(gameOverLabel, 1);
     
-    // Ê§°ÜÐÅÏ¢
+    // Ê§ï¿½ï¿½ï¿½ï¿½Ï¢
     auto infoLabel = Label::createWithTTF("The zombies ate your brains!", "fonts/Marker Felt.ttf", 32);
     infoLabel->setPosition(centerX, centerY + 20);
     infoLabel->setColor(Color3B::WHITE);
     this->addChild(infoLabel, 1);
     
-    // ÖØÐÂ¿ªÊ¼°´Å¥
+    // ï¿½ï¿½ï¿½Â¿ï¿½Ê¼ï¿½ï¿½Å¥
     auto restartButton = ui::Button::create();
     restartButton->setTitleText("Try Again");
     restartButton->setTitleFontName("fonts/Marker Felt.ttf");
@@ -62,7 +62,7 @@ void GameOverScene::createUI() {
     });
     this->addChild(restartButton, 1);
     
-    // ·µ»ØÖ÷²Ëµ¥°´Å¥
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½ï¿½Å¥
     auto mainMenuButton = ui::Button::create();
     mainMenuButton->setTitleText("Main Menu");
     mainMenuButton->setTitleFontName("fonts/Marker Felt.ttf");

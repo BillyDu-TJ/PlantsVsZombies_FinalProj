@@ -1,35 +1,51 @@
-// Ö²ÎïµÄÀà¶¨Òå£¬¼Ì³Ğ×ÔUnitÀà£¬°üº¬Ö²ÎïÌØÓĞµÄÊôĞÔºÍ·½·¨
+// æ¤ç‰©ç±»å®šä¹‰ï¼Œç»§æ‰¿è‡ªUnitç±»ï¼ŒåŒ…å«æ¤ç‰©ç‰¹æœ‰çš„å±æ€§å’Œæ–¹æ³•
 // 2025.12.2 by BillyDu
+//12.22 by Zhao ï¿½ï¿½ï¿½ï¿½Ö²ï¿½ï¿ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Çµï¿½ï¿½Ş¸Ä»ï¿½È¥ï¿½ï¿½
 #ifndef __PLANT_H__
 #define __PLANT_H__
 
 #include <functional>
+#include <string>
 
 #include "Unit.h"
-#include "GameDataStructures.h" // ÒıÓÃÖ®Ç°¶¨ÒåµÄÊı¾İ½á¹¹
+#include "GameDataStructures.h" // åŒ…å«ä¹‹å‰å®šä¹‰çš„æ•°æ®ç»“æ„
 
 class Plant : public Unit {
 public:
     static Plant* createWithData(const PlantData& data);
     virtual bool init() override;
 
-    // ¸²Ğ´»ùÀà·½·¨
+    // é‡å†™çˆ¶ç±»å‡½æ•°
     virtual void updateLogic(float dt) override;
     virtual void die() override;
 
-    // Ö²ÎïÌØÓĞÂß¼­
+    // Ö²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½
     void setPlantData(const PlantData& data);
 
-    // ´¥·¢¼¼ÄÜ£¨Èç·¢ÉäÍã¶¹¡¢Éú²úÑô¹â£©
+    // è§¦å‘æŠ€èƒ½ï¼Œå¦‚å‘å°„è±Œè±†ã€ç”Ÿäº§é˜³å…‰ç­‰
     virtual void triggerSkill();
 
-    // ²ÎÊı£º×Óµ¯²úÉúµÄÎ»ÖÃ (Vec2), ÉËº¦ (int) - Ò²¿ÉÒÔ´« BulletData
+    // è®¾ç½®å‘å°„å­å¼¹çš„å›è°ƒï¼šä½ç½® (Vec2), ä¼¤å®³ (int) - ä¹Ÿå¯ä»¥ä¼  BulletData
     void setOnShootCallback(const std::function<void(cocos2d::Vec2, int)>& callback);
+
+    // ï¿½ï¿½ï¿½Ã¼ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ğ¹ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½Ä»Øµï¿½
+    void setHasTargetCallback(const std::function<bool()>& callback);
+    
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø·ï¿½ï¿½ï¿½
+    void playAnimation(const std::string& animName);  // ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    void playDefaultAnimation();  // ï¿½ï¿½ï¿½ï¿½Ä¬ï¿½Ï¶ï¿½ï¿½ï¿½
+
+    // --- Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ---
+    const std::string& getName() const { return _data.name; }
+    const std::string& getType() const { return _data.type; }
+    const PlantData& getData() const { return _data; }
 
 protected:
     PlantData _data;
-    float _timer; // ÓÃÓÚ¹¥»÷»òÉú²úµÄ¼ÆÊ±Æ÷
+    float _timer; // ç”¨äºæ”»å‡»/ç”Ÿäº§é—´éš”çš„è®¡æ—¶å™¨
     std::function<void(cocos2d::Vec2, int)> _onShootCallback;
+    std::function<bool()> _hasTargetCallback;  // ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ğ¹ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½Ä»Øµï¿½
+    std::string _currentAnimation;  // ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ÅµÄ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 };
 
 #endif // __PLANT_H__

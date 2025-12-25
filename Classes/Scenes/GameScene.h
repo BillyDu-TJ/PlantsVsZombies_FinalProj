@@ -1,10 +1,14 @@
-// ÓÎÏ·Ö÷³¡¾°Í·ÎÄ¼ş£¬¶¨ÒåÁËºËĞÄ¼Ü¹¹·½·¨
+ï»¿// æ¸¸æˆåœºæ™¯å¤´æ–‡ä»¶ï¼Œå®šä¹‰äº†æ¸¸æˆçš„æ ¸å¿ƒæ¶æ„å’ŒåŠŸèƒ½
 // 2025.11.27 by BillyDu
+//edited on 2025.12.21 by Zhao
+// ï¿½ï¿½ï¿½Â£ï¿½ï¿½ï¿½Ó°ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È´Ê±ï¿½ä¹¦ï¿½Ü£ï¿½ï¿½ï¿½ï¿½ï¿½5ï¿½ë£¬ï¿½ï¿½ï¿½10ï¿½ë£©ï¿½ï¿½ï¿½ï¿½Ö²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È´
+// by Zhao.12.23
 #ifndef __GAME_SCENE_H__
 #define __GAME_SCENE_H__
 
 #include <vector>
 #include <utility>
+#include <set>
 
 #include "cocos2d.h"
 #include "../Entities/Zombie.h"
@@ -18,84 +22,121 @@ public:
     static cocos2d::Scene* createScene();
     virtual bool init() override;
 
-    // Ã¿Ò»Ö¡¸üĞÂÂß¼­
+    // Ã¿Ò»Ö¡ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½
     virtual void update(float dt) override;
 
-    // --- ºËĞÄ¼Ü¹¹·½·¨ ---
+    // --- ç½‘æ ¼æ¶æ„åŠŸèƒ½ ---
 
-    // ½«Âß¼­×ø±ê (row, col) ×ª»»ÎªÆÁÄ»ÏñËØ×ø±ê (x, y)
+    // å°†é€»è¾‘ç½‘æ ¼åæ ‡ (row, col) è½¬æ¢ä¸ºå±å¹•åƒç´ åæ ‡ (x, y)
     // row: 0~4, col: 0~8
     cocos2d::Vec2 gridToPixel(int row, int col);
 
-    // ½«ÆÁÄ»ÏñËØ×ø±ê×ª»»ÎªÂß¼­×ø±ê (row, col)
-    // ·µ»Ø pair, Èç¹ûµã»÷ÔÚÍø¸ñÍâ£¬·µ»Ø {-1, -1}
+    // å°†å±å¹•åƒç´ åæ ‡è½¬æ¢ä¸ºé€»è¾‘ç½‘æ ¼åæ ‡ (row, col)
+    // è¿”å› pairï¼Œå¦‚æœè½¬æ¢å¤±è´¥åˆ™è¿”å› {-1, -1}
     std::pair<int, int> pixelToGrid(cocos2d::Vec2 pos);
 
-    // µ÷ÊÔ¹¦ÄÜ£ºÔÚÆÁÄ»ÉÏ»­³ö¸ñ×ÓÏß
+    // è°ƒè¯•åŠŸèƒ½ï¼šåœ¨å±å¹•ä¸Šç»˜åˆ¶ç½‘æ ¼
     void drawDebugGrid();
 
     CREATE_FUNC(GameScene);
 
 private:
-	cocos2d::Vector<Plant*> _plants;   // ³¡ÉÏµÄÖ²ÎïÁĞ±í
-    cocos2d::Vector<Zombie*> _zombies; // ³¡ÉÏµÄ½©Ê¬ÁĞ±í
+	cocos2d::Vector<Plant*> _plants;   // ï¿½ï¿½ï¿½Ïµï¿½Ö²ï¿½ï¿½ï¿½Ğ±ï¿½
+    cocos2d::Vector<Zombie*> _zombies; // ï¿½ï¿½ï¿½ÏµÄ½ï¿½Ê¬ï¿½Ğ±ï¿½
    
-	// Éú³É½©Ê¬
+	// ï¿½ï¿½ï¿½É½ï¿½Ê¬
 	void spawnZombie(int id, int row);
-    // ÖÖÖ²Ö²Îï
+    // ï¿½ï¿½Ö²Ö²ï¿½ï¿½
     void tryPlantAt(int row, int col);
     void selectPlant(int plantId);
+    // ï¿½ï¿½È¡Ö²ï¿½ï¿½
+    void tryDigAt(int row, int col);
 
-	Plant* _plantMap[GRID_ROWS][GRID_COLS]; // Âß¼­Íø¸ñÉÏµÄÖ²ÎïÖ¸Õë
+    Plant* _plantMap[6][GRID_COLS]; // é€»è¾‘ç½‘æ ¼ä¸Šçš„æ¤ç‰©æŒ‡é’ˆï¼ˆæœ€å¤§6è¡Œï¼ŒMap2/Map4ä½¿ç”¨6è¡Œï¼ŒMap1/Map3ä½¿ç”¨5è¡Œï¼‰
 
-    // ÓÎÏ·×´Ì¬
-    int _currentSun = 500; // ³õÊ¼Ñô¹âÊı
-	int _selectedPlantId = -1; // µ±Ç°Ñ¡ÖĞµÄÖ²ÎïID£¬-1±íÊ¾Î´Ñ¡Ôñ
-    GameState _gameState = GameState::PLAYING; // ÓÎÏ·×´Ì¬
+    // åŠ¨æ€ç½‘æ ¼è¡Œæ•°ï¼ˆæ ¹æ®åœ°å›¾ç±»å‹ï¼šMap1/Map3=5è¡Œï¼ŒMap2/Map4=6è¡Œï¼‰
+    int _actualGridRows = GRID_ROWS;
 
-    // UI LebelÓÃÓÚÏÔÊ¾Ñô¹â
+    // ï¿½ï¿½Ï·×´Ì¬
+    int _currentSun = 500; // åˆå§‹é˜³å…‰å€¼
+    int _selectedPlantId = -1; // å½“å‰é€‰ä¸­çš„æ¤ç‰©IDï¼Œ-1è¡¨ç¤ºæœªé€‰ä¸­
+    GameState _gameState = GameState::PLAYING; // ï¿½ï¿½Ï·×´Ì¬
+
+    // å†·å´æ—¶é—´è®¡ç®—ç›¸å…³
+    int _minCost = 0;  // æœ€å°é˜³å…‰å€¼
+    int _maxCost = 0;  // æœ€å¤§é˜³å…‰å€¼
+    
+    // æ ¹æ®é˜³å…‰å€¼è®¡ç®—å†·å´æ—¶é—´ï¼ˆæœ€å°‘5ç§’ï¼Œæœ€å¤š10ç§’ï¼‰
+    float calculateCooldownByCost(int cost) const;
+
+    // UI Labelï¼šç”¨äºæ˜¾ç¤ºé˜³å…‰
 	cocos2d::Label* _sunLabel = nullptr;
 
-    // ×Óµ¯ÈİÆ÷
+    // å­å¼¹ç®¡ç†
     cocos2d::Vector<Bullet*> _bullets;
 
-    // ´´½¨×Óµ¯µÄ¾ßÌåÂß¼­
-    void createBullet(cocos2d::Vec2 startPos, int damage);
+    // åˆ›å»ºå­å¼¹çš„é€šç”¨é€»è¾‘
+    void createBullet(cocos2d::Vec2 startPos, int damage, BulletType type = BulletType::NORMAL, const std::string& texturePath = "");
 
-    // ºËĞÄÕ½¶·¼ì²â (Collision & AI Check)
+    // åˆ›å»ºè˜‘è‡å­å¼¹ï¼ˆå¸¦åŠ¨ç”»ï¼‰
+    void createMushroomBullet(cocos2d::Vec2 startPos, int damage);
+
+    // åˆ›å»ºçˆ†ç‚¸åŠ¨ç”»ï¼ˆboom1ç”¨äºCherryBombï¼Œboom2ç”¨äºPotatoMineï¼‰
+    void createExplosionAnimation(cocos2d::Vec2 pos, const std::string& boomType, int damage, int row, int col);
+
+    // æˆ˜æ–—é€»è¾‘æ›´æ–°ï¼ˆç¢°æ’æ£€æµ‹å’ŒAIæ£€æŸ¥ï¼‰
     void updateCombatLogic();
 
-    // [UI] ¿¨Æ¬ÈİÆ÷
+    // [UI] ç§å­å¡ç‰‡
     cocos2d::Vector<SeedCard*> _seedCards;
 
-    // [Ghost] ÓÄÁé¾«Áé£¨ÓÃÓÚÔ¤ÀÀ£©
+    // [Ghost] ç§æ¤é¢„è§ˆï¼ˆåŠé€æ˜é¢„è§ˆï¼‰
     cocos2d::Sprite* _ghostSprite;
 
-    // [Input] Êó±êÒÆ¶¯¼àÌı
+    // [Shovel] é“²å­ç›¸å…³
+    cocos2d::Sprite* _shovel = nullptr;        // é“²å­ç²¾çµ
+    cocos2d::Sprite* _shovelSlot = nullptr;     // é“²å­æ§½ç²¾çµ
+    cocos2d::Vec2 _shovelOriginalPos;          // é“²å­åŸå§‹ä½ç½®ï¼ˆåœ¨æ§½ä¸­ï¼‰
+    bool _isShovelSelected = false;             // æ˜¯å¦é€‰ä¸­äº†é“²å­
+    bool _isShovelDragging = false;             // æ˜¯å¦æ­£åœ¨æ‹–åŠ¨é“²å­
+
+    // [Input] é¼ æ ‡ç§»åŠ¨å¤„ç†
     void onMouseMove(cocos2d::Event* event);
 
-    // [Helper] ¸üĞÂÓÄÁéÎ»ÖÃ
+    // [Helper] ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½
     void updateGhostPosition(cocos2d::Vec2 mousePos);
     
-    // [Game Flow] Ê¤¸ºÅĞ¶¨
+    // [Game Flow] èƒœåˆ©æ¡ä»¶æ£€æŸ¥
     void checkVictoryCondition();
     void checkGameOverCondition();
     void endGame(bool isVictory);
     
-    // [UI] ÔİÍ£°´Å¥
+    // [UI] æš‚åœæŒ‰é’® / æš‚åœèœå•
     void createPauseButton();
     void onPauseButtonClicked(cocos2d::Ref* sender);
     void pauseGame();
     void resumeGame();
+    void showPauseMenu();
+    void hidePauseMenu();
 
-    // ¶¯Ì¬Íø¸ñ²ÎÊı£¨Èç¹ûĞèÒª£©
+    // [Shovel] ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Øºï¿½ï¿½ï¿½
+    void createShovelUI(cocos2d::Node* uiLayer, float x, float y);
+    void resetShovel();
+
+    // åŠ¨æ€ç½‘æ ¼å‚æ•°ï¼ˆæ ¹æ®èƒŒæ™¯å¤§å°è°ƒæ•´ï¼‰
     float _actualGridStartX = GRID_START_X;
     float _actualGridStartY = GRID_START_Y;
     float _actualCellWidth = CELL_WIDTH;
     float _actualCellHeight = CELL_HEIGHT;
     
-    // ¼ÆËãÊµ¼ÊÍø¸ñ²ÎÊıµÄ·½·¨
+    // è®¡ç®—ç½‘æ ¼å®é™…å‚æ•°çš„æ–¹æ³•
     void calculateGridParameters(cocos2d::Sprite* background);
+    
+    // Boss2 ice tracking (grid positions where ice has been placed)
+    std::set<std::pair<int, int>> _icePositions;  // (row, col) pairs
+
+    // ï¿½ï¿½Í£ï¿½Ëµï¿½ï¿½ã£¨ESC ï¿½ï¿½ï¿½ï¿½Í£ï¿½ï¿½Å¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    cocos2d::LayerColor* _pauseLayer = nullptr;
 };
 
 #endif // __GAME_SCENE_H__

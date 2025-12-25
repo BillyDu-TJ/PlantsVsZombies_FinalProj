@@ -1,4 +1,4 @@
-// ¿ªÊ¼²Ëµ¥³¡¾°ÊµÏÖ
+// å¼€å§‹èœå•åœºæ™¯å®žçŽ°
 // 2025.12.15 by BillyDu
 #include "StartScene.h"
 #include "../Managers/SceneManager.h"
@@ -33,13 +33,13 @@ void StartScene::createBackground() {
 }
 
 void StartScene::createTitle() {
-    // ÓÎÏ·±êÌâ
+    // æ¸¸æˆæ ‡é¢˜
     auto title = Label::createWithTTF("Plants vs Zombies", "fonts/Marker Felt.ttf", 64);
     title->setPosition(_visibleSize.width/2 + _origin.x, _visibleSize.height * 0.75f + _origin.y);
     title->setColor(Color3B::YELLOW);
     this->addChild(title, 1);
     
-    // Ìí¼Ó±êÌâ¶¯»­Ð§¹û
+    // æ·»åŠ æ ‡é¢˜åŠ¨ç”»æ•ˆæžœ
     auto scaleUp = ScaleTo::create(1.0f, 1.1f);
     auto scaleDown = ScaleTo::create(1.0f, 1.0f);
     auto sequence = Sequence::create(scaleUp, scaleDown, nullptr);
@@ -52,7 +52,7 @@ void StartScene::createButtons() {
     float startY = _visibleSize.height * 0.5f + _origin.y;
     float buttonSpacing = 80.0f;
     
-    // ¿ªÊ¼ÓÎÏ·°´Å¥
+    // å¼€å§‹æ¸¸æˆæŒ‰é’®
     auto startButton = ui::Button::create();
     startButton->setTitleText("Start Game");
     startButton->setTitleFontName("fonts/Marker Felt.ttf");
@@ -67,7 +67,7 @@ void StartScene::createButtons() {
     });
     this->addChild(startButton, 1);
     
-    // ÉèÖÃ°´Å¥
+    // è®¾ç½®æŒ‰é’®
     auto settingsButton = ui::Button::create();
     settingsButton->setTitleText("Settings");
     settingsButton->setTitleFontName("fonts/Marker Felt.ttf");
@@ -82,7 +82,7 @@ void StartScene::createButtons() {
     });
     this->addChild(settingsButton, 1);
     
-    // ÍË³ö°´Å¥
+    // é€€å‡ºæŒ‰é’®
     auto exitButton = ui::Button::create();
     exitButton->setTitleText("Exit");
     exitButton->setTitleFontName("fonts/Marker Felt.ttf");
@@ -100,17 +100,17 @@ void StartScene::createButtons() {
 
 void StartScene::onStartButtonClicked(cocos2d::Ref* sender) {
     CCLOG("[Info] Start button clicked");
-    AudioManager::getInstance().playEffect(AudioPath::PLANT_SOUND); // ÁÙÊ±ÓÃÖÖÖ²ÒôÐ§
-    SceneManager::getInstance().gotoGameScene();
+    AudioManager::getInstance().playEffect(AudioPath::PLANT_SOUND); // ä¸´æ—¶ç”¨ç§æ¤éŸ³æ•ˆ
+    SceneManager::getInstance().gotoMapSelectScene();
 }
 
 void StartScene::onSettingsButtonClicked(cocos2d::Ref* sender) {
     CCLOG("[Info] Settings button clicked");
-    // TODO: ÊµÏÖÉèÖÃ½çÃæ
-    // ÕâÀï¿ÉÒÔ´´½¨Ò»¸öµ¯´°»òÌø×ªµ½ÉèÖÃ³¡¾°
+    // TODO: å®žçŽ°è®¾ç½®ç•Œé¢
+    // è¿™é‡Œå¯ä»¥åˆ›å»ºä¸€ä¸ªå¼¹çª—æˆ–è·³è½¬åˆ°è®¾ç½®åœºæ™¯
     AudioManager::getInstance().playEffect(AudioPath::PLANT_SOUND);
     
-    // ¼òµ¥µÄÒôÁ¿¿ØÖÆÊ¾Àý
+    // ç®€å•çš„éŸ³é‡æŽ§åˆ¶ç¤ºä¾‹
     auto& audioMgr = AudioManager::getInstance();
     float currentVolume = audioMgr.getMusicVolume();
     audioMgr.setMusicVolume(currentVolume > 0.5f ? 0.3f : 1.0f);

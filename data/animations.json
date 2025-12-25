@@ -1,0 +1,944 @@
+{
+  "version": "1.0",
+  "description": "动画资源配置文件 - 用于描述从GIF切片后的PNG序列动画",
+  
+  "animations": {
+    "zombies": {
+      "2001": {
+        "id": "2001",
+        "name": "NormalZombie",
+        "description": "普通僵尸动画组",
+        
+        "animations": {
+          "walk": {
+            "name": "walk",
+            "displayName": "行走",
+            "type": "loop",
+            "frameFormat": "zombies/normalzombie/normalzombie_walk/%d.png",
+            "frameCount": 22,
+            "startFrame": 1,
+            "endFrame": 22,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/normalzombie/normalzombie_walk/1.png"
+          },
+          
+          "eat": {
+            "name": "eat",
+            "displayName": "吃植物",
+            "type": "loop",
+            "frameFormat": "zombies/normalzombie/normalzombie_eat/%d.png",
+            "frameCount": 21,
+            "startFrame": 1,
+            "endFrame": 21,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/normalzombie/normalzombie_eat/1.png"
+          },
+          
+          "dead": {
+            "name": "dead",
+            "displayName": "死亡",
+            "type": "once",
+            "frameFormat": "zombies/normalzombie/normalzombie_dead/%d.png",
+            "frameCount": 20,
+            "startFrame": 1,
+            "endFrame": 20,
+            "frameDelay": 0.12,
+            "loopCount": 1,
+            "defaultTexture": "zombies/normalzombie/normalzombie_dead/1.png",
+            "onComplete": "remove"
+          },
+          
+          "stand": {
+            "name": "stand",
+            "displayName": "站立",
+            "type": "loop",
+            "frameFormat": "zombies/normalzombie/normalzombie_stand/%d.png",
+            "frameCount": 11,
+            "startFrame": 1,
+            "endFrame": 11,
+            "frameDelay": 0.15,
+            "loopCount": -1,
+            "defaultTexture": "zombies/normalzombie/normalzombie_stand/1.png"
+          }
+        },
+        
+        "defaultAnimation": "walk",
+        "defaultTexture": "zombies/normalzombie/normalzombie_walk/1.png"
+      },
+      
+      "2002": {
+        "id": "2002",
+        "name": "ConeheadZombie",
+        "description": "路障僵尸动画组",
+        
+        "animations": {
+          "walk": {
+            "name": "walk",
+            "displayName": "行走",
+            "type": "loop",
+            "frameFormat": "zombies/conehead/conehead_walk/%d.png",
+            "frameCount": 21,
+            "startFrame": 1,
+            "endFrame": 21,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/conehead/conehead_walk/1.png"
+          },
+          
+          "eat": {
+            "name": "eat",
+            "displayName": "吃植物",
+            "type": "loop",
+            "frameFormat": "zombies/conehead/conehead_eat/%d.png",
+            "frameCount": 11,
+            "startFrame": 1,
+            "endFrame": 11,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/conehead/conehead_eat/1.png"
+          },
+          
+          "dead": {
+            "name": "dead",
+            "displayName": "死亡",
+            "type": "once",
+            "frameFormat": "zombies/conehead/conehead_dead/%d.png",
+            "frameCount": 20,
+            "startFrame": 1,
+            "endFrame": 20,
+            "frameDelay": 0.12,
+            "loopCount": 1,
+            "defaultTexture": "zombies/conehead/conehead_dead/1.png",
+            "onComplete": "remove"
+          },
+          
+          "stand": {
+            "name": "stand",
+            "displayName": "站立",
+            "type": "loop",
+            "frameFormat": "zombies/conehead/conehead_stand/%d.png",
+            "frameCount": 8,
+            "startFrame": 1,
+            "endFrame": 8,
+            "frameDelay": 0.15,
+            "loopCount": -1,
+            "defaultTexture": "zombies/conehead/conehead_stand/1.png"
+          }
+        },
+        
+        "defaultAnimation": "walk",
+        "defaultTexture": "zombies/conehead/conehead_walk/1.png"
+      },
+      
+      "2003": {
+        "id": "2003",
+        "name": "IronheadZombie",
+        "description": "铁桶僵尸动画组",
+        
+        "animations": {
+          "walk": {
+            "name": "walk",
+            "displayName": "行走",
+            "type": "loop",
+            "frameFormat": "zombies/ironhead/ironhead_walk/%d.png",
+            "frameCount": 15,
+            "startFrame": 1,
+            "endFrame": 15,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/ironhead/ironhead_walk/1.png"
+          },
+          
+          "eat": {
+            "name": "eat",
+            "displayName": "吃植物",
+            "type": "loop",
+            "frameFormat": "zombies/ironhead/ironhead_eat/%d.png",
+            "frameCount": 11,
+            "startFrame": 1,
+            "endFrame": 11,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/ironhead/ironhead_eat/1.png"
+          },
+          
+          "dead": {
+            "name": "dead",
+            "displayName": "死亡",
+            "type": "once",
+            "frameFormat": "zombies/ironhead/ironhead_dead/%d.png",
+            "frameCount": 20,
+            "startFrame": 1,
+            "endFrame": 20,
+            "frameDelay": 0.12,
+            "loopCount": 1,
+            "defaultTexture": "zombies/ironhead/ironhead_dead/1.png",
+            "onComplete": "remove"
+          },
+          
+          "stand": {
+            "name": "stand",
+            "displayName": "站立",
+            "type": "loop",
+            "frameFormat": "zombies/ironhead/ironhead_stand/%d.png",
+            "frameCount": 1,
+            "startFrame": 1,
+            "endFrame": 1,
+            "frameDelay": 0.15,
+            "loopCount": -1,
+            "defaultTexture": "zombies/ironhead/ironhead_stand/1.png"
+          }
+        },
+        
+        "defaultAnimation": "walk",
+        "defaultTexture": "zombies/ironhead/ironhead_walk/1.png"
+      },
+      
+      "2004": {
+        "id": "2004",
+        "name": "Boss1",
+        "description": "Boss1动画组",
+        
+        "animations": {
+          "move1": {
+            "name": "move1",
+            "displayName": "移动1（第一阶段）",
+            "type": "loop",
+            "frameFormat": "zombies/boss1/boss1_move1/%d.png",
+            "frameCount": 11,
+            "startFrame": 1,
+            "endFrame": 11,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/boss1/boss1_move1/1.png"
+          },
+          
+          "move2": {
+            "name": "move2",
+            "displayName": "移动2（第二阶段）",
+            "type": "loop",
+            "frameFormat": "zombies/boss1/boss1_move2/%d.png",
+            "frameCount": 11,
+            "startFrame": 1,
+            "endFrame": 11,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/boss1/boss1_move2/1.png"
+          },
+          
+          "eat1": {
+            "name": "eat1",
+            "displayName": "吃植物1（第一阶段）",
+            "type": "loop",
+            "frameFormat": "zombies/boss1/boss1_eat1/%d.png",
+            "frameCount": 10,
+            "startFrame": 1,
+            "endFrame": 10,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/boss1/boss1_eat1/1.png"
+          },
+          
+          "eat2": {
+            "name": "eat2",
+            "displayName": "吃植物2（第二阶段）",
+            "type": "loop",
+            "frameFormat": "zombies/boss1/boss1_eat2/%d.png",
+            "frameCount": 11,
+            "startFrame": 1,
+            "endFrame": 11,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/boss1/boss1_eat2/1.png"
+          },
+          
+          "die": {
+            "name": "die",
+            "displayName": "死亡",
+            "type": "once",
+            "frameFormat": "zombies/boss1/boss1_die/%d.png",
+            "frameCount": 7,
+            "startFrame": 1,
+            "endFrame": 7,
+            "frameDelay": 0.15,
+            "loopCount": 1,
+            "defaultTexture": "zombies/boss1/boss1_die/1.png",
+            "onComplete": "remove"
+          },
+          
+          "stand1": {
+            "name": "stand1",
+            "displayName": "站立",
+            "type": "loop",
+            "frameFormat": "zombies/boss1/boss1_stand1/%d.png",
+            "frameCount": 15,
+            "startFrame": 1,
+            "endFrame": 15,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/boss1/boss1_stand1/1.png"
+          }
+        },
+        
+        "defaultAnimation": "move1",
+        "defaultTexture": "zombies/boss1/boss1_move1/1.png"
+      },
+      
+      "2005": {
+        "id": "2005",
+        "name": "Boss2",
+        "description": "Boss2雪橇车僵尸动画组",
+        
+        "animations": {
+          "move1": {
+            "name": "move1",
+            "displayName": "移动1（100%-75%）",
+            "type": "loop",
+            "frameFormat": "zombies/boss2/boss2_move1/%d.png",
+            "frameCount": 12,
+            "startFrame": 1,
+            "endFrame": 12,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/boss2/boss2_move1/1.png"
+          },
+          
+          "move2": {
+            "name": "move2",
+            "displayName": "移动2（75%-40%）",
+            "type": "loop",
+            "frameFormat": "zombies/boss2/boss2_move2/%d.png",
+            "frameCount": 11,
+            "startFrame": 1,
+            "endFrame": 11,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/boss2/boss2_move2/1.png"
+          },
+          
+          "move3": {
+            "name": "move3",
+            "displayName": "移动3（40%-20%）",
+            "type": "loop",
+            "frameFormat": "zombies/boss2/boss2_move3/%d.png",
+            "frameCount": 11,
+            "startFrame": 1,
+            "endFrame": 11,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/boss2/boss2_move3/1.png"
+          },
+          
+          "move4": {
+            "name": "move4",
+            "displayName": "移动4（20%-0%）",
+            "type": "loop",
+            "frameFormat": "zombies/boss2/boss2_move4/%d.png",
+            "frameCount": 29,
+            "startFrame": 1,
+            "endFrame": 29,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "zombies/boss2/boss2_move4/1.png"
+          },
+          
+          "die": {
+            "name": "die",
+            "displayName": "死亡",
+            "type": "once",
+            "frameFormat": "zombies/boss2/boss2_die/%d.png",
+            "frameCount": 7,
+            "startFrame": 1,
+            "endFrame": 7,
+            "frameDelay": 0.15,
+            "loopCount": 1,
+            "defaultTexture": "zombies/boss2/boss2_die/1.png",
+            "onComplete": "remove"
+          }
+        },
+        
+        "defaultAnimation": "move1",
+        "defaultTexture": "zombies/boss2/boss2_move1/1.png"
+      }
+    },
+    
+    "plants": {
+      "1001": {
+        "id": "1001",
+        "name": "Peashooter",
+        "description": "豌豆射手动画组",
+        "animations": {
+          "idle": {
+            "name": "idle",
+            "displayName": "待机",
+            "type": "loop",
+            "frameFormat": "plants/peashooter/%d.png",
+            "frameCount": 13,
+            "startFrame": 1,
+            "endFrame": 13,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "plants/peashooter/1.png"
+          },
+          "shoot": {
+            "name": "shoot",
+            "displayName": "射击",
+            "type": "once",
+            "frameFormat": "plants/peashooter_shoot/%d.png",
+            "frameCount": 8,
+            "startFrame": 1,
+            "endFrame": 8,
+            "frameDelay": 0.08,
+            "loopCount": 1,
+            "defaultTexture": "plants/peashooter_shoot/1.png",
+            "onComplete": "idle"
+          }
+        },
+        "defaultAnimation": "idle",
+        "defaultTexture": "plants/peashooter/1.png"
+      },
+      
+      "1002": {
+        "id": "1002",
+        "name": "Sunflower",
+        "description": "向日葵动画组",
+        "animations": {
+          "idle": {
+            "name": "idle",
+            "displayName": "待机",
+            "type": "loop",
+            "frameFormat": "plants/sunflower/%d.png",
+            "frameCount": 18,
+            "startFrame": 1,
+            "endFrame": 18,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "plants/sunflower/1.png"
+          },
+          "produce": {
+            "name": "produce",
+            "displayName": "产生阳光",
+            "type": "once",
+            "frameFormat": "plants/sunflower_produce/%d.png",
+            "frameCount": 12,
+            "startFrame": 1,
+            "endFrame": 12,
+            "frameDelay": 0.1,
+            "loopCount": 1,
+            "defaultTexture": "plants/sunflower_produce/1.png",
+            "onComplete": "idle"
+          }
+        },
+        "defaultAnimation": "idle",
+        "defaultTexture": "plants/sunflower/1.png"
+      },
+      
+      "1003": {
+        "id": "1003",
+        "name": "CherryBomb",
+        "description": "樱桃炸弹动画组",
+        "animations": {
+          "idle": {
+            "name": "idle",
+            "displayName": "待机",
+            "type": "loop",
+            "frameFormat": "plants/cherrybomb/%d.png",
+            "frameCount": 10,
+            "startFrame": 1,
+            "endFrame": 10,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "plants/cherrybomb/1.png"
+          },
+          "explode": {
+            "name": "explode",
+            "displayName": "爆炸",
+            "type": "once",
+            "frameFormat": "plants/cherrybomb_explode/%d.png",
+            "frameCount": 8,
+            "startFrame": 1,
+            "endFrame": 8,
+            "frameDelay": 0.08,
+            "loopCount": 1,
+            "defaultTexture": "plants/cherrybomb_explode/1.png",
+            "onComplete": "remove"
+          }
+        },
+        "defaultAnimation": "idle",
+        "defaultTexture": "plants/cherrybomb/1.png"
+      },
+      
+      "1004": {
+        "id": "1004",
+        "name": "WallNut",
+        "description": "坚果墙动画组",
+        "animations": {
+          "idle": {
+            "name": "idle",
+            "displayName": "待机",
+            "type": "loop",
+            "frameFormat": "plants/wallnut/%d.png",
+            "frameCount": 16,
+            "startFrame": 1,
+            "endFrame": 16,
+            "frameDelay": 0.12,
+            "loopCount": -1,
+            "defaultTexture": "plants/wallnut/1.png"
+          },
+          "damaged": {
+            "name": "damaged",
+            "displayName": "受伤",
+            "type": "loop",
+            "frameFormat": "plants/wallnut_damaged/%d.png",
+            "frameCount": 16,
+            "startFrame": 1,
+            "endFrame": 16,
+            "frameDelay": 0.12,
+            "loopCount": -1,
+            "defaultTexture": "plants/wallnut_damaged/1.png"
+          },
+          "cracked": {
+            "name": "cracked",
+            "displayName": "破裂",
+            "type": "loop",
+            "frameFormat": "plants/wallnut_cracked/%d.png",
+            "frameCount": 16,
+            "startFrame": 1,
+            "endFrame": 16,
+            "frameDelay": 0.12,
+            "loopCount": -1,
+            "defaultTexture": "plants/wallnut_cracked/1.png"
+          }
+        },
+        "defaultAnimation": "idle",
+        "defaultTexture": "plants/wallnut/1.png"
+      },
+      
+      "1005": {
+        "id": "1005",
+        "name": "PotatoMine",
+        "description": "土豆地雷动画组",
+        "animations": {
+          "idle": {
+            "name": "idle",
+            "displayName": "待机（未激活）",
+            "type": "loop",
+            "frameFormat": "plants/potatomine/%d.png",
+            "frameCount": 8,
+            "startFrame": 1,
+            "endFrame": 8,
+            "frameDelay": 0.15,
+            "loopCount": -1,
+            "defaultTexture": "plants/potatomine/1.png"
+          },
+          "ready": {
+            "name": "ready",
+            "displayName": "准备就绪",
+            "type": "loop",
+            "frameFormat": "plants/potatomine_ready/%d.png",
+            "frameCount": 8,
+            "startFrame": 1,
+            "endFrame": 8,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "plants/potatomine_ready/1.png"
+          },
+          "explode": {
+            "name": "explode",
+            "displayName": "爆炸",
+            "type": "once",
+            "frameFormat": "plants/potatomine_explode/%d.png",
+            "frameCount": 10,
+            "startFrame": 1,
+            "endFrame": 10,
+            "frameDelay": 0.08,
+            "loopCount": 1,
+            "defaultTexture": "plants/potatomine_explode/1.png",
+            "onComplete": "remove"
+          }
+        },
+        "defaultAnimation": "idle",
+        "defaultTexture": "plants/potatomine/1.png"
+      },
+      
+      "1006": {
+        "id": "1006",
+        "name": "SnowPea",
+        "description": "寒冰射手动画组",
+        "animations": {
+          "idle": {
+            "name": "idle",
+            "displayName": "待机",
+            "type": "loop",
+            "frameFormat": "plants/snowpea/%d.png",
+            "frameCount": 15,
+            "startFrame": 1,
+            "endFrame": 15,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "plants/snowpea/1.png"
+          },
+          "shoot": {
+            "name": "shoot",
+            "displayName": "射击",
+            "type": "once",
+            "frameFormat": "plants/snowpea_shoot/%d.png",
+            "frameCount": 8,
+            "startFrame": 1,
+            "endFrame": 8,
+            "frameDelay": 0.08,
+            "loopCount": 1,
+            "defaultTexture": "plants/snowpea_shoot/1.png",
+            "onComplete": "idle"
+          }
+        },
+        "defaultAnimation": "idle",
+        "defaultTexture": "plants/snowpea/1.png"
+      },
+      
+      "1007": {
+        "id": "1007",
+        "name": "Chomper",
+        "description": "大嘴花动画组",
+        "animations": {
+          "idle": {
+            "name": "idle",
+            "displayName": "待机",
+            "type": "loop",
+            "frameFormat": "plants/bigmouth/%d.png",
+            "frameCount": 13,
+            "startFrame": 1,
+            "endFrame": 13,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "plants/bigmouth/1.png"
+          },
+          "eat": {
+            "name": "eat",
+            "displayName": "吃僵尸",
+            "type": "once",
+            "frameFormat": "plants/bigmouth_eat/%d.png",
+            "frameCount": 15,
+            "startFrame": 1,
+            "endFrame": 15,
+            "frameDelay": 0.1,
+            "loopCount": 1,
+            "defaultTexture": "plants/bigmouth_eat/1.png",
+            "onComplete": "digest"
+          },
+          "digest": {
+            "name": "digest",
+            "displayName": "消化",
+            "type": "once",
+            "frameFormat": "plants/bigmouth_digest/%d.png",
+            "frameCount": 20,
+            "startFrame": 1,
+            "endFrame": 20,
+            "frameDelay": 0.1,
+            "loopCount": 1,
+            "defaultTexture": "plants/bigmouth_digest/1.png",
+            "onComplete": "idle"
+          }
+        },
+        "defaultAnimation": "idle",
+        "defaultTexture": "plants/bigmouth/1.png"
+      },
+      
+      "1008": {
+        "id": "1008",
+        "name": "Repeater",
+        "description": "双发射手动画组",
+        "animations": {
+          "idle": {
+            "name": "idle",
+            "displayName": "待机",
+            "type": "loop",
+            "frameFormat": "plants/repeater/%d.png",
+            "frameCount": 15,
+            "startFrame": 1,
+            "endFrame": 15,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "plants/repeater/1.png"
+          },
+          "shoot": {
+            "name": "shoot",
+            "displayName": "射击",
+            "type": "once",
+            "frameFormat": "plants/repeater_shoot/%d.png",
+            "frameCount": 10,
+            "startFrame": 1,
+            "endFrame": 10,
+            "frameDelay": 0.08,
+            "loopCount": 1,
+            "defaultTexture": "plants/repeater_shoot/1.png",
+            "onComplete": "idle"
+          }
+        },
+        "defaultAnimation": "idle",
+        "defaultTexture": "plants/repeater/1.png"
+      },
+      
+      "1009": {
+        "id": "1009",
+        "name": "PuffShroom",
+        "description": "小喷菇动画组",
+        "animations": {
+          "idle": {
+            "name": "idle",
+            "displayName": "待机",
+            "type": "loop",
+            "frameFormat": "plants/smallgu/%d.png",
+            "frameCount": 14,
+            "startFrame": 1,
+            "endFrame": 14,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "plants/smallgu/1.png"
+          },
+          "shoot": {
+            "name": "shoot",
+            "displayName": "射击",
+            "type": "once",
+            "frameFormat": "plants/smallgu_shoot/%d.png",
+            "frameCount": 8,
+            "startFrame": 1,
+            "endFrame": 8,
+            "frameDelay": 0.08,
+            "loopCount": 1,
+            "defaultTexture": "plants/smallgu_shoot/1.png",
+            "onComplete": "idle"
+          }
+        },
+        "defaultAnimation": "idle",
+        "defaultTexture": "plants/smallgu/1.png"
+      },
+      
+      "1010": {
+        "id": "1010",
+        "name": "SunShroom",
+        "description": "阳光菇动画组",
+        "animations": {
+          "idle": {
+            "name": "idle",
+            "displayName": "待机",
+            "type": "loop",
+            "frameFormat": "plants/sunshroom/%d.png",
+            "frameCount": 10,
+            "startFrame": 1,
+            "endFrame": 10,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "plants/sunshroom/1.png"
+          },
+          "produce": {
+            "name": "produce",
+            "displayName": "产生阳光",
+            "type": "once",
+            "frameFormat": "plants/sunshroom_produce/%d.png",
+            "frameCount": 12,
+            "startFrame": 1,
+            "endFrame": 12,
+            "frameDelay": 0.1,
+            "loopCount": 1,
+            "defaultTexture": "plants/sunshroom_produce/1.png",
+            "onComplete": "idle"
+          },
+          "grow": {
+            "name": "grow",
+            "displayName": "成长",
+            "type": "once",
+            "frameFormat": "plants/sunshroom_grow/%d.png",
+            "frameCount": 15,
+            "startFrame": 1,
+            "endFrame": 15,
+            "frameDelay": 0.1,
+            "loopCount": 1,
+            "defaultTexture": "plants/sunshroom_grow/1.png",
+            "onComplete": "idle"
+          }
+        },
+        "defaultAnimation": "idle",
+        "defaultTexture": "plants/sunshroom/1.png"
+      },
+      
+      "1011": {
+        "id": "1011",
+        "name": "FumeShroom",
+        "description": "大喷菇动画组",
+        "animations": {
+          "idle": {
+            "name": "idle",
+            "displayName": "待机",
+            "type": "loop",
+            "frameFormat": "plants/scareroom/%d.png",
+            "frameCount": 17,
+            "startFrame": 1,
+            "endFrame": 17,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "plants/scareroom/1.png"
+          },
+          "shoot": {
+            "name": "shoot",
+            "displayName": "射击",
+            "type": "once",
+            "frameFormat": "plants/scareroom_shoot/%d.png",
+            "frameCount": 10,
+            "startFrame": 1,
+            "endFrame": 10,
+            "frameDelay": 0.08,
+            "loopCount": 1,
+            "defaultTexture": "plants/scareroom_shoot/1.png",
+            "onComplete": "idle"
+          }
+        },
+        "defaultAnimation": "idle",
+        "defaultTexture": "plants/scareroom/1.png"
+      },
+      
+      "1012": {
+        "id": "1012",
+        "name": "Spikeweed",
+        "description": "地刺动画组",
+        "animations": {
+          "idle": {
+            "name": "idle",
+            "displayName": "待机",
+            "type": "loop",
+            "frameFormat": "plants/spikeweed/%d.png",
+            "frameCount": 19,
+            "startFrame": 1,
+            "endFrame": 19,
+            "frameDelay": 0.1,
+            "loopCount": -1,
+            "defaultTexture": "plants/spikeweed/1.png"
+          },
+          "attack": {
+            "name": "attack",
+            "displayName": "攻击",
+            "type": "once",
+            "frameFormat": "plants/spikeweed_attack/%d.png",
+            "frameCount": 12,
+            "startFrame": 1,
+            "endFrame": 12,
+            "frameDelay": 0.08,
+            "loopCount": 1,
+            "defaultTexture": "plants/spikeweed_attack/1.png",
+            "onComplete": "idle"
+          }
+        },
+        "defaultAnimation": "idle",
+        "defaultTexture": "plants/spikeweed/1.png"
+      },
+      
+      "1013": {
+        "id": "1013",
+        "name": "TallNut",
+        "description": "高坚果动画组",
+        "animations": {
+          "idle": {
+            "name": "idle",
+            "displayName": "待机",
+            "type": "loop",
+            "frameFormat": "plants/tallnut/%d.png",
+            "frameCount": 14,
+            "startFrame": 1,
+            "endFrame": 14,
+            "frameDelay": 0.12,
+            "loopCount": -1,
+            "defaultTexture": "plants/tallnut/1.png"
+          },
+          "damaged": {
+            "name": "damaged",
+            "displayName": "受伤",
+            "type": "loop",
+            "frameFormat": "plants/tallnut_damaged/%d.png",
+            "frameCount": 14,
+            "startFrame": 1,
+            "endFrame": 14,
+            "frameDelay": 0.12,
+            "loopCount": -1,
+            "defaultTexture": "plants/tallnut_damaged/1.png"
+          },
+          "cracked": {
+            "name": "cracked",
+            "displayName": "破裂",
+            "type": "loop",
+            "frameFormat": "plants/tallnut_cracked/%d.png",
+            "frameCount": 14,
+            "startFrame": 1,
+            "endFrame": 14,
+            "frameDelay": 0.12,
+            "loopCount": -1,
+            "defaultTexture": "plants/tallnut_cracked/1.png"
+          }
+        },
+        "defaultAnimation": "idle",
+        "defaultTexture": "plants/tallnut/1.png"
+      },
+      
+      "1014": {
+        "id": "1014",
+        "name": "LilyPad",
+        "description": "荷叶动画组",
+        "animations": {
+          "idle": {
+            "name": "idle",
+            "displayName": "待机",
+            "type": "loop",
+            "frameFormat": "plants/lilypad/%d.png",
+            "frameCount": 3,
+            "startFrame": 1,
+            "endFrame": 3,
+            "frameDelay": 0.2,
+            "loopCount": -1,
+            "defaultTexture": "plants/lilypad/1.png"
+          }
+        },
+        "defaultAnimation": "idle",
+        "defaultTexture": "plants/lilypad/1.png"
+      }
+    }
+  },
+  
+  "animationTypes": {
+    "loop": "循环播放动画",
+    "once": "播放一次后停止",
+    "pingpong": "往返播放（暂未实现）"
+  },
+  
+  "animationStates": {
+    "common": {
+      "idle": "待机状态，通常为循环播放",
+      "dead": "死亡状态，播放一次后移除",
+      "damaged": "受伤状态，根据血量切换不同受伤程度"
+    },
+    "shooter": {
+      "shoot": "射击动画，播放一次后返回待机"
+    },
+    "producer": {
+      "produce": "生产资源动画，播放一次后返回待机"
+    },
+    "instant": {
+      "explode": "爆炸动画，播放一次后移除",
+      "activate": "激活动画，播放一次后执行效果"
+    },
+    "defensive": {
+      "damaged": "受伤状态",
+      "cracked": "破裂状态（严重受伤）"
+    }
+  },
+  
+  "notes": {
+    "frameFormat": "帧文件路径格式，%d会被替换为帧序号（从startFrame到endFrame）",
+    "frameDelay": "每帧之间的延迟时间（秒）",
+    "loopCount": "循环次数，-1表示无限循环，1表示播放一次",
+    "defaultTexture": "默认显示的静态图片（通常是第一帧）",
+    "defaultAnimation": "默认播放的动画名称",
+    "onComplete": "动画完成后的行为：idle（切换到待机）、remove（移除）、或指定下一个动画名称",
+    "extensibility": "可以通过添加新的动画状态来扩展功能，例如：添加shoot_charged、produce_big等"
+  }
+}

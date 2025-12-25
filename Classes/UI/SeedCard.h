@@ -1,5 +1,7 @@
-// ÖÖÖ²¿¨Æ¬ÀàÍ·ÎÄ¼ş
+// ç§å­å¡ç‰‡ç±»å¤´æ–‡ä»¶
 // 2025.12.15 by BillyDu
+// ï¿½ï¿½ï¿½Â£ï¿½ï¿½ï¿½ï¿½Ö²ï¿½ï¿½ï¿½ï¿½Ö²ï¿½ï¿½È´ï¿½ï¿½ï¿½Ü£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È´ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ê¾ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½
+// by Zhao.12.23
 #ifndef __SEED_CARD_H__
 #define __SEED_CARD_H__
 
@@ -11,11 +13,20 @@ class SeedCard : public cocos2d::Node {
 public:
     static SeedCard* create(int plantId);
     
-    // ÉèÖÃÑ¡Ôñ»Øµ÷
+    // ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½Øµï¿½
     void setOnSelectCallback(const std::function<void(int)>& callback);
     
-    // ¸ù¾İÑô¹âÊÇ·ñ×ã¹» (ÓÃÓÚ¸Ä±ä¿¨Æ¬±ä»Ò/¸ßÁÁ×´Ì¬)
+    // æ›´æ–°é˜³å…‰æ˜¯å¦è¶³å¤Ÿ (ç”¨äºæ”¹å˜å¡ç‰‡é¢œè‰²/ç¦ç”¨çŠ¶æ€)
     void updateSunCheck(int currentSun);
+    
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È´×´Ì¬
+    void updateCooldown(float dt);
+    
+    // ï¿½ï¿½ï¿½ï¿½ï¿½È´
+    void startCooldown(float cooldownTime);
+    
+    // ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½È´ï¿½ï¿½
+    bool isInCooldown() const { return _cooldownRemaining > 0.0f; }
     
     int getPlantId() const { return _plantId; }
 
@@ -25,10 +36,15 @@ private:
     int _plantId;
     int _cost;
     
-    // UI ×é¼ş
-    cocos2d::Sprite* _bg = nullptr;        // ¿¨Æ¬±³¾°£¨PNGËØ²Ä£©
-    cocos2d::Sprite* _icon = nullptr;      // Ö²ÎïÍ¼±ê£¨Èç¹ûĞèÒª£©
-    cocos2d::Label* _costLabel = nullptr;  // ÏûºÄÊı×Ö£¨±¸ÓÃ£©
+    // ï¿½ï¿½È´ï¿½ï¿½ï¿½
+    float _cooldownRemaining = 0.0f;  // Ê£ï¿½ï¿½ï¿½ï¿½È´Ê±ï¿½ï¿½
+    float _cooldownTotal = 0.0f;      // ï¿½ï¿½ï¿½ï¿½È´Ê±ï¿½ï¿½
+    
+    // UI ï¿½ï¿½ï¿½
+    cocos2d::Sprite* _bg = nullptr;        // å¡ç‰‡èƒŒæ™¯PNGç´ æï¼Œ
+    cocos2d::Sprite* _icon = nullptr;      // Ö²ï¿½ï¿½Í¼ï¿½ê£¨ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½
+    cocos2d::Label* _costLabel = nullptr;  // ä»·æ ¼æ ‡ç­¾ï¼ˆå¤‡ç”¨ï¼‰
+    cocos2d::Label* _cooldownLabel = nullptr;  // å†·å´å€’è®¡æ—¶æ ‡ç­¾
     
     std::function<void(int)> _onSelectCallback;
 };

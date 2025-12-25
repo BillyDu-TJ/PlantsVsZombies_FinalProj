@@ -1,4 +1,4 @@
-// ¸ÃÍ·ÎÄ¼þ¶¨ÒåÁËÓÎÏ·Êý¾Ý¹ÜÀíÀà DataManager£¬¸ºÔð¼ÓÔØºÍÌá¹©ÓÎÏ·ÖÐ¸÷ÖÖÊµÌåµÄÊý¾Ý¡£
+// ï¿½ï¿½Í·ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï·ï¿½ï¿½ï¿½Ý¹ï¿½ï¿½ï¿½ï¿½ï¿½ DataManagerï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Øºï¿½ï¿½á¹©ï¿½ï¿½Ï·ï¿½Ð¸ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý¡ï¿½
 // 2025.11.27 by BillyDu
 #ifndef __DATA_MANAGER_H__
 #define __DATA_MANAGER_H__
@@ -9,35 +9,35 @@
 
 class DataManager {
 public:
-    // C++11 ·ç¸ñµÄµ¥Àý»ñÈ¡ (Meyers' Singleton)
+    // C++11 ï¿½ï¿½ï¿½Äµï¿½ï¿½ï¿½ï¿½ï¿½È¡ (Meyers' Singleton)
     static DataManager& getInstance();
 
-    // É¾³ý¿½±´¹¹ÔìºÍ¸³Öµ²Ù×÷·û£¬È·±£µ¥ÀýÎ¨Ò»ÐÔ
+    // É¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¨Ò»ï¿½ï¿½
     DataManager(const DataManager&) = delete;
     void operator=(const DataManager&) = delete;
 
-    // ¼ÓÔØËùÓÐÊý¾Ý (Å×³öÒì³£)
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½×³ï¿½ï¿½ì³£)
     void loadData();
 
-    // »ñÈ¡ÌØ¶¨Ö²ÎïµÄÊý¾Ý (const ÒýÓÃ±ÜÃâ¿½±´)
+    // ï¿½ï¿½È¡ï¿½Ø¶ï¿½Ö²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (const ï¿½ï¿½ï¿½Ã±ï¿½ï¿½â¿½ï¿½ï¿½)
     const PlantData& getPlantData(int id) const;
 
-    // »ñÈ¡½©Ê¬µÄÊý¾Ý
+    // ï¿½ï¿½È¡ï¿½ï¿½Ê¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	const ZombieData& getZombieData(int id) const;
 
 private:
-    DataManager() = default; // Ë½ÓÐ¹¹Ôì
+    DataManager() = default; // Ë½ï¿½Ð¹ï¿½ï¿½ï¿½
 
-    // ½âÎö¾ßÌåÖ²ÎïÊý¾ÝÎÄ¼þµÄ¸¨Öúº¯Êý
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Ä¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     void loadPlants(const std::string& filename);
 
-    // »º´æÊý¾Ý£ºID -> Data
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½ID -> Data
     std::unordered_map<int, PlantData> _plantDataMap;
 
-	// ½âÎö¾ßÌå½©Ê¬Êý¾ÝÎÄ¼þµÄ¸¨Öúº¯Êý
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½å½©Ê¬ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Ä¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     void loadZombies(const std::string& filename);
 
-    // ½©Ê¬Êý¾Ý»º´æ
+    // ï¿½ï¿½Ê¬ï¿½ï¿½ï¿½Ý»ï¿½ï¿½ï¿½
     std::unordered_map<int, ZombieData> _zombieDataMap;
 };
 

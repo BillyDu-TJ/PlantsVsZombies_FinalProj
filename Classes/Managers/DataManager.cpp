@@ -1,4 +1,4 @@
-// ÊµÏÖ DataManager Àà£¬¸ºÔğ¼ÓÔØºÍ¹ÜÀíÓÎÏ·Êı¾İ
+// Êµï¿½ï¿½ DataManager ï¿½à£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ØºÍ¹ï¿½ï¿½ï¿½ï¿½ï¿½Ï·ï¿½ï¿½ï¿½ï¿½
 #include "DataManager.h"
 #include "cocos2d.h"
 #include "json/document.h" // RapidJSON
@@ -12,16 +12,16 @@ DataManager& DataManager::getInstance() {
 }
 
 void DataManager::loadData() {
-    // ¼¯ÖĞ¼ÓÔØËùÓĞÅäÖÃÎÄ¼ş
+    // é›†ä¸­åŠ è½½æ‰€æœ‰æ•°æ®æ–‡ä»¶
     try {
         loadPlants("data/plants.json");
-        loadZombies("data/zombies.json"); // Î´À´À©Õ¹
+        loadZombies("data/zombies.json"); // å¾…æ‰©å±•
         cocos2d::log("[Info] All data loaded successfully.");
     }
     catch (const std::exception& e) {
-        // ²¶»ñÒì³£²¢¼ÇÂ¼£¬»òÕßÔÙ´ÎÅ×³öÈÃÉÏ²ã´¦Àí
+        // æ•è·å¼‚å¸¸å¹¶è®°å½•ï¼Œç„¶åå†æ¬¡æŠ›å‡ºç»™ä¸Šå±‚å¤„ç†
         cocos2d::log("[Err] CRITICAL ERROR loading data: %s", e.what());
-        throw; // ÖØĞÂÅ×³ö£¬ÒòÎªÊı¾İ¼ÓÔØÊ§°ÜÓÎÏ·ÎŞ·¨½øĞĞ
+        throw; // é‡æ–°æŠ›å‡ºï¼Œå› ä¸ºæ•°æ®åŠ è½½å¤±è´¥æ¸¸æˆæ— æ³•è¿è¡Œ
     }
 }
 
@@ -45,15 +45,15 @@ void DataManager::loadPlants(const std::string& filename) {
         throw GameException("[Err] Invalid JSON format in " + filename);
     }
 
-    // ±éÀú JSON ¶ÔÏó
+    // éå† JSON æ•°æ®
     for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it) {
-        // key ÊÇ×Ö·û´® ID ("1001")£¬ÎÒÃÇĞèÒª×ªÎª int
+        // key æ˜¯å­—ç¬¦ä¸² ID ("1001")ï¼Œéœ€è¦è½¬ä¸º int
         int id = std::stoi(it->name.GetString());
         const auto& val = it->value;
 
         PlantData data;
 
-        // Ê¹ÓÃ·ÀÓùĞÔ±à³Ì¼ì²é×Ö¶ÎÊÇ·ñ´æÔÚ
+        // ä½¿ç”¨è®¿é—®å™¨æ£€æŸ¥å­—æ®µæ˜¯å¦å­˜åœ¨
         if (!val.HasMember("name")) throw GameException("[Err] Missing 'name' in plant " + std::to_string(id));
 
         data.name = val["name"].GetString();
@@ -64,15 +64,73 @@ void DataManager::loadPlants(const std::string& filename) {
         data.attack = val.HasMember("attack") ? val["attack"].GetInt() : 0;
         data.texturePath = val["texture"].GetString();
 
+        // ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        // - ï¿½ï¿½ï¿½ï¿½ï¿½Ö²ï¿½ï£ºÊ¹ï¿½ï¿½ attackSpeed
+        // - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö²ï¿½ï£¨ï¿½ï¿½ï¿½Õ¿ï¿½ï¿½ï¿½ï¿½ï¿½â¹½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½ produceIntervalï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½Ë»ï¿½ attackSpeed
         if (val.HasMember("attackSpeed")) {
             data.attackSpeed = val["attackSpeed"].GetFloat();
         }
         else {
             data.attackSpeed = 0.0f;
-            CCLOG("[Warn] Plant %d missing 'attackSpeed'", id);
         }
 
-        // ²åÈëµ½ Map ÖĞ
+        // å…¼å®¹ JSON ä¸­çš„ produceInterval å­—æ®µï¼ˆä»…ç”Ÿäº§å‹æ¤ç‰©æœ‰ï¼‰
+        if (val.HasMember("produceInterval")) {
+            float produceInterval = val["produceInterval"].GetFloat();
+            // å¦‚æœ attackSpeed ä¸ºç©ºæˆ–éæ­£æ•°ï¼Œåˆ™ç›´æ¥ç”¨ç”Ÿäº§é—´éš”ä½œä¸ºè®¡æ—¶ç”¨çš„ attackSpeed
+            if (data.attackSpeed <= 0.0f) {
+                data.attackSpeed = produceInterval;
+            }
+            cocos2d::log("[Info] Plant %d (%s) use produceInterval: %.2f", id, data.name.c_str(), data.attackSpeed);
+        }
+        else if (data.attackSpeed <= 0.0f) {
+            // æ—¢æ²¡æœ‰ attackSpeed ä¹Ÿæ²¡æœ‰ produceIntervalï¼Œç»™ä¸ªè­¦å‘Šæ–¹ä¾¿æ’æŸ¥
+            CCLOG("[Warn] Plant %d missing both 'attackSpeed' and 'produceInterval'", id);
+        }
+
+        // åŠ è½½åŠ¨ç”»é…ç½®
+        if (val.HasMember("animations") && val["animations"].IsObject()) {
+            const auto& animsObj = val["animations"];
+            for (auto animIt = animsObj.MemberBegin(); animIt != animsObj.MemberEnd(); ++animIt) {
+                std::string animName = animIt->name.GetString();
+                const auto& animVal = animIt->value;
+                
+                AnimationConfig animConfig;
+                animConfig.frameFormat = animVal["frameFormat"].GetString();
+                animConfig.frameCount = animVal["frameCount"].GetInt();
+                animConfig.frameDelay = animVal.HasMember("frameDelay") ? 
+                    animVal["frameDelay"].GetFloat() : 0.1f;
+                animConfig.loopCount = animVal.HasMember("loopCount") ? 
+                    animVal["loopCount"].GetInt() : -1;
+                
+                if (animVal.HasMember("defaultTexture")) {
+                    animConfig.defaultTexture = animVal["defaultTexture"].GetString();
+                } else {
+                    // å¦‚æœæ²¡æœ‰æŒ‡å®šï¼Œä½¿ç”¨ç¬¬ä¸€å¸§
+                    char defaultPath[256];
+                    snprintf(defaultPath, sizeof(defaultPath), animConfig.frameFormat.c_str(), 1);
+                    animConfig.defaultTexture = defaultPath;
+                }
+                
+                if (animVal.HasMember("onComplete")) {
+                    animConfig.onComplete = animVal["onComplete"].GetString();
+                }
+                
+                data.animations[animName] = animConfig;
+            }
+        }
+        
+        // åŠ è½½é»˜è®¤åŠ¨ç”»åç§°
+        if (val.HasMember("defaultAnimation")) {
+            data.defaultAnimation = val["defaultAnimation"].GetString();
+        }
+        
+        // åŠ è½½å¡ç‰‡å›¾ç‰‡è·¯å¾„ï¼ˆå¯é€‰ï¼‰
+        if (val.HasMember("cardImage")) {
+            data.cardImage = val["cardImage"].GetString();
+        }
+
+        // ï¿½ï¿½ï¿½ëµ½ Map ï¿½ï¿½
         _plantDataMap[id] = data;
     }
 }
@@ -85,7 +143,7 @@ const PlantData& DataManager::getPlantData(int id) const {
     return it->second;
 }
 
-// [ĞÂÔö] ÊµÏÖ getZombieData
+// [å¾…å®ç°] å®ç° getZombieData
 const ZombieData& DataManager::getZombieData(int id) const {
     auto it = _zombieDataMap.find(id);
     if (it == _zombieDataMap.end()) {
@@ -94,7 +152,7 @@ const ZombieData& DataManager::getZombieData(int id) const {
     return it->second;
 }
 
-// [ĞÂÔö] ÊµÏÖ loadZombies (Âß¼­¼¸ºõÍ¬ loadPlants)
+// [å¾…å®ç°] å®ç° loadZombies (é€»è¾‘ç±»ä¼¼ loadPlants)
 void DataManager::loadZombies(const std::string& filename) {
     std::string fullPath = cocos2d::FileUtils::getInstance()->fullPathForFilename(filename);
     if (fullPath.empty()) throw GameException("Config file not found: " + filename);
@@ -112,7 +170,7 @@ void DataManager::loadZombies(const std::string& filename) {
         const auto& val = it->value;
 
         ZombieData data;
-        // ·ÀÓùĞÔ¶ÁÈ¡
+        // å®‰å…¨åœ°è¯»å–
         data.name = val.HasMember("name") ? val["name"].GetString() : "Unknown";
         data.hp = val.HasMember("hp") ? val["hp"].GetInt() : 100;
         data.damage = val.HasMember("damage") ? val["damage"].GetInt() : 10;
@@ -120,7 +178,44 @@ void DataManager::loadZombies(const std::string& filename) {
         data.attackInterval = val.HasMember("attackInterval") ? val["attackInterval"].GetFloat() : 1.0f;
         data.texturePath = val.HasMember("texture") ? val["texture"].GetString() : "";
 
+        // ï¿½ï¿½ï¿½Ø¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        if (val.HasMember("animations") && val["animations"].IsObject()) {
+            const auto& animsObj = val["animations"];
+            for (auto animIt = animsObj.MemberBegin(); animIt != animsObj.MemberEnd(); ++animIt) {
+                std::string animName = animIt->name.GetString();
+                const auto& animVal = animIt->value;
+                
+                AnimationConfig animConfig;
+                animConfig.frameFormat = animVal["frameFormat"].GetString();
+                animConfig.frameCount = animVal["frameCount"].GetInt();
+                animConfig.frameDelay = animVal.HasMember("frameDelay") ? 
+                    animVal["frameDelay"].GetFloat() : 0.1f;
+                animConfig.loopCount = animVal.HasMember("loopCount") ? 
+                    animVal["loopCount"].GetInt() : -1;
+                
+                if (animVal.HasMember("defaultTexture")) {
+                    animConfig.defaultTexture = animVal["defaultTexture"].GetString();
+                } else {
+                    // ï¿½ï¿½ï¿½Ã»ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½Ãµï¿½Ò»Ö¡
+                    char defaultPath[256];
+                    snprintf(defaultPath, sizeof(defaultPath), animConfig.frameFormat.c_str(), 1);
+                    animConfig.defaultTexture = defaultPath;
+                }
+                
+                if (animVal.HasMember("onComplete")) {
+                    animConfig.onComplete = animVal["onComplete"].GetString();
+                }
+                
+                data.animations[animName] = animConfig;
+            }
+        }
+        
+        // ï¿½ï¿½ï¿½ï¿½Ä¬ï¿½Ï¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        if (val.HasMember("defaultAnimation")) {
+            data.defaultAnimation = val["defaultAnimation"].GetString();
+        }
+
         _zombieDataMap[id] = data;
-        CCLOG("[Info] Loaded Zombie ID: %d (%s)", id, data.name.c_str());
+        CCLOG("[Info] Loaded Zombie ID: %d (%s) with %zu animations", id, data.name.c_str(), data.animations.size());
     }
 }

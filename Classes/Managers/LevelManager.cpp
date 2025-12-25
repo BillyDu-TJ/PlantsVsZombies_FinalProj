@@ -1,4 +1,4 @@
-// ÊµÏÖ LevelManager Àà
+// Êµï¿½ï¿½ LevelManager ï¿½ï¿½
 // 2025.12.2 by BillyDu
 #include "LevelManager.h"
 #include "cocos2d.h"
@@ -28,18 +28,28 @@ void LevelManager::loadLevel(const std::string& filename) {
 
     if (doc.HasParseError()) throw GameException("[Err] Level JSON parse error");
 
-    // ½âÎö assets
+    // åŠ è½½ assets
     if (doc.HasMember("assets")) {
         const Value& a = doc["assets"];
         _assets.sunBarPath = a["sunBar"].GetString();
         _assets.seedSlotPath = a["seedSlot"].GetString();
     }
 
+    // Ö»ï¿½ï¿½ï¿½Ú±ï¿½ï¿½ï¿½Â·ï¿½ï¿½Ã»ï¿½Ğ±ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Å¸ï¿½ï¿½ï¿½
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô±ï¿½ï¿½ï¿½ï¿½Í¼Ñ¡ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ÃµÄ±ï¿½ï¿½ï¿½Â·ï¿½ï¿½
     if (doc.HasMember("levelInfo")) {
-        _assets.bgPath = doc["levelInfo"]["background"].GetString();
+        std::string newBgPath = doc["levelInfo"]["background"].GetString();
+        // å¦‚æœèƒŒæ™¯è·¯å¾„æ²¡æœ‰è¢«æ‰‹åŠ¨è®¾ç½®ï¼Œæ‰ä»JSONåŠ è½½
+        if (!_isBgPathManuallySet) {
+            _assets.bgPath = newBgPath;
+        } else {
+            // èƒŒæ™¯è·¯å¾„å·²ç»è¢«æ‰‹åŠ¨è®¾ç½®ï¼ˆåœ°å›¾é€‰æ‹©ï¼‰ï¼Œä¿ç•™å®ƒ
+            CCLOG("[Info] Keeping custom background path: %s (ignoring JSON: %s)", 
+                  _assets.bgPath.c_str(), newBgPath.c_str());
+        }
     }
 
-    // ¶ÁÈ¡ waves Êı×é
+    // è·å– waves æ•°æ®
     if (doc.HasMember("waves") && doc["waves"].IsArray()) {
         const Value& waves = doc["waves"];
         for (SizeType i = 0; i < waves.Size(); i++) {
@@ -60,12 +70,12 @@ void LevelManager::update(float dt, const std::function<void(int, int)>& onSpawn
     _gameTime += dt;
     bool allSpawned = true;
 
-    // ±éÀúËùÓĞË¢¹ÖÊÂ¼ş
+    // éå†æ‰€æœ‰åˆ·æ–°äº‹ä»¶
     for (auto& evt : _waves) {
         if (!evt.spawned) {
             allSpawned = false;
             if (_gameTime >= evt.time) {
-                // Ê±¼äµ½ÁË£¡´¥·¢»Øµ÷
+                // æ—¶é—´åˆ°äº†ï¼Œè§¦å‘åˆ·æ–°
                 if (onSpawnCallback) {
                     onSpawnCallback(evt.zombieId, evt.row);
                 }
@@ -81,11 +91,11 @@ void LevelManager::update(float dt, const std::function<void(int, int)>& onSpawn
 }
 
 bool LevelManager::isAllWavesCompleted() const {
-    // ¼ì²éÊÇ·ñËùÓĞË¢¹ÖÊÂ¼ş¶¼ÒÑÍê³É
+    // æ£€æŸ¥æ˜¯å¦æ‰€æœ‰åˆ·æ–°äº‹ä»¶éƒ½å·²å®Œæˆ
     for (const auto& wave : _waves) {
         if (!wave.spawned) {
-            return false; // »¹ÓĞÎ´Íê³ÉµÄ²¨´Î
+            return false; // ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ÉµÄ²ï¿½ï¿½ï¿½
         }
     }
-    return true; // ËùÓĞ²¨´Î¶¼ÒÑÍê³É
+    return true; // ï¿½ï¿½ï¿½Ğ²ï¿½ï¿½Î¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 }
