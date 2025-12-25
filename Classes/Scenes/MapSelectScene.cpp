@@ -79,7 +79,7 @@ void MapSelectScene::createTitle() {
 }
 
 void MapSelectScene::createMapButtons() {
-    // 以屏幕中心为基准，做一个 2x2 的网格布局，让每个地图按钮之间间距更大，避免误触
+    // 以屏幕中心为基准，做一个 2x2 的网格布局，让每个地图按钮之间间距更大
     float centerX = _visibleSize.width / 2 + _origin.x;
     float centerY = _visibleSize.height * 0.55f + _origin.y;
 
@@ -125,6 +125,7 @@ void MapSelectScene::createMapButtons() {
         // 创建按钮容器
         auto buttonContainer = Node::create();
         buttonContainer->setPosition(x, y);
+        buttonContainer->setContentSize(Size(buttonWidth, buttonHeight));
         this->addChild(buttonContainer, 1);
         
         // 创建按钮背景
@@ -158,9 +159,66 @@ void MapSelectScene::createMapButtons() {
         mapLabel->setColor(isMapUnlocked(mapId) ? Color3B::WHITE : Color3B::GRAY);
         buttonContainer->addChild(mapLabel, 2);
         
-        // 已解锁地图：仅展示，不再使用鼠标/点击选择，改为数字键 1~4 选择
+        // 为已解锁的地图添加鼠标点击事件
         if (isMapUnlocked(mapId)) {
-            // 这里保留 buttonContainer 作为纯展示用容器，不添加额外输入事件
+            // 添加触摸事件监听器
+            auto touchListener = EventListenerTouchOneByOne::create();
+            touchListener->setSwallowTouches(true);
+            touchListener->onTouchBegan = [this, mapId, buttonContainer, buttonBg, buttonWidth, buttonHeight](Touch* touch, Event* event) {
+                Vec2 touchPos = buttonContainer->getParent()->convertToNodeSpace(touch->getLocation());
+                Vec2 buttonPos = buttonContainer->getPosition();
+                Rect buttonRect = Rect(buttonPos.x - buttonWidth/2, buttonPos.y - buttonHeight/2, 
+                                     buttonWidth, buttonHeight);
+                
+                if (buttonRect.containsPoint(touchPos)) {
+                    // 点击时的视觉反馈：按钮变亮
+                    buttonBg->setColor(Color3B(150, 200, 150));
+                    return true;
+                }
+                return false;
+            };
+            
+            touchListener->onTouchEnded = [this, mapId, buttonContainer, buttonBg, buttonWidth, buttonHeight](Touch* touch, Event* event) {
+                Vec2 touchPos = buttonContainer->getParent()->convertToNodeSpace(touch->getLocation());
+                Vec2 buttonPos = buttonContainer->getPosition();
+                Rect buttonRect = Rect(buttonPos.x - buttonWidth/2, buttonPos.y - buttonHeight/2, 
+                                     buttonWidth, buttonHeight);
+                
+                // 恢复按钮原始颜色
+                buttonBg->setColor(Color3B(100, 150, 100));
+                
+                if (buttonRect.containsPoint(touchPos)) {
+                    // 在按钮范围内释放，触发地图选择
+                    CCLOG("[Info] Map %d clicked with mouse", mapId);
+                    this->onMapButtonClicked(nullptr, mapId);
+                }
+            };
+            
+            touchListener->onTouchCancelled = [buttonBg](Touch* touch, Event* event) {
+                // 取消时恢复按钮颜色
+                buttonBg->setColor(Color3B(100, 150, 100));
+            };
+            
+            _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, buttonContainer);
+            
+            // 添加悬停效果（可选）
+            auto mouseListener = EventListenerMouse::create();
+            mouseListener->onMouseMove = [this, buttonContainer, buttonBg, mapId, buttonWidth, buttonHeight](EventMouse* event) {
+                Vec2 mousePos = buttonContainer->getParent()->convertToNodeSpace(Vec2(event->getCursorX(), event->getCursorY()));
+                Vec2 buttonPos = buttonContainer->getPosition();
+                Rect buttonRect = Rect(buttonPos.x - buttonWidth/2, buttonPos.y - buttonHeight/2, 
+                                     buttonWidth, buttonHeight);
+                
+                if (buttonRect.containsPoint(mousePos)) {
+                    // 鼠标悬停时稍微变亮
+                    buttonBg->setColor(Color3B(120, 170, 120));
+                } else {
+                    // 鼠标离开时恢复原色
+                    buttonBg->setColor(Color3B(100, 150, 100));
+                }
+            };
+            _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, buttonContainer);
+            
         } else {
             // 未解锁的地图显示锁定图标
             auto lockLabel = Label::createWithTTF("🔒", "fonts/Marker Felt.ttf", 40);

@@ -101,7 +101,7 @@ void StartScene::createButtons() {
 void StartScene::onStartButtonClicked(cocos2d::Ref* sender) {
     CCLOG("[Info] Start button clicked");
     AudioManager::getInstance().playEffect(AudioPath::PLANT_SOUND); // 临时用种植音效
-    SceneManager::getInstance().gotoGameScene();
+    SceneManager::getInstance().gotoMapSelectScene();
 }
 
 void StartScene::onSettingsButtonClicked(cocos2d::Ref* sender) {

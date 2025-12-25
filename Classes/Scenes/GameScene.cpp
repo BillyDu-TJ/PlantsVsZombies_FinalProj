@@ -1,7 +1,7 @@
 // 这个文件实际上是头文件，包含了 GameScene 类的方法，主要功能包括游戏的开始、暂停、转换和结束等设计。
 // 2025.11.27 by BillyDu
 // edited on 2025.12.21 by Zhao//the problems before are a lots...
-// ���£�ʵ��ֲ����ֲ��ȴϵͳ���������ֵ��̬������ȴʱ�䣬��ֲ�������ȴ�����¿�Ƭ״̬
+// 更新：实现植物种植冷却系统，根据阳光值动态计算冷却时间，种植后启动冷却并更新卡片状态
 // by Zhao.12.23
 #include <string> // C++11 string
 #include <unordered_map>
@@ -22,7 +22,7 @@
 
 USING_NS_CC;
 
-// ȫ�֣����컨��Chomper / Bigmouth����ȴ��ʱ����룩
+// 全局：大嘴花（Chomper / Bigmouth）冷却计时表（秒）
 static std::unordered_map<Plant*, float> g_bigmouthCooldowns;
 
 Scene* GameScene::createScene() {
@@ -64,7 +64,7 @@ bool GameScene::init() {
 
     // --- 加载数据与对应地图的关卡配置 ---
     try {
-        DataManager::getInstance().loadData(); // ȷ�������ȼ���
+        DataManager::getInstance().loadData(); // 确保数据先加载
 
         std::string levelFile = "data/level_test.json";
         if (mapId == 2) {
@@ -111,7 +111,7 @@ bool GameScene::init() {
     }
 
     // [调试网格] 绘制调试网格以确保正确
-    drawDebugGrid();
+    // drawDebugGrid();
     
     // --- UI: 阳光显示与卡片 (左上方) ---
 
@@ -511,7 +511,10 @@ void GameScene::spawnZombie(int id, int row) {
 
         zombie->setPosition(pixelPos);
         zombie->setRow(row);
-        this->addChild(zombie, row * 10);
+        // 修复 Z-Order：越靠近屏幕底部的僵尸应该有更高的 Z-Order
+        // 使用较大的基数减去行号，确保下方的僵尸在上层显示
+        int zOrder = 1000 + row * 10;  // 行号越大，Z-Order 越高
+        this->addChild(zombie, zOrder);
 
         _zombies.pushBack(zombie);
 
@@ -741,12 +744,10 @@ void GameScene::tryPlantAt(int row, int col) {
         plant->setPosition(pixelPos);
         plant->setRow(row);
 
-        // 添加到场景（根据 Row 设置 ZOrder，防止图层错乱）
-        // 如果是在睡莲上种植，新植物应该在睡莲之上（更高的ZOrder）
-        int zOrder = row * 10 + 1;
+        int zOrder = 500 + row * 10;  // 植物基础 Z-Order 比僵尸低
         if (isWaterRow && !isLilyPad && _plantMap[row][col] != nullptr) {
             // 在睡莲上种植：新植物在睡莲之上
-            zOrder = row * 10 + 2;
+            zOrder = 500 + row * 10 + 2;
         }
         this->addChild(plant, zOrder);
 

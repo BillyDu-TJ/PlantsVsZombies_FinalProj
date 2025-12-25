@@ -160,7 +160,6 @@ void Plant::updateLogic(float dt) {
             if (!hasWarned) {
                 CCLOG("[Err] Plant %s has 0 or negative attackSpeed: %f", _data.name.c_str(), _data.attackSpeed);
                 hasWarned = true;
-            }
         }
     }
 }

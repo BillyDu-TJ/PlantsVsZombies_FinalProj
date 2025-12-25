@@ -111,9 +111,10 @@ void PlantSelectScene::createCardArea() {
                 float y = centerY;
                 
                 card->setPosition(x, y);
-                card->setScale(1.2f); // Initial card scale
+                card->setScale(1.2f); // 统一初始缩放
                 
-                // Cards don't need individual event listeners, handled by global mouse listener
+                // 重要：清除SeedCard自带的触摸监听器，避免冲突
+                card->getEventDispatcher()->removeEventListenersForTarget(card);
                 
                 _cardArea->addChild(card);
                 _availableCards.push_back(card);
@@ -138,23 +139,44 @@ void PlantSelectScene::createGlobalMouseListener() {
         Vec2 location = event->getLocationInView();
         Vec2 worldPos = Director::getInstance()->convertToGL(location);
         
+        // Debug: 打印鼠标点击位置
+        CCLOG("[Debug] Mouse clicked at: (%.1f, %.1f)", worldPos.x, worldPos.y);
+        
         // Check if clicked on any card (reverse order to check top cards first)
         for (auto it = _availableCards.rbegin(); it != _availableCards.rend(); ++it) {
             auto* card = *it;
             
-            // Get card's world bounding box
-            Vec2 cardWorldPos = _cardArea->convertToWorldSpace(card->getPosition());
+            // 获取卡片在世界坐标系中的位置
+            Vec2 cardLocalPos = card->getPosition();
+            Vec2 cardWorldPos = _cardArea->convertToWorldSpace(cardLocalPos);
             Size cardSize = card->getContentSize();
             float scale = card->getScale();
             
+            // 关键修复：考虑到SeedCard内部使用的是Vec2(0,0)锚点（左下角）
+            // 但是Node默认锚点是Vec2(0.5, 0.5)（中心），所以需要调整计算
+            // SeedCard的setContentSize设置为Size(72, 96)
+            float actualWidth = cardSize.width * scale;
+            float actualHeight = cardSize.height * scale;
+            
+            // 计算实际的碰撞矩形（以卡片中心为基准）
             Rect cardRect(
-                cardWorldPos.x - cardSize.width * scale * 0.5f,
-                cardWorldPos.y - cardSize.height * scale * 0.5f,
-                cardSize.width * scale,
-                cardSize.height * scale
+                cardWorldPos.x - actualWidth * 0.5f,    // 左边界
+                cardWorldPos.y - actualHeight * 0.5f,   // 下边界
+                actualWidth,                             // 宽度
+                actualHeight                             // 高度
             );
             
+            // Debug: 打印卡片信息
+            CCLOG("[Debug] Card %d: LocalPos(%.1f, %.1f), WorldPos(%.1f, %.1f), Size(%.1fx%.1f), Scale(%.2f), Rect(%.1f,%.1f,%.1f,%.1f)", 
+                  dynamic_cast<SeedCard*>(card)->getPlantId(),
+                  cardLocalPos.x, cardLocalPos.y,
+                  cardWorldPos.x, cardWorldPos.y,
+                  cardSize.width, cardSize.height, scale,
+                  cardRect.origin.x, cardRect.origin.y, cardRect.size.width, cardRect.size.height);
+            
             if (cardRect.containsPoint(worldPos)) {
+                CCLOG("[Debug] Hit detected on card %d", dynamic_cast<SeedCard*>(card)->getPlantId());
+                
                 if (event->getMouseButton() == EventMouse::MouseButton::BUTTON_LEFT) {
                     // Left click: select card
                     this->onCardLeftClick(event, card);
@@ -165,6 +187,8 @@ void PlantSelectScene::createGlobalMouseListener() {
                 return;
             }
         }
+        
+        CCLOG("[Debug] No card hit");
     };
     
     _eventDispatcher->addEventListenerWithSceneGraphPriority(_globalMouseListener, this);
@@ -246,8 +270,30 @@ void PlantSelectScene::onCardLeftClick(cocos2d::EventMouse* event, cocos2d::Node
     _selectedPlantIds.push_back(plantId);
     _cardSelectedMap[card] = true;
     
-    // Visual feedback: make card bigger
-    card->setScale(1.5f);
+    // Visual feedback: 保持统一大小，添加高亮效果
+    card->setColor(Color3B(255, 255, 150)); // 淡黄色高亮
+    
+    // 添加发光边框效果 - 修复位置和锚点
+    auto glowSprite = Sprite::create();
+    glowSprite->setTextureRect(Rect(0, 0, 80, 104)); // 稍大于卡片尺寸 (72x96 + 边距)
+    glowSprite->setColor(Color3B::YELLOW);
+    glowSprite->setOpacity(80);
+    
+    // 关键修复：设置锚点为左下角，与SeedCard的背景图片对齐
+    glowSprite->setAnchorPoint(Vec2(0, 0));
+    // 设置位置为相对于卡片左下角的偏移
+    glowSprite->setPosition(-4, -4); // 向左下偏移4像素，创建边框效果
+    glowSprite->setTag(999); // 用于后续移除
+    card->addChild(glowSprite, -1); // 放在卡片后面作为边框
+    
+    // 添加轻微的点击反馈动画，但保持最终大小一致
+    card->runAction(Sequence::create(
+        ScaleTo::create(0.05f, 1.15f), 
+        ScaleTo::create(0.05f, 1.2f), 
+        nullptr));
+    
+    // 播放音效
+    AudioManager::getInstance().playEffect(AudioPath::PLANT_SOUND);
     
     // Update selected count label
     if (_selectedCountLabel) {
@@ -274,8 +320,18 @@ void PlantSelectScene::onCardRightClick(cocos2d::EventMouse* event, cocos2d::Nod
         _selectedPlantIds.erase(it);
         _cardSelectedMap[card] = false;
         
-        // Restore original card size
-        card->setScale(1.2f);
+        // 恢复原始状态：保持统一大小，移除高亮效果
+        card->setScale(1.2f); // 确保缩放一致
+        card->setColor(Color3B::WHITE); // 恢复原始颜色
+        
+        // 移除发光边框
+        auto glowSprite = card->getChildByTag(999);
+        if (glowSprite) {
+            glowSprite->removeFromParent();
+        }
+        
+        // 播放音效
+        AudioManager::getInstance().playEffect(AudioPath::PLANT_SOUND);
         
         // Update selected count label
         if (_selectedCountLabel) {
@@ -287,7 +343,6 @@ void PlantSelectScene::onCardRightClick(cocos2d::EventMouse* event, cocos2d::Nod
         CCLOG("[Info] Card %d deselected (Total: %zu)", plantId, _selectedPlantIds.size());
     }
 }
-
 
 void PlantSelectScene::onConfirmButtonClicked(cocos2d::Ref* sender) {
     if (_selectedPlantIds.empty()) {
