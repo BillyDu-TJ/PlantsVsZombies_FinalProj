@@ -30,3 +30,12 @@ cocos2d/
 # System
 .DS_Store
 Thumbs.db
+
+# --- Android ---
+proj.android/.gradle/
+proj.android/app/build/
+proj.android/app/.cxx/
+proj.android/app/.externalNativeBuild/
+proj.android/local.properties
+proj.android/captures/
+.idea/
