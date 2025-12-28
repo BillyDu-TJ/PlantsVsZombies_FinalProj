@@ -14,8 +14,16 @@ android {
 
         externalNativeBuild {
             cmake {
+                version "3.10.2.4988404"
+                abiFilters "armeabi-v7a"
+                arguments "-DANDROID_STL=c++_static",
+                        "-DANDROID_NDK=C:/ndk-r21",
+                        "-DCMAKE_TOOLCHAIN_FILE=C:/ndk-r21/build/cmake/android.toolchain.cmake",
+                        "-DANDROID_ABI=armeabi-v7a",
+                        "-DANDROID_NATIVE_API_LEVEL=21",
+                        "-DANDROID_TOOLCHAIN=clang",
+                        "-DCMAKE_MAKE_PROGRAM=C:/Users/MSI/AppData/Local/Android/Sdk/cmake/3.10.2.4988404/bin/ninja.exe"
                 targets 'MyGame'
-                arguments "-DCMAKE_FIND_ROOT_PATH=", "-DANDROID_STL=c++_static", "-DANDROID_TOOLCHAIN=clang", "-DANDROID_ARM_NEON=TRUE"
                 cppFlags "-frtti -fexceptions -fsigned-char"
             }
         }
@@ -36,6 +44,7 @@ android {
     externalNativeBuild {
         cmake {
             path "../../CMakeLists.txt"
+            version "3.10.2.4988404"
         }
     }
 

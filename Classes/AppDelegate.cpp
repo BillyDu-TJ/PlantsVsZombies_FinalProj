@@ -24,11 +24,11 @@
 
 #include "AppDelegate.h"
 #include "HelloWorldScene.h"
-#include "Scenes/StartScene.h"  // ¸ÄÎªÆô¶¯²Ëµ¥³¡¾°
+#include "Scenes/StartScene.h"  // ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½ï¿½ï¿½ï¿½
 #include "Managers/AudioManager.h"
 #include "Managers/SceneManager.h"
 
-// ÆôÓÃÒôÆµÒýÇæ
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½
 #define USE_AUDIO_ENGINE 1
 
 #if USE_AUDIO_ENGINE
@@ -85,7 +85,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     }
 
     // turn on display FPS
-    director->setDisplayStats(true);
+    director->setDisplayStats(false);
 
     // set FPS. the default value is 1.0/60 if you don't call this
     director->setAnimationInterval(1.0f / 60);
@@ -95,26 +95,26 @@ bool AppDelegate::applicationDidFinishLaunching() {
     auto frameSize = glview->getFrameSize();
     // if the frame's height is larger than the height of medium size.
     if (frameSize.height > mediumResolutionSize.height)
-    {        
-        director->setContentScaleFactor(MIN(largeResolutionSize.height/designResolutionSize.height, largeResolutionSize.width/designResolutionSize.width));
+    {
+        director->setContentScaleFactor(MIN(largeResolutionSize.height / designResolutionSize.height, largeResolutionSize.width / designResolutionSize.width));
     }
     // if the frame's height is larger than the height of small size.
     else if (frameSize.height > smallResolutionSize.height)
-    {        
-        director->setContentScaleFactor(MIN(mediumResolutionSize.height/designResolutionSize.height, mediumResolutionSize.width/designResolutionSize.width));
+    {
+        director->setContentScaleFactor(MIN(mediumResolutionSize.height / designResolutionSize.height, mediumResolutionSize.width / designResolutionSize.width));
     }
     // if the frame's height is smaller than the height of medium size.
     else
-    {        
-        director->setContentScaleFactor(MIN(smallResolutionSize.height/designResolutionSize.height, smallResolutionSize.width/designResolutionSize.width));
+    {
+        director->setContentScaleFactor(MIN(smallResolutionSize.height / designResolutionSize.height, smallResolutionSize.width / designResolutionSize.width));
     }
 
     register_all_packages();
 
-    // ³õÊ¼»¯ÒôÆµ¹ÜÀíÆ÷
+    // ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     AudioManager::getInstance().preloadAudio();
     
-    // Æô¶¯¿ªÊ¼²Ëµ¥³¡¾°¶ø²»ÊÇÖ±½Ó½øÓÎÏ·
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½Ëµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½Ó½ï¿½ï¿½ï¿½Ï·
     SceneManager::getInstance().gotoStartScene();
 
     return true;
@@ -128,7 +128,7 @@ void AppDelegate::applicationDidEnterBackground() {
     AudioEngine::pauseAll();
 #endif
     
-    // ÔÝÍ£±³¾°ÒôÀÖ
+    // ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     AudioManager::getInstance().pauseBackgroundMusic();
 }
 
@@ -140,6 +140,6 @@ void AppDelegate::applicationWillEnterForeground() {
     AudioEngine::resumeAll();
 #endif
     
-    // »Ö¸´±³¾°ÒôÀÖ
+    // ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     AudioManager::getInstance().resumeBackgroundMusic();
 }
